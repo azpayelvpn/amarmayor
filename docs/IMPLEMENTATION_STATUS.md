@@ -91,15 +91,52 @@
 - [x] **Directory APIs:** REST endpoints for City Profile, Zones, Wards, Reserved Seats, Governance Leadership, Departments, and Teams.
 
 ### ✅ Phase 6 — Complaint Configuration (COMPLETED)
-- [x] **Complaint Taxonomy:** 12 Top-Level Categories, 25+ Subcategories with default priorities, operational classifications, and live camera flags.
+- [x] **Complaint Taxonomy:** 12 Top-Level Categories, 25+ Subcategories with default priorities, canonical operational classifications, and live camera flags.
 - [x] **4-Tier Deterministic Routing Engine:** 
   1. Subcategory + Ward
   2. Category + Ward
   3. Subcategory Default
   4. Category Default
-- [x] **Service SLA & Deadlines:** Priority defaults (P1=8h, P2=24h, P3=48h, P4=120h), specific rule overrides, exact resolution timestamp calculator.
+- [x] **Service SLA & Deadlines:** Configurable deadline rules (`service_deadline_rules`), exact resolution timestamp calculator; returns unconfigured nulls rather than fabricating MCC statutory policy.
 - [x] **Routing Gap Detection:** Automated detection of unassigned category/ward routing configurations.
 - [x] **Configuration APIs:** Endpoints for categories, subcategories, deadlines, and routing gaps.
+
+---
+
+### ✅ Phase 7 — Citizen Complaint Core (COMPLETED)
+- [x] **Submission Pipeline:** Public complaint generation (`MCC-YYMM-XXXXX`), category/subcategory binding, ward-to-zone resolution, reverse geocoding fallback.
+- [x] **Privacy-Safe Public Representation:** Exact location blurred to 3 decimal places and landmarks for public viewers; citizen identity/PII masked.
+- [x] **Media & Evidence Management:** Multi-photo attachment support, live-camera detection flag, MIME/size validation.
+- [x] **State History Initialization:** Append-only transition log created at submission (`from_internal_status = NULL`, `to_internal_status = 'submitted'`).
+- [x] **Citizen Portfolio:** Endpoints for citizen complaints list (`GET /api/v1/complaints/my`) and public status tracker (`GET /api/v1/complaints/track/{trackingNumber}`).
+
+### ✅ Phase 8 — Automatic Deterministic Routing (COMPLETED)
+- [x] **Runtime Routing Engine:** Real-time 4-tier cascade rule resolution triggered immediately upon complaint submission.
+- [x] **Accountable Ownership Assignment:** Resolves department, service unit, supervisor employee, and operational team.
+- [x] **Automatic State Transition:** Transitions from `submitted` to `assigned` or `routed` on rule match; transitions to `review_required` on routing gap.
+- [x] **Ownership History:** Append-only log in `complaint_ownership_history` recording originating vs receiving supervisors and departments.
+
+### ✅ Phase 9 — Field Operations (COMPLETED)
+- [x] **Task Creation & Dispatch:** Supervisors create and assign `field_tasks` to field workers or operational crews with instructions.
+- [x] **Assignment History:** Durable tracking in `field_task_assignments` supporting historical reassignment audits.
+- [x] **Field Execution Lifecycle:** Workers mark start (`in_progress`) and completion (`work_completed`).
+- [x] **Evidence Attachment:** Workers upload before/in-progress/after work photos directly linked via `task_evidence`.
+- [x] **Non-Closure Invariant:** Field worker completion marks task complete and complaint `work_completed`, strictly preserving that worker completion is NOT final resolution.
+
+### ✅ Phase 10 — Resolution Quality / Citizen Confirmation / Reopen (COMPLETED)
+- [x] **Supervisor Verification:** Supervisor inspects work on site or via photo evidence $\rightarrow$ transitions complaint to `awaiting_citizen_confirmation` (Citizen presentation status: `confirmation_needed`).
+- [x] **Citizen Confirmed Resolution:** Citizen confirms satisfaction $\rightarrow$ transitions complaint to `closed` (Citizen status: `resolved`), records 1-5 rating score and feedback comment.
+- [x] **Citizen Reopen ("Not Resolved" / "Needs More Work"):**
+  - Increments `reopen_count` ($+1$) and `completion_attempts` ($+1$).
+  - Transitions complaint to `needs_more_work` (Citizen status: `needs_more_work`).
+  - **Invariants Preserved:** Original `submitted_at`, `deadline_at`, and total case age NEVER reset; operational owner remains unchanged.
+  - **Immediate Mayor / Admin Attention:** FIRST reopen immediately inserts an active `executive_attention` record (`trigger_type = 'citizen_reopen'`).
+
+### ✅ Phase 11 — Deadline, Overdue and Executive Attention (COMPLETED)
+- [x] **Overdue Deadline Monitoring:** Scanner detects SLA deadline breaches for open unclosed complaints, sets `deadline_missed_at`.
+- [x] **Immediate Executive Attention Trigger:** FIRST missed deadline immediately creates an active `executive_attention` record (`trigger_type = 'deadline_breach'`, `severity = 'p1_critical'`).
+- [x] **No Escalation Ladders:** Operational department/supervisor ownership remains intact; zero automated reassignment ping-pong.
+- [x] **Mayor & Administrator Command Capabilities:** Executive Attention Queue endpoint (`GET /api/v1/executive/attention-queue`), binding executive directives (`POST /api/v1/executive/directives`), formal explanation requests (`POST /api/v1/executive/explanation-requests`).
 
 ---
 
@@ -114,18 +151,18 @@
 | **Phase 4** | Authentication, RBAC & Scope (Phone+OTP, Argon2id, Sessions, Mobile Tokens) | ✅ **Completed** |
 | **Phase 5** | City, Governance & Workforce (MCC 3 Zones, 33 Wards, 11 Reserved Seats, Employees) | ✅ **Completed** |
 | **Phase 6** | Complaint Configuration (12 Categories, Subcategories, Routing & Deadline Rules) | ✅ **Completed** |
-| **Phase 7** | Citizen Complaint Core (Portal, Submission, Public Number, Tracking, Timeline) | ⏳ Next Up (Milestone B) |
-| **Phase 8** | Automatic Deterministic Routing (Engine, Temporary Overrides, Gap Detection) | 📋 Queued |
-| **Phase 9** | Field Operations (Supervisor Queue, Team Dispatch, Field Tasks, Evidence Upload) | 📋 Queued |
-| **Phase 10** | Resolution Quality (Supervisor Verification, Citizen Confirmation, Needs More Work) | 📋 Queued |
-| **Phase 11** | Deadline & Executive Attention (Overdue Processing, 1st Failure $\rightarrow$ Mayor Attention) | 📋 Queued |
-| **Phase 12** | Role-Specific Administration (Ward/Zone Officers, Dept Heads, CEO, Councillors) | 📋 Queued |
-| **Phase 13** | Mayor / Administrator Command Center (6 KPIs, Attention Required, Directives) | 📋 Queued |
-| **Phase 14** | Platform Super Admin (Non-Technical People, Areas, Governance, Services, Wizards) | 📋 Queued |
-| **Phase 15** | Technical Super Admin (Traffic-Light Health, Queues, Backups, Advanced Details) | 📋 Queued |
-| **Phase 16** | Structured Communication (Complaint Messages, Representative Contact, Triage) | 📋 Queued |
-| **Phase 17** | Public Accountability (Dashboard, Public Tracking, Ward Profiles, Notices) | 📋 Queued |
-| **Phase 18** | Background Processing & Notifications (Durable Queues, Workers, Schedulers) | 📋 Queued |
+| **Phase 7** | Citizen Complaint Core (Portal, Submission, Public Number, Tracking, Timeline) | ✅ **Completed** |
+| **Phase 8** | Automatic Deterministic Routing (Engine, Temporary Overrides, Gap Detection) | ✅ **Completed** |
+| **Phase 9** | Field Operations (Supervisor Queue, Team Dispatch, Field Tasks, Evidence Upload) | ✅ **Completed** |
+| **Phase 10** | Resolution Quality (Supervisor Verification, Citizen Confirmation, Needs More Work) | ✅ **Completed** |
+| **Phase 11** | Deadline & Executive Attention (Overdue Processing, 1st Failure $\rightarrow$ Mayor Attention) | ✅ **Completed** |
+| **Phase 12** | Role-Specific Administration (Ward/Zone Officers, Dept Heads, CEO, Councillors) | 📋 Queued (Milestone C) |
+| **Phase 13** | Mayor / Administrator Command Center (6 KPIs, Attention Required, Directives) | 📋 Queued (Milestone C) |
+| **Phase 14** | Platform Super Admin (Non-Technical People, Areas, Governance, Services, Wizards) | 📋 Queued (Milestone C) |
+| **Phase 15** | Technical Super Admin (Traffic-Light Health, Queues, Backups, Advanced Details) | 📋 Queued (Milestone C) |
+| **Phase 16** | Structured Communication (Complaint Messages, Representative Contact, Triage) | 📋 Queued (Milestone C) |
+| **Phase 17** | Public Accountability (Dashboard, Public Tracking, Ward Profiles, Notices) | 📋 Queued (Milestone C) |
+| **Phase 18** | Background Processing & Notifications (Durable Queues, Workers, Schedulers) | 📋 Queued (Milestone C) |
 | **Phase 19** | Stabilize API v1 (Contract Review, Freezing API for Mobile) | 📋 Queued |
 | **Phase 20** | Flutter Mobile Application (Shared Native App for Citizen, Worker, Supervisor) | 📋 Queued |
 | **Phase 21** | Advanced Civic Intelligence (Duplicates, "I am affected", Hotspots, Pulse) | 📋 Queued |

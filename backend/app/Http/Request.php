@@ -114,6 +114,11 @@ class Request
         return array_merge($this->query, $this->post, $this->json);
     }
 
+    public function getJsonBody(): array
+    {
+        return !empty($this->json) ? $this->json : array_merge($this->post, $this->query);
+    }
+
     public function query(string $key, mixed $default = null): mixed
     {
         return $this->query[$key] ?? $default;

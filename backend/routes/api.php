@@ -6,6 +6,8 @@ use AmarMayor\Controllers\Api\HealthController;
 use AmarMayor\Http\Controllers\AuthController;
 use AmarMayor\Http\Controllers\CityController;
 use AmarMayor\Http\Controllers\ComplaintConfigController;
+use AmarMayor\Http\Controllers\ComplaintController;
+use AmarMayor\Http\Controllers\ExecutiveController;
 use AmarMayor\Http\Controllers\GovernanceController;
 use AmarMayor\Http\Controllers\WorkforceController;
 use AmarMayor\Middleware\AuthenticateMiddleware;
@@ -43,5 +45,26 @@ $r->get('/complaints/categories', [ComplaintConfigController::class, 'getCategor
 $r->get('/complaints/subcategories/{id}', [ComplaintConfigController::class, 'getSubcategory']);
 $r->get('/complaints/config/routing-gaps', [ComplaintConfigController::class, 'getRoutingGaps']);
 $r->get('/complaints/config/deadlines', [ComplaintConfigController::class, 'getDeadlines']);
+
+// Citizen Complaint Core & Tracking
+$r->post('/complaints', [ComplaintController::class, 'submit'], [AuthenticateMiddleware::class]);
+$r->get('/complaints/my', [ComplaintController::class, 'getMyComplaints'], [AuthenticateMiddleware::class]);
+$r->get('/complaints/track/{trackingNumber}', [ComplaintController::class, 'track']);
+$r->get('/complaints/{id}', [ComplaintController::class, 'getComplaint']);
+
+// Field Operations & Tasks
+$r->post('/complaints/{id}/tasks', [ComplaintController::class, 'createTask'], [AuthenticateMiddleware::class]);
+$r->post('/tasks/{taskId}/start', [ComplaintController::class, 'startTask'], [AuthenticateMiddleware::class]);
+$r->post('/tasks/{taskId}/complete', [ComplaintController::class, 'completeTask'], [AuthenticateMiddleware::class]);
+
+// Resolution Quality & Confirmation
+$r->post('/complaints/{id}/verify', [ComplaintController::class, 'verify'], [AuthenticateMiddleware::class]);
+$r->post('/complaints/{id}/confirm', [ComplaintController::class, 'confirm'], [AuthenticateMiddleware::class]);
+
+// Executive Attention & Command Center
+$r->get('/executive/attention-queue', [ExecutiveController::class, 'getAttentionQueue'], [AuthenticateMiddleware::class]);
+$r->post('/executive/directives', [ExecutiveController::class, 'issueDirective'], [AuthenticateMiddleware::class]);
+$r->post('/executive/explanation-requests', [ExecutiveController::class, 'requestExplanation'], [AuthenticateMiddleware::class]);
+
 
 

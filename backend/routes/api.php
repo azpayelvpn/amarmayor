@@ -89,6 +89,11 @@ $r->get('/admin/platform/overview', [AdminOpsController::class, 'getPlatformOver
 $r->get('/admin/system/health', [AdminOpsController::class, 'getSystemHealth'], [AuthenticateMiddleware::class]);
 $r->post('/admin/system/run-scheduler', [AdminOpsController::class, 'runScheduler'], [AuthenticateMiddleware::class]);
 
+// Operational Intelligence
+$r->get('/intelligence/recurring', [\AmarMayor\Http\Controllers\IntelligenceController::class, 'getRecurring'], [AuthenticateMiddleware::class]);
+$r->get('/intelligence/hotspots', [\AmarMayor\Http\Controllers\IntelligenceController::class, 'getHotspots'], [AuthenticateMiddleware::class]);
+$r->get('/intelligence/evaluate-project', [\AmarMayor\Http\Controllers\IntelligenceController::class, 'evaluateProject'], [AuthenticateMiddleware::class]);
+
 
 
 

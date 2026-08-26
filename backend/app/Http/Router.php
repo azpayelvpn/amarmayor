@@ -145,6 +145,10 @@ class Router
             };
         }
 
+        foreach ($params as $k => $v) {
+            $request->setAttribute($k, $v);
+        }
+
         return $pipeline($request);
     }
 

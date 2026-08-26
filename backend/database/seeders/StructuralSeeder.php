@@ -23,6 +23,7 @@ class StructuralSeeder
             self::seedZonesAndWards($pdo);
             self::seedReservedSeats($pdo);
             self::seedRepresentationTypes($pdo);
+            self::seedDepartmentsAndUnits($pdo);
             self::seedRolesAndPermissions($pdo);
             self::seedComplaintTaxonomy($pdo);
             self::seedClassificationsAndPriorities($pdo);
@@ -149,6 +150,130 @@ class StructuralSeeder
             if (!$stmt->fetch()) {
                 $ins = $pdo->prepare("INSERT INTO representation_types (slug, name_bn, name_en, is_electoral) VALUES (?, ?, ?, ?)");
                 $ins->execute([$t['slug'], $t['name_bn'], $t['name_en'], $t['is_electoral']]);
+            }
+        }
+    }
+
+    private static function seedDepartmentsAndUnits(PDO $pdo): void
+    {
+        $cityId = (int)$pdo->query("SELECT id FROM cities WHERE slug = 'mcc'")->fetchColumn();
+
+        $departments = [
+            [
+                'slug' => 'waste_management',
+                'name_bn' => 'বর্জ্য ব্যবস্থাপনা ও পরিচ্ছন্নতা বিভাগ',
+                'name_en' => 'Waste Management & Conservancy Department',
+                'description_bn' => 'দৈনিক বর্জ্য অপসারণ, রাস্তা ঝাড়ু ও ড্রেন পরিচ্ছন্নতা',
+                'units' => [
+                    ['slug' => 'waste_collection', 'name_bn' => 'বর্জ্য সংগ্রহ ও অপসারণ শাখা', 'name_en' => 'Waste Collection & Transport Unit'],
+                    ['slug' => 'street_sweeping', 'name_bn' => 'সড়ক ঝাড়ু ও পরিচ্ছন্নতা শাখা', 'name_en' => 'Street Sweeping Unit'],
+                    ['slug' => 'landfill_disposal', 'name_bn' => 'ডাম্পিং ও ল্যান্ডফিল ব্যবস্থাপনা', 'name_en' => 'Landfill & Disposal Unit'],
+                ]
+            ],
+            [
+                'slug' => 'public_health',
+                'name_bn' => 'স্বাস্থ্য ও মশক নিধন বিভাগ',
+                'name_en' => 'Public Health & Mosquito Control Department',
+                'description_bn' => 'মশক নিধন স্প্রে, স্যানিটেশন ও জনস্বাস্থ্য সেবা',
+                'units' => [
+                    ['slug' => 'mosquito_control', 'name_bn' => 'মশক নিধন ও স্প্রে শাখা', 'name_en' => 'Mosquito Control & Fogging Unit'],
+                    ['slug' => 'sanitation', 'name_bn' => 'স্যানিটেশন ও স্বাস্থ্যবিধি শাখা', 'name_en' => 'Sanitation & Hygiene Unit'],
+                ]
+            ],
+            [
+                'slug' => 'engineering_civil',
+                'name_bn' => 'প্রকৌশল ও পুরকৌশল বিভাগ',
+                'name_en' => 'Civil Engineering & Infrastructure Department',
+                'description_bn' => 'সড়ক, কালভার্ট ও অবকাঠামো সংস্কার',
+                'units' => [
+                    ['slug' => 'road_maintenance', 'name_bn' => 'সড়ক মেরামত ও প্যাচওয়ার্ক শাখা', 'name_en' => 'Road Maintenance Unit'],
+                    ['slug' => 'culvert_bridges', 'name_bn' => 'কালভার্ট ও সেতু সংস্কার শাখা', 'name_en' => 'Bridges & Culverts Unit'],
+                ]
+            ],
+            [
+                'slug' => 'drainage_waterlogging',
+                'name_bn' => 'ড্রেনেজ ও পানি নিষ্কাশন বিভাগ',
+                'name_en' => 'Drainage & Water Drainage Department',
+                'description_bn' => 'ড্রেন নির্মাণ, সংস্কার ও জলাবদ্ধতা দূরীকরণ',
+                'units' => [
+                    ['slug' => 'drain_cleaning', 'name_bn' => 'ড্রেন পলি অপসারণ ও পরিচ্ছন্নতা শাখা', 'name_en' => 'Drain Desilting Unit'],
+                    ['slug' => 'drain_repair', 'name_bn' => 'ড্রেন ও স্ল্যাব মেরামত শাখা', 'name_en' => 'Drain Repair & Slab Unit'],
+                ]
+            ],
+            [
+                'slug' => 'electrical_lighting',
+                'name_bn' => 'বিদ্যুৎ ও পথবাতি বিভাগ',
+                'name_en' => 'Electrical & Street Lighting Department',
+                'description_bn' => 'সড়কবাতি স্থাপন, মেরামত ও বিদ্যুতায়ন',
+                'units' => [
+                    ['slug' => 'street_light_repair', 'name_bn' => 'পথবাতি রক্ষণাবেক্ষণ শাখা', 'name_en' => 'Street Light Maintenance Unit'],
+                    ['slug' => 'electrical_substation', 'name_bn' => 'বৈদ্যুতিক সাবস্টেশন ও সংযোগ শাখা', 'name_en' => 'Electrical Power Unit'],
+                ]
+            ],
+            [
+                'slug' => 'water_supply',
+                'name_bn' => 'পানি সরবরাহ শাখা',
+                'name_en' => 'Water Supply Department',
+                'description_bn' => 'পাইপলাইন ও গভীর নলকূপ পানি সরবরাহ',
+                'units' => [
+                    ['slug' => 'pipeline_distribution', 'name_bn' => 'পাইপলাইন ও লাইন মেরামত শাখা', 'name_en' => 'Pipeline Distribution Unit'],
+                    ['slug' => 'tubewell_pump', 'name_bn' => 'নলকূপ ও পাম্প ব্যবস্থাপনা শাখা', 'name_en' => 'Tubewell & Pump Unit'],
+                ]
+            ],
+            [
+                'slug' => 'revenue_taxation',
+                'name_bn' => 'রাজস্ব ও কর বিভাগ',
+                'name_en' => 'Revenue & Taxation Department',
+                'description_bn' => 'হোল্ডিং ট্যাক্স ও পৌর রাজস্ব আদায়',
+                'units' => [
+                    ['slug' => 'holding_tax', 'name_bn' => 'হোল্ডিং ট্যাক্স শাখা', 'name_en' => 'Holding Tax Unit'],
+                    ['slug' => 'trade_license', 'name_bn' => 'ট্রেড লাইসেন্স শাখা', 'name_en' => 'Trade License Unit'],
+                ]
+            ],
+            [
+                'slug' => 'estate_markets',
+                'name_bn' => 'সম্পত্তি ও বাজার ব্যবস্থাপনা বিভাগ',
+                'name_en' => 'Estate & Municipal Markets Department',
+                'description_bn' => 'পৌর জমি ও হাট-বাজার ব্যবস্থাপনা',
+                'units' => [
+                    ['slug' => 'market_management', 'name_bn' => 'পৌর বাজার ও মার্কেট শাখা', 'name_en' => 'Market Management Unit'],
+                ]
+            ],
+            [
+                'slug' => 'general_administration',
+                'name_bn' => 'সাধারণ প্রশাসন ও সংস্থাপন শাখা',
+                'name_en' => 'General Administration & Establishment Department',
+                'description_bn' => 'সাধারণ প্রশাসন, সংস্থাপন ও পৌর নিরাপত্তা',
+                'units' => [
+                    ['slug' => 'establishment', 'name_bn' => 'সংস্থাপন শাখা', 'name_en' => 'Establishment Unit'],
+                ]
+            ],
+        ];
+
+        foreach ($departments as $dept) {
+            $stmt = $pdo->prepare("SELECT id FROM departments WHERE city_id = ? AND slug = ?");
+            $stmt->execute([$cityId, $dept['slug']]);
+            $deptId = $stmt->fetchColumn();
+
+            if (!$deptId) {
+                $ins = $pdo->prepare("
+                    INSERT INTO departments (city_id, slug, name_bn, name_en, description_bn, status, created_at)
+                    VALUES (?, ?, ?, ?, ?, 'active', NOW())
+                ");
+                $ins->execute([$cityId, $dept['slug'], $dept['name_bn'], $dept['name_en'], $dept['description_bn']]);
+                $deptId = (int)$pdo->lastInsertId();
+            }
+
+            foreach ($dept['units'] as $unit) {
+                $uStmt = $pdo->prepare("SELECT id FROM service_units WHERE department_id = ? AND slug = ?");
+                $uStmt->execute([$deptId, $unit['slug']]);
+                if (!$uStmt->fetch()) {
+                    $uIns = $pdo->prepare("
+                        INSERT INTO service_units (department_id, slug, name_bn, name_en, status, created_at)
+                        VALUES (?, ?, ?, ?, 'active', NOW())
+                    ");
+                    $uIns->execute([$deptId, $unit['slug'], $unit['name_bn'], $unit['name_en']]);
+                }
             }
         }
     }

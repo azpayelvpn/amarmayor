@@ -5,6 +5,7 @@ declare(strict_types=1);
 use AmarMayor\Controllers\Api\HealthController;
 use AmarMayor\Http\Controllers\AuthController;
 use AmarMayor\Http\Controllers\CityController;
+use AmarMayor\Http\Controllers\ComplaintConfigController;
 use AmarMayor\Http\Controllers\GovernanceController;
 use AmarMayor\Http\Controllers\WorkforceController;
 use AmarMayor\Middleware\AuthenticateMiddleware;
@@ -36,4 +37,11 @@ $r->get('/governance/wards/{wardId}/history', [GovernanceController::class, 'get
 // Workforce & Operational Directory
 $r->get('/workforce/departments', [WorkforceController::class, 'getDepartments']);
 $r->get('/workforce/teams', [WorkforceController::class, 'getTeams']);
+
+// Complaint Configuration & Taxonomy
+$r->get('/complaints/categories', [ComplaintConfigController::class, 'getCategories']);
+$r->get('/complaints/subcategories/{id}', [ComplaintConfigController::class, 'getSubcategory']);
+$r->get('/complaints/config/routing-gaps', [ComplaintConfigController::class, 'getRoutingGaps']);
+$r->get('/complaints/config/deadlines', [ComplaintConfigController::class, 'getDeadlines']);
+
 

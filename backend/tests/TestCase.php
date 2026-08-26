@@ -115,4 +115,11 @@ abstract class TestCase
             throw new \AssertionError($message ?: "Array does not contain key [{$key}]");
         }
     }
+
+    protected function assertIsArray(mixed $actual, string $message = ''): void
+    {
+        if (!is_array($actual)) {
+            throw new \AssertionError($message ?: "Expected array, got " . gettype($actual));
+        }
+    }
 }

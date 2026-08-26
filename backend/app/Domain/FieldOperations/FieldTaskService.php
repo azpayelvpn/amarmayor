@@ -178,8 +178,13 @@ class FieldTaskService
                 ->execute([$taskId]);
 
             // 2. Transition parent complaint to 'work_completed' (pending supervisor verification)
-            $pdo->prepare("UPDATE complaints SET internal_status = 'work_completed', citizen_status = 'work_completed' WHERE id = ?")
-                ->execute([$complaintId]);
+            $pdo->prepare("
+                UPDATE complaints 
+                SET internal_status = 'work_completed', 
+                    citizen_status = 'work_completed',
+                    completion_attempts = completion_attempts + 1 
+                WHERE id = ?
+            ")->execute([$complaintId]);
 
             // 3. Append status history
             $histStmt = $pdo->prepare("

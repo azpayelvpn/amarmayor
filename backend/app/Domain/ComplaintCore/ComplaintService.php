@@ -110,14 +110,15 @@ class ComplaintService
             ]);
             $complaintId = (int)$pdo->lastInsertId();
 
-            // 6. Insert Location (Exact + Public Safe Approximation)
+            // 6. Insert Location (Exact Internal Coordinates + Privacy-Safe Public Representation)
             $lat = (float)($data['latitude'] ?? 24.7471); // Default Mymensingh center
             $lng = (float)($data['longitude'] ?? 90.4203);
             $approxAddr = $data['approximate_address'] ?? null;
             $landmark = $data['landmark'] ?? null;
-            $publicSafeAddr = $landmark ?: ($approxAddr ? substr($approxAddr, 0, 50) . '...' : "Ward {$data['ward_id']}, Mymensingh");
-            $publicLat = round($lat, 3); // Blurred coordinates for privacy
-            $publicLng = round($lng, 3);
+            // Public safe representation strictly avoids household numbers or private building identifiers
+            $publicSafeAddr = $landmark ?: "ওয়ার্ড নং {$data['ward_id']}, ময়মনসিংহ";
+            $publicLat = null; // Private household coordinates not exposed to public
+            $publicLng = null;
 
             $locStmt = $pdo->prepare("
                 INSERT INTO complaint_locations (

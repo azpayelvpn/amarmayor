@@ -17,7 +17,7 @@ class ExecutiveAttentionService
     {
         $pdo = DatabaseManager::getConnection();
         $stmt = $pdo->prepare("
-            SELECT id, internal_status, citizen_status, deadline_at, deadline_missed_at, closed_at 
+            SELECT id, priority, internal_status, citizen_status, deadline_at, deadline_missed_at, closed_at 
             FROM complaints 
             WHERE id = ? 
             LIMIT 1
@@ -55,12 +55,19 @@ class ExecutiveAttentionService
             $existingId = $checkStmt->fetchColumn();
 
             if (!$existingId) {
+                // Determine executive attention severity based on complaint priority without altering operational priority
+                $severity = match ($complaint['priority'] ?? 'p3_normal') {
+                    'p1_critical' => 'p1_critical',
+                    'p2_high' => 'p2_high',
+                    default => 'p3_normal',
+                };
+
                 // Insert Immediate Mayor/Administrator Executive Attention trigger
                 $eaStmt = $pdo->prepare("
                     INSERT INTO executive_attention (complaint_id, trigger_type, severity, is_active, created_at)
-                    VALUES (?, 'deadline_breach', 'p1_critical', 1, NOW())
+                    VALUES (?, 'deadline_breach', ?, 1, NOW())
                 ");
-                $eaStmt->execute([$complaintId]);
+                $eaStmt->execute([$complaintId, $severity]);
 
                 // Append status history for transparency
                 $histStmt = $pdo->prepare("

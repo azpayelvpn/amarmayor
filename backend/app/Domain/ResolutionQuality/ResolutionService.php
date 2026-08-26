@@ -152,25 +152,23 @@ class ResolutionService
                 // 2. Citizen Reports 'Not Resolved' / 'Needs More Work'
                 // Hard Rules:
                 // - reopen_count increments (+1)
-                // - completion_attempts increments (+1)
+                // - completion_attempts is NOT incremented here (only increments on actual work completion attempts)
                 // - original submitted_at NEVER resets
                 // - original deadline_at NEVER resets
                 // - total case age NEVER resets
                 // - operational owner remains unchanged
                 // - Immediate Mayor / Administrator Attention Required trigger created
                 $newReopenCount = (int)$complaint['reopen_count'] + 1;
-                $newAttempts = (int)$complaint['completion_attempts'] + 1;
 
                 $upStmt = $pdo->prepare("
                     UPDATE complaints
                     SET internal_status = 'needs_more_work',
                         citizen_status = 'needs_more_work',
                         reopen_count = ?,
-                        completion_attempts = ?,
                         first_reopened_at = COALESCE(first_reopened_at, NOW())
                     WHERE id = ?
                 ");
-                $upStmt->execute([$newReopenCount, $newAttempts, $complaintId]);
+                $upStmt->execute([$newReopenCount, $complaintId]);
 
                 // Insert feedback recording rejection
                 $pdo->prepare("

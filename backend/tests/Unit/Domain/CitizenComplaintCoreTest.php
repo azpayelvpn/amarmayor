@@ -72,7 +72,7 @@ class CitizenComplaintCoreTest extends TestCase
             $this->assertFalse(isset($publicView['citizen_user_id']), "Citizen ID must not be leaked to public");
             $this->assertFalse(isset($publicView['description']), "Raw citizen description must be protected in public view");
             $this->assertEquals('নতুন বাজার জামে মসজিদের সামনে', $publicView['public_safe_address']);
-            $this->assertEquals(24.747, (float)$publicView['public_latitude']); // Rounded to 3 decimals
+            $this->assertNull($publicView['public_latitude'], "Private GPS coordinates must be hidden from public view");
 
             // 4. Test Authenticated Citizen View (Citizen sees their own full data)
             $citizenView = $this->complaintService->getComplaintByTrackingNumber($complaint['public_complaint_number'], $citizenUserId);

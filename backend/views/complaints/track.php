@@ -89,7 +89,7 @@
                         <div class="col-6 col-md-4">
                             <span class="text-muted small d-block"><?= ($locale ?? 'bn') === 'bn' ? 'ওয়ার্ড ও অঞ্চল' : 'Ward & Zone' ?></span>
                             <strong class="text-dark">
-                                <?= ($locale ?? 'bn') === 'bn' ? 'ওয়ার্ড নং ' . to_bn_number((string)($complaint['ward_number'] ?? '')) . ' (' . e($complaint['zone_name_bn'] ?? '') . ')' : 'Ward ' . ($complaint['ward_number'] ?? '') . ' (' . e($complaint['zone_name_en'] ?? '') . ')' ?>
+                                <?= ($locale ?? 'bn') === 'bn' ? 'ওয়ার্ড ' . to_bn_number((string)($complaint['ward_number'] ?? '')) . ', অঞ্চল ' . to_bn_number((string)($complaint['zone_number'] ?? '')) : 'Ward ' . ($complaint['ward_number'] ?? '') . ', Zone ' . ($complaint['zone_number'] ?? '') ?>
                             </strong>
                         </div>
                         <div class="col-6 col-md-4">

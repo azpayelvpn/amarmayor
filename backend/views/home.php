@@ -150,24 +150,21 @@
         </div>
     </div>
 
-    <!-- Quick Emergency Helpline Card -->
+    <!-- Municipal Control Room / Contact Information Card -->
     <div class="card bg-light border-0 rounded-4 p-3 mb-4">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
-                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;font-size:1.4rem;">
-                    <i class="bi bi-telephone-inbound-fill"></i>
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;font-size:1.4rem;">
+                    <i class="bi bi-info-circle-fill"></i>
                 </div>
                 <div>
-                    <h6 class="fw-bold mb-0 text-dark"><?= ($locale ?? 'bn') === 'bn' ? 'জরুরি পৌর সেবা হটলাইন' : 'Emergency Municipal Helpline' ?></h6>
-                    <small class="text-muted"><?= ($locale ?? 'bn') === 'bn' ? '২৪/৭ কন্ট্রোল রুম সহায়তা ও জরুরি সেবা' : '24/7 Control Room Support' ?></small>
+                    <h6 class="fw-bold mb-0 text-dark"><?= ($locale ?? 'bn') === 'bn' ? 'পৌর সেবা ও নিয়ন্ত্রণ কক্ষ' : 'Municipal Control Room & Support' ?></h6>
+                    <small class="text-muted"><?= ($locale ?? 'bn') === 'bn' ? 'জরুরি সেবা ও নিয়ন্ত্রণ কক্ষের যোগাযোগের তথ্য শীঘ্রই যুক্ত করা হবে।' : 'Official control room and emergency helpline numbers will be updated soon.' ?></small>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <a href="tel:16106" class="btn btn-outline-danger fw-bold px-3 py-2">
-                    <i class="bi bi-telephone me-1"></i> ১৬১০৬
-                </a>
-                <a href="tel:02996663123" class="btn btn-outline-secondary fw-semibold px-3 py-2">
-                    ০২৯৯৬৬-৬৩১২৩
+            <div>
+                <a href="/notices" class="btn btn-outline-primary fw-semibold px-3 py-2">
+                    <i class="bi bi-bell me-1"></i> <?= ($locale ?? 'bn') === 'bn' ? 'পৌর বিজ্ঞপ্তি দেখুন' : 'View City Notices' ?>
                 </a>
             </div>
         </div>

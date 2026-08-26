@@ -280,4 +280,23 @@ function goToStep(step) {
         }
     }
 }
+
+document.getElementById('complaintForm').addEventListener('submit', function(e) {
+    const phoneInput = document.getElementById('phone');
+    if (phoneInput && !phoneInput.value.trim()) {
+        e.preventDefault();
+        alert(isBn ? 'অনুগ্রহ করে আপনার মোবাইল নম্বরটি লিখুন।' : 'Please enter your mobile number.');
+        goToStep(4);
+        phoneInput.focus();
+        return false;
+    }
+    const desc = document.getElementById('description').value.trim();
+    if (!desc) {
+        e.preventDefault();
+        alert(isBn ? 'অনুগ্রহ করে সমস্যার বিবরণ লিখুন।' : 'Please describe the problem.');
+        goToStep(3);
+        document.getElementById('description').focus();
+        return false;
+    }
+});
 </script>

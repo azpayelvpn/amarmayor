@@ -52,6 +52,16 @@
                     </div>
 
                     <?php if (($step ?? 'request') === 'verify'): ?>
+                        <?php if (\AmarMayor\Support\Config::get('app.env') !== 'production'): ?>
+                            <div class="alert alert-warning py-2 px-3 small rounded-3 mb-3 border-0 bg-warning-subtle text-warning-emphasis">
+                                <i class="bi bi-tools me-1"></i>
+                                <strong><?= ($locale ?? 'bn') === 'bn' ? 'পরীক্ষামূলক মোড:' : 'Testing Mode:' ?></strong>
+                                <?= ($locale ?? 'bn') === 'bn' ? 'SMS গেটওয়ে সংযুক্ত নয়। যাচাইকরণ কোড' : 'SMS gateway is not connected. The verification code is available in the' ?>
+                                <a href="/dev/otp-inbox" target="_blank" class="fw-bold text-decoration-underline text-warning-emphasis">Developer OTP Inbox</a>
+                                <?= ($locale ?? 'bn') === 'bn' ? '-এ পাওয়া যাবে।' : '.' ?>
+                            </div>
+                        <?php endif; ?>
+
                         <!-- Step 2: Verify OTP -->
                         <form action="/auth/otp/verify" method="POST">
                             <?= csrf_field() ?>

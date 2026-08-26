@@ -258,7 +258,7 @@ class ComplaintService
 
         $isOwner = ($viewingUserId !== null && (int)$row['citizen_user_id'] === $viewingUserId);
 
-        // Status history summary
+        // Status history summary (consolidate consecutive identical citizen presentations)
         $hStmt = $pdo->prepare("
             SELECT to_citizen_status as status, action_name, created_at 
             FROM complaint_status_history 
@@ -266,7 +266,18 @@ class ComplaintService
             ORDER BY id ASC
         ");
         $hStmt->execute([(int)$row['id']]);
-        $row['timeline'] = $hStmt->fetchAll(PDO::FETCH_ASSOC);
+        $rawTimeline = $hStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $dedupedTimeline = [];
+        $lastStatus = null;
+        foreach ($rawTimeline as $item) {
+            $currentStatus = $item['status'];
+            if ($currentStatus !== $lastStatus) {
+                $dedupedTimeline[] = $item;
+                $lastStatus = $currentStatus;
+            }
+        }
+        $row['timeline'] = $dedupedTimeline;
 
         // If viewing as citizen owner, include full description and uploaded media
         if ($isOwner) {

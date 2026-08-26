@@ -74,8 +74,8 @@
                                 ?>
                             </div>
                         <?php else: ?>
-                            <span class="text-muted small italic">
-                                <?= ($locale ?? 'bn') === 'bn' ? 'প্রতিনিধি তথ্য হালনাগাদ হচ্ছে' : 'Pending appointment' ?>
+                            <span class="text-muted small">
+                                <?= ($locale ?? 'bn') === 'bn' ? 'এই ওয়ার্ডের বর্তমান যাচাইকৃত দায়িত্বশীল ব্যক্তির তথ্য এখনো যোগ করা হয়নি।' : 'Information for the verified responsible officer/representative for this ward has not been added yet.' ?>
                             </span>
                         <?php endif; ?>
                     </div>
@@ -93,8 +93,8 @@
                                 <?= ($locale ?? 'bn') === 'bn' ? 'সংরক্ষিত কাউন্সিলর (' . e($resRep['seat_name_bn'] ?? '') . ')' : 'Reserved Councillor (' . e($resRep['seat_name_en'] ?? '') . ')' ?>
                             </div>
                         <?php else: ?>
-                            <span class="text-muted small italic">
-                                <?= ($locale ?? 'bn') === 'bn' ? 'প্রতিনিধি তথ্য হালনাগাদ হচ্ছে' : 'Pending appointment' ?>
+                            <span class="text-muted small">
+                                <?= ($locale ?? 'bn') === 'bn' ? 'এই ওয়ার্ডের বর্তমান যাচাইকৃত দায়িত্বশীল ব্যক্তির তথ্য এখনো যোগ করা হয়নি।' : 'Information for the verified responsible officer/representative for this ward has not been added yet.' ?>
                             </span>
                         <?php endif; ?>
                     </div>

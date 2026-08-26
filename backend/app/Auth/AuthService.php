@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AmarMayor\Auth;
 
+use AmarMayor\Auth\Otp\DevOtpInboxService;
 use AmarMayor\Auth\Otp\MockOtpProvider;
 use AmarMayor\Auth\Otp\OtpProviderInterface;
 use AmarMayor\Auth\Otp\SmsGatewayProvider;
@@ -117,7 +118,13 @@ class AuthService
         RedisClient::set($rateLimitKey, (string)($attempts + 1), 600); // 10 minute window
 
         // Send OTP via configured provider
-        $this->otpProvider->sendOtp($normalizedPhone, $otp);
+        $sent = $this->otpProvider->sendOtp($normalizedPhone, $otp);
+        if (!$sent) {
+            return [
+                'success' => false,
+                'message' => 'sms_not_configured',
+            ];
+        }
 
         $response = [
             'success' => true,
@@ -151,6 +158,9 @@ class AuthService
 
         // Invalidate OTP immediately after successful verification
         RedisClient::delete($otpStorageKey);
+
+        // Mark OTP used in Dev Inbox if in dev mode
+        DevOtpInboxService::markUsed($normalizedPhone, trim($otpCode));
 
         // Find or create citizen user
         $user = User::findByPhone($normalizedPhone);

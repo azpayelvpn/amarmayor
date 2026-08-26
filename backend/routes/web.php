@@ -38,3 +38,8 @@ $r->post('/login/password', [AuthController::class, 'loginPassword']);
 $r->post('/auth/otp/request', [AuthController::class, 'requestOtp']);
 $r->post('/auth/otp/verify', [AuthController::class, 'verifyOtp']);
 $r->post('/logout', [AuthController::class, 'logout']);
+
+// Local Development Testing Tools (Strictly 404 in Production)
+$r->get('/dev/otp-inbox', [\AmarMayor\Controllers\Web\DevTestingController::class, 'otpInbox']);
+$r->get('/dev/testing-access', [\AmarMayor\Controllers\Web\DevTestingController::class, 'testingAccess']);
+

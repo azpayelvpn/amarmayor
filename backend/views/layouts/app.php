@@ -104,13 +104,20 @@
                 <div class="col-md-6 text-center text-md-start">
                     <p class="mb-1 fw-bold text-dark"><?= e(__('common.mcc_full_name')) ?></p>
                     <p class="mb-0 text-muted small">
-                        জরুরি হেল্পলাইন: <strong>১৬১০৬</strong> | কন্ট্রোল রুম: <strong>০২৯৯৬৬-৬৩১২৩</strong>
+                        <?= ($locale ?? 'bn') === 'bn' ? 'জরুরি সেবা ও কন্ট্রোল রুম: যোগাযোগের তথ্য শীঘ্রই যোগ করা হবে' : 'Emergency Services & Control Room: Official contact details will be added soon' ?>
                     </p>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
-                    <p class="mb-0 text-muted small">
+                    <p class="mb-1 text-muted small">
                         &copy; <?= date('Y') ?> <?= e(__('common.all_rights_reserved')) ?> | <?= e(__('common.app_name')) ?>
                     </p>
+                    <?php if (\AmarMayor\Support\Config::get('app.env') !== 'production'): ?>
+                        <div class="small">
+                            <span class="badge bg-warning text-dark me-1">DEV</span>
+                            <a href="/dev/otp-inbox" class="text-decoration-underline text-muted me-2">OTP Inbox</a>
+                            <a href="/dev/testing-access" class="text-decoration-underline text-muted">Demo Roles</a>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

@@ -66,8 +66,7 @@ class AuthController
             return Response::redirect('/login?error=' . urlencode($result['message']) . '&tab=otp');
         }
 
-        $mockQuery = isset($result['mock_otp']) ? '&mock_otp=' . urlencode($result['mock_otp']) : '';
-        return Response::redirect('/login?step=verify&phone=' . urlencode($phone) . '&tab=otp' . $mockQuery);
+        return Response::redirect('/login?step=verify&phone=' . urlencode($phone) . '&tab=otp');
     }
 
     /**

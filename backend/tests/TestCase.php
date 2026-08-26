@@ -1,0 +1,83 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AmarMayor\Tests;
+
+use AmarMayor\Http\Request;
+use AmarMayor\Http\Response;
+use AmarMayor\Http\Router;
+use AmarMayor\Support\Config;
+use AmarMayor\Support\Container;
+use AmarMayor\Support\Translator;
+
+/**
+ * Base Testing Harness for Core Backend Foundation.
+ */
+abstract class TestCase
+{
+    protected Router $router;
+    protected Container $container;
+
+    public function setUp(): void
+    {
+        $baseDir = dirname(__DIR__);
+        require_once $baseDir . '/bootstrap/app.php';
+
+        $this->container = Container::getInstance();
+        $this->router = $this->container->get(Router::class);
+    }
+
+    protected function get(string $uri, array $headers = []): Response
+    {
+        $request = new Request('GET', $uri, [], [], $headers);
+        return $this->router->dispatch($request);
+    }
+
+    protected function post(string $uri, array $data = [], array $headers = []): Response
+    {
+        $request = new Request('POST', $uri, [], $data, $headers);
+        return $this->router->dispatch($request);
+    }
+
+    protected function postJson(string $uri, array $data = [], array $headers = []): Response
+    {
+        $headers['content-type'] = 'application/json';
+        $rawBody = json_encode($data);
+        $request = new Request('POST', $uri, [], [], $headers, [], [], [], $rawBody);
+        return $this->router->dispatch($request);
+    }
+
+    protected function assert(bool $condition, string $message = 'Assertion failed'): void
+    {
+        if (!$condition) {
+            throw new \AssertionError($message);
+        }
+    }
+
+    protected function assertEquals(mixed $expected, mixed $actual, string $message = ''): void
+    {
+        if ($expected !== $actual) {
+            $expectedStr = is_scalar($expected) ? (string)$expected : json_encode($expected);
+            $actualStr = is_scalar($actual) ? (string)$actual : json_encode($actual);
+            throw new \AssertionError($message ?: "Expected [{$expectedStr}], got [{$actualStr}]");
+        }
+    }
+
+    protected function assertTrue(bool $condition, string $message = ''): void
+    {
+        $this->assert($condition === true, $message ?: 'Expected true, got false');
+    }
+
+    protected function assertFalse(bool $condition, string $message = ''): void
+    {
+        $this->assert($condition === false, $message ?: 'Expected false, got true');
+    }
+
+    protected function assertStringContains(string $needle, string $haystack, string $message = ''): void
+    {
+        if (!str_contains($haystack, $needle)) {
+            throw new \AssertionError($message ?: "String [{$haystack}] does not contain [{$needle}]");
+        }
+    }
+}

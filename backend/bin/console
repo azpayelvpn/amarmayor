@@ -1,0 +1,126 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use AmarMayor\Database\DatabaseManager;
+use AmarMayor\Database\MigrationRunner;
+use AmarMayor\Support\Config;
+use AmarMayor\Support\RedisClient;
+
+$baseDir = dirname(__DIR__);
+require_once $baseDir . '/bootstrap/app.php';
+
+$args = $argv;
+array_shift($args); // Remove script name
+$command = $args[0] ?? 'help';
+
+echo "========================================================\n";
+echo " Amar Mayor (আমার ময়মনসিংহ) — Administrative CLI Console\n";
+echo "========================================================\n\n";
+
+switch ($command) {
+    case 'migrate:status':
+        try {
+            $runner = new MigrationRunner();
+            $status = $runner->getStatus();
+            echo sprintf("%-40s | %-10s | %-6s | %-20s\n", "Migration File", "Status", "Batch", "Executed At");
+            echo str_repeat("-", 85) . "\n";
+            if (empty($status)) {
+                echo "No migrations found in database/migrations.\n";
+            } else {
+                foreach ($status as $s) {
+                    echo sprintf(
+                        "%-40s | %-10s | %-6s | %-20s\n",
+                        substr($s['migration'], 0, 40),
+                        $s['applied'] ? "APPLIED" : "PENDING",
+                        $s['batch'] ?? "-",
+                        $s['executed_at'] ?? "-"
+                    );
+                }
+            }
+        } catch (\Throwable $e) {
+            echo "❌ Error checking migration status: " . $e->getMessage() . "\n";
+            exit(1);
+        }
+        break;
+
+    case 'migrate':
+        try {
+            $runner = new MigrationRunner();
+            echo "Running pending migrations...\n";
+            $executed = $runner->migrate();
+            if (empty($executed)) {
+                echo "✅ Nothing to migrate. Database is up to date.\n";
+            } else {
+                foreach ($executed as $mig) {
+                    echo "  ✅ Migrated: {$mig}\n";
+                }
+                echo "Done.\n";
+            }
+        } catch (\Throwable $e) {
+            echo "❌ Migration failed: " . $e->getMessage() . "\n";
+            exit(1);
+        }
+        break;
+
+    case 'migrate:rollback':
+        try {
+            $runner = new MigrationRunner();
+            echo "Rolling back latest migration batch...\n";
+            $rolledBack = $runner->rollback();
+            if (empty($rolledBack)) {
+                echo "✅ No migrations to rollback.\n";
+            } else {
+                foreach ($rolledBack as $mig) {
+                    echo "  🔄 Rolled back: {$mig}\n";
+                }
+                echo "Done.\n";
+            }
+        } catch (\Throwable $e) {
+            echo "❌ Rollback failed: " . $e->getMessage() . "\n";
+            exit(1);
+        }
+        break;
+
+    case 'make:migration':
+        $name = $args[1] ?? null;
+        if (!$name) {
+            echo "❌ Error: Migration name is required. Example: php backend/bin/console make:migration create_users_table\n";
+            exit(1);
+        }
+        $runner = new MigrationRunner();
+        $file = $runner->createMigration($name);
+        echo "✅ Created migration skeleton: database/migrations/{$file}\n";
+        break;
+
+    case 'health':
+        echo "Checking system components...\n";
+        $db = DatabaseManager::checkHealth();
+        $redis = RedisClient::checkHealth();
+
+        echo "  - MySQL Database:       [" . ($db['connected'] ? "OK" : "FAIL") . "] (" . ($db['version'] ?? $db['error'] ?? 'N/A') . ")\n";
+        echo "  - Redis Cache/Session:  [" . ($redis['connected'] ? "OK" : "DEGRADED") . "] (" . ($redis['driver'] ?? 'N/A') . " - " . ($redis['status'] ?? 'N/A') . ")\n";
+        echo "  - Environment:          " . Config::get('app.env') . "\n";
+        echo "  - Timezone:             " . Config::get('app.timezone') . "\n";
+        echo "  - Primary Locale:       " . Config::get('app.locale') . "\n";
+        break;
+
+    case 'serve':
+        $port = $args[1] ?? '8000';
+        echo "Starting local development server at http://127.0.0.1:{$port}\n";
+        echo "Document root: {$baseDir}/public\n";
+        passthru("php -S 127.0.0.1:{$port} -t {$baseDir}/public");
+        break;
+
+    case 'help':
+    default:
+        echo "Available Commands:\n";
+        echo "  migrate           Run all pending database migrations\n";
+        echo "  migrate:status    Show migration execution status\n";
+        echo "  migrate:rollback  Rollback the latest migration batch\n";
+        echo "  make:migration    Generate a new migration template\n";
+        echo "  health            Check system connectivity and component health\n";
+        echo "  serve [port]      Start PHP built-in web server (default: 8000)\n";
+        break;
+}

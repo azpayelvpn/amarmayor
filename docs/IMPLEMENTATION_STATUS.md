@@ -21,7 +21,26 @@
 - [x] **UX Rules:** Codified action verbs, persona criteria, and non-technical admin rules in [docs/UX_RULES.md](file:///C:/laragon/www/amarmayor/docs/UX_RULES.md).
 - [x] **API Specification:** Established v1 REST API contract in [docs/API_SPEC.md](file:///C:/laragon/www/amarmayor/docs/API_SPEC.md).
 - [x] **Consistency Review:** Validated 100% coherence in [docs/INTERNAL_CONSISTENCY_REVIEW.md](file:///C:/laragon/www/amarmayor/docs/INTERNAL_CONSISTENCY_REVIEW.md).
-- [x] **ADR Log:** Logged decisions ADR-0001 through ADR-0007 in [docs/DECISIONS.md](file:///C:/laragon/www/amarmayor/docs/DECISIONS.md).
+- [x] **Pre-Implementation Gate:** Audited all 28 critical governance and architecture rules; 100% PASSED.
+
+---
+
+### ✅ Phase 1 — Core Backend Foundation (COMPLETED)
+- [x] **Bootstrap & PSR-4 Autoloading:** Configured Composer and fallback PSR-4 autoloader (`backend/bootstrap/app.php`).
+- [x] **Environment & Config Loader:** Centralized configurations in `backend/config/` with `.env` loader (`backend/app/Support/Env.php`, `Config.php`).
+- [x] **HTTP Request & Response:** Structured `Request` and `Response` with standard API envelopes (`success`, `data`, `meta.request_id`).
+- [x] **Lightweight REST Router:** Explicit HTTP router supporting route groups, middleware pipelines, 404/405 handling (`backend/app/Http/Router.php`).
+- [x] **Foundational Middleware:** Implemented `RequestIdMiddleware`, `LocaleMiddleware`, `SessionMiddleware`, `CsrfMiddleware`, `CorsMiddleware`.
+- [x] **Database Connection & Transactions:** PDO MySQL manager with explicit transaction support, UTF-8mb4, and health check (`backend/app/Database/DatabaseManager.php`).
+- [x] **Redis Abstraction:** Adapter with local offline memory fallback, key prefixing, rate-limit counters (`backend/app/Support/RedisClient.php`).
+- [x] **Structured Logger:** JSON-structured logs with request ID correlation and automatic PII/credential redaction (`backend/app/Support/Logger.php`).
+- [x] **Centralized Error Handling:** Secure error handling with zero stack trace/secret leaks in production (`backend/app/Support/ErrorHandler.php`).
+- [x] **Validation Foundation:** Explicit rule validator with localized Bangla/English error messaging (`backend/app/Validation/Validator.php`).
+- [x] **Bilingual Resources:** Centralized language arrays for Bangla primary and English secondary (`backend/lang/bn/`, `backend/lang/en/`).
+- [x] **Server-Rendered Views & HTMX:** PHP view engine with layout/partial support, contextual escaping (`backend/app/View/View.php`), and HTMX partial update endpoint.
+- [x] **Security Foundation:** Cryptographic helpers for Argon2id hashing, timing-safe string comparison, CSRF tokens, UUIDv4 (`backend/app/Support/Security.php`).
+- [x] **Migration Engine & CLI Console:** Standalone migration runner (`_migrations` metadata) and CLI entrypoint (`backend/bin/console`) supporting `migrate`, `migrate:status`, `migrate:rollback`, `make:migration`, `health`.
+- [x] **Automated Test Suite:** 21 unit and feature tests covering Router, API envelopes, Validator, Security, Container, Translator, and Web/API endpoints (`backend/tests/run_tests.php`). 100% PASSED.
 
 ---
 
@@ -30,8 +49,8 @@
 | Phase | Phase Name | Status |
 |---|---|---|
 | **Phase 0** | Specification Synthesis & Architectural Modeling | ✅ **Completed** |
-| **Phase 1** | Core Backend Foundation (Bootstrap, Autoloading, Router, PDO, Redis, Testing) | ⏳ Next Up |
-| **Phase 2** | Database Foundation (Migrations, Schema, Constraints, Structural Seeds) | 📋 Queued |
+| **Phase 1** | Core Backend Foundation (Bootstrap, Autoloading, Router, PDO, Redis, Testing) | ✅ **Completed** |
+| **Phase 2** | Database Foundation (Core Schema Migrations, Constraints, Structural Seeds) | ⏳ Next Up |
 | **Phase 3** | Bilingual Foundation (Bangla Primary / English Secondary, Resource Files) | 📋 Queued |
 | **Phase 4** | Authentication, RBAC & Scope (Phone+OTP, Argon2id, Sessions, Mobile Tokens) | 📋 Queued |
 | **Phase 5** | City, Governance & Workforce (MCC 3 Zones, 33 Wards, 11 Reserved Seats, Employees) | 📋 Queued |

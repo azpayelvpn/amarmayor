@@ -1,0 +1,51 @@
+/* ==============================================================================
+   Amar Mayor — Mymensingh City Citizen Service Platform (Phase 1 CSS Tokens)
+   ============================================================================== */
+
+:root {
+    --am-primary: #0d6efd;
+    --am-success: #198754;
+    --am-warning: #ffc107;
+    --am-danger: #dc3545;
+    --am-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --am-font-bengali: 'Hind Siliguri', 'SolaimanLipi', 'Noto Sans Bengali', system-ui, sans-serif;
+}
+
+body {
+    font-family: var(--am-font-bengali);
+    background-color: #f8f9fa;
+    color: #212529;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+/* Brand styling */
+.brand-badge {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+}
+
+.brand-title {
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+}
+
+/* Card aesthetics */
+.card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* HTMX loading indicator */
+.htmx-indicator {
+    display: none;
+}
+.htmx-request .htmx-indicator {
+    display: inline-block;
+}
+.htmx-request.htmx-indicator {
+    display: inline-block;
+}

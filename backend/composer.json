@@ -1,0 +1,30 @@
+{
+  "name": "amarmayor/platform",
+  "description": "Mymensingh City Citizen Service Platform (আমার ময়মনসিংহ)",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "php": "^8.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.5 || ^11.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "AmarMayor\\": "app/"
+    },
+    "files": [
+      "app/Support/helpers.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "AmarMayor\\Tests\\": "tests/"
+    }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  }
+}

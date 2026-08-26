@@ -76,8 +76,20 @@ class StructuralSeedDataTest extends TestCase
         $priorityCount = (int)$pdo->query("SELECT COUNT(*) FROM priorities")->fetchColumn();
         $this->assertEquals(4, $priorityCount);
 
-        // Roles >= 20
+        // Roles = 22
         $roleCount = (int)$pdo->query("SELECT COUNT(*) FROM roles")->fetchColumn();
-        $this->assertTrue($roleCount >= 20);
+        $this->assertEquals(22, $roleCount, "Must seed exact 22 canonical roles");
+
+        // Permissions = 68
+        $permissionCount = (int)$pdo->query("SELECT COUNT(*) FROM permissions")->fetchColumn();
+        $this->assertEquals(68, $permissionCount, "Must seed all 68 granular permissions");
+
+        // Representation Types = 8
+        $repCount = (int)$pdo->query("SELECT COUNT(*) FROM representation_types")->fetchColumn();
+        $this->assertEquals(8, $repCount, "Must seed 8 representation types");
+
+        // Skills = 9
+        $skillCount = (int)$pdo->query("SELECT COUNT(*) FROM skills")->fetchColumn();
+        $this->assertEquals(9, $skillCount, "Must seed 9 municipal skills");
     }
 }

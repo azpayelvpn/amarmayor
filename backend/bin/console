@@ -126,6 +126,13 @@ switch ($command) {
 
     case 'seed:demo':
         try {
+            $env = Config::get('app.env', 'production');
+            $hasForce = in_array('--force', $args, true);
+            if ($env === 'production' && !$hasForce) {
+                echo "🚨 ERROR: Cannot run seed:demo in PRODUCTION environment without --force flag.\n";
+                echo "   Fictional demo accounts and data must never pollute production systems.\n";
+                exit(1);
+            }
             echo "Seeding fictional demo data (Demo Employees, Teams, Users)...\n";
             \AmarMayor\Database\Seeders\DemoSeeder::run();
             echo "✅ Demo seeding completed successfully.\n";
@@ -137,6 +144,13 @@ switch ($command) {
 
     case 'migrate:fresh':
         try {
+            $env = Config::get('app.env', 'production');
+            $hasForce = in_array('--force', $args, true);
+            if ($env === 'production' && !$hasForce) {
+                echo "🚨 ERROR: Cannot run migrate:fresh in PRODUCTION environment without --force flag.\n";
+                echo "   This destructive operation drops all tables and will cause permanent data loss.\n";
+                exit(1);
+            }
             echo "Dropping all database tables...\n";
             $pdo = DatabaseManager::getConnection();
             $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");

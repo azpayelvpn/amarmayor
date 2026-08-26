@@ -66,12 +66,16 @@ erDiagram
 
     COMPLAINTS ||--o{ FIELD_TASKS : spawns
     TEAMS ||--o{ FIELD_TASKS : assigned_to
+    TEAMS ||--o{ TEAM_COVERAGE : covers_areas
+    FIELD_TASKS ||--o{ FIELD_TASK_ASSIGNMENTS : reassignments
     FIELD_TASKS ||--o{ TASK_EVIDENCE : verified_by
     FIELD_TASKS ||--o{ SUPPORT_REQUESTS : requires
 
     COMPLAINTS ||--o{ EXECUTIVE_ATTENTION : triggers
     EXECUTIVE_ATTENTION ||--o{ EXECUTIVE_DIRECTIVES : issues
     EXECUTIVE_ATTENTION ||--o{ EXPLANATION_REQUESTS : demands
+
+    BACKGROUND_JOBS ||--o{ BACKGROUND_JOB_ATTEMPTS : logs_retries
 ```
 
 ---
@@ -89,9 +93,9 @@ erDiagram
 | `phone_lookup_hash` | CHAR(64) | Yes | INDEX | HMAC-SHA256 of canonical phone for private lookup |
 | `email` | VARCHAR(191) | Yes | UNIQUE | Optional Staff/Admin Email |
 | `password_hash` | VARCHAR(255) | Yes | | Argon2id Hash (Null for OTP-only Citizens) |
-| `user_type` | ENUM('citizen', 'staff', 'representative', 'admin') | No | INDEX | High-level user classification |
-| `status` | ENUM('active', 'inactive', 'suspended', 'pending_verification') | No | Default: 'active', INDEX | Account Status |
-| `preferred_language` | ENUM('bn', 'en') | No | Default: 'bn' | Language Preference |
+| `user_type` | VARCHAR(32) | No | INDEX | High-level user classification (`citizen`, `staff`, `representative`, `admin`) |
+| `status` | VARCHAR(32) | No | Default: 'active', INDEX | Account Status (`active`, `inactive`, `suspended`) |
+| `preferred_language` | VARCHAR(10) | No | Default: 'bn' | Language Preference (`bn`, `en`) |
 | `mfa_secret` | VARCHAR(255) | Yes | | Encrypted TOTP Secret for Privileged Roles |
 | `mfa_enabled_at` | DATETIME | Yes | | Timestamp when MFA was enabled |
 | `last_login_at` | DATETIME | Yes | | Last successful login |
@@ -114,6 +118,8 @@ erDiagram
 | `id` | INT UNSIGNED | No | PK, Auto Increment | Primary Key |
 | `slug` | VARCHAR(100) | No | UNIQUE | Permission string (`complaint.verify`, `executive.directive.issue`) |
 | `category` | VARCHAR(64) | No | INDEX | Functional group (`complaint`, `workforce`, `governance`, `system`) |
+| `name_bn` | VARCHAR(128) | No | | Bangla display name |
+| `name_en` | VARCHAR(128) | No | | English display name |
 | `description` | VARCHAR(255) | Yes | | Human-readable explanation of capability |
 
 #### `role_permissions`

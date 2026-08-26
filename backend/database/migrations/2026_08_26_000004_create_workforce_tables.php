@@ -156,10 +156,25 @@ return new class {
             UNIQUE KEY uq_team_emp_period (team_id, employee_id, effective_from),
             INDEX idx_tm_emp_lookup (employee_id, effective_from, effective_to)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+        // 10. Team Coverage Table (Configurable Multi-Ward / Zone / Citywide Coverage)
+        $pdo->exec("CREATE TABLE IF NOT EXISTS team_coverage (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            team_id INT UNSIGNED NOT NULL,
+            area_type VARCHAR(32) NOT NULL DEFAULT 'ward',
+            area_id BIGINT UNSIGNED NULL,
+            effective_from DATETIME NOT NULL,
+            effective_to DATETIME NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT chk_tc_dates CHECK (effective_to IS NULL OR effective_to >= effective_from),
+            CONSTRAINT fk_tc_team FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+            INDEX idx_tc_lookup (team_id, area_type, area_id, effective_from, effective_to)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
     }
 
     public function down(PDO $pdo): void
     {
+        $pdo->exec("DROP TABLE IF EXISTS team_coverage;");
         $pdo->exec("DROP TABLE IF EXISTS team_members;");
         $pdo->exec("DROP TABLE IF EXISTS teams;");
         $pdo->exec("DROP TABLE IF EXISTS employee_skills;");

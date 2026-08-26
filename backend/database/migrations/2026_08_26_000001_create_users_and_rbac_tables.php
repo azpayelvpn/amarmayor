@@ -40,7 +40,9 @@ return new class {
         $pdo->exec("CREATE TABLE IF NOT EXISTS permissions (
             id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             slug VARCHAR(100) NOT NULL UNIQUE,
-            category VARCHAR(64) NOT NULL,
+            category VARCHAR(64) NOT NULL DEFAULT 'general',
+            name_bn VARCHAR(128) NOT NULL,
+            name_en VARCHAR(128) NOT NULL,
             description VARCHAR(255) NULL,
             INDEX idx_permissions_category (category)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");

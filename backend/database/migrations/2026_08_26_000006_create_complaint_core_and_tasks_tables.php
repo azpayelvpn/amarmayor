@@ -10,6 +10,7 @@ return new class {
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             public_complaint_number VARCHAR(32) NOT NULL UNIQUE,
             citizen_user_id BIGINT UNSIGNED NOT NULL,
+            created_by_user_id BIGINT UNSIGNED NULL,
             category_id INT UNSIGNED NOT NULL,
             subcategory_id INT UNSIGNED NOT NULL,
             ward_id INT UNSIGNED NOT NULL,
@@ -41,6 +42,7 @@ return new class {
             CONSTRAINT chk_complaints_attempts CHECK (completion_attempts >= 0),
             CONSTRAINT chk_complaints_reopens CHECK (reopen_count >= 0),
             CONSTRAINT fk_comp_citizen FOREIGN KEY (citizen_user_id) REFERENCES users(id) ON DELETE RESTRICT,
+            CONSTRAINT fk_comp_creator FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
             CONSTRAINT fk_comp_category FOREIGN KEY (category_id) REFERENCES complaint_categories(id) ON DELETE RESTRICT,
             CONSTRAINT fk_comp_subcat FOREIGN KEY (subcategory_id) REFERENCES complaint_subcategories(id) ON DELETE RESTRICT,
             CONSTRAINT fk_comp_ward FOREIGN KEY (ward_id) REFERENCES wards(id) ON DELETE RESTRICT,
@@ -173,7 +175,26 @@ return new class {
             INDEX idx_ft_team (assigned_team_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
-        // 8. Task Evidence Table
+        // 8. Field Task Assignments History Table (Historical Reassignment Log)
+        $pdo->exec("CREATE TABLE IF NOT EXISTS field_task_assignments (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            field_task_id BIGINT UNSIGNED NOT NULL,
+            assigned_team_id INT UNSIGNED NULL,
+            assigned_worker_employee_id BIGINT UNSIGNED NULL,
+            assigned_by_user_id BIGINT UNSIGNED NULL,
+            assignment_notes TEXT NULL,
+            effective_from DATETIME NOT NULL,
+            effective_to DATETIME NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT chk_fta_dates CHECK (effective_to IS NULL OR effective_to >= effective_from),
+            CONSTRAINT fk_fta_task FOREIGN KEY (field_task_id) REFERENCES field_tasks(id) ON DELETE CASCADE,
+            CONSTRAINT fk_fta_team FOREIGN KEY (assigned_team_id) REFERENCES teams(id) ON DELETE SET NULL,
+            CONSTRAINT fk_fta_worker FOREIGN KEY (assigned_worker_employee_id) REFERENCES employees(id) ON DELETE SET NULL,
+            CONSTRAINT fk_fta_user FOREIGN KEY (assigned_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+            INDEX idx_fta_task_dates (field_task_id, effective_from, effective_to)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+        // 9. Task Evidence Table
         $pdo->exec("CREATE TABLE IF NOT EXISTS task_evidence (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             field_task_id BIGINT UNSIGNED NOT NULL,
@@ -187,7 +208,7 @@ return new class {
             INDEX idx_te_stage (evidence_stage)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
-        // 9. Support Requests Table
+        // 10. Support Requests Table
         $pdo->exec("CREATE TABLE IF NOT EXISTS support_requests (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             complaint_id BIGINT UNSIGNED NOT NULL,
@@ -209,7 +230,7 @@ return new class {
             INDEX idx_sr_status (status)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
-        // 10. Citizen Feedback Table (1:1 with Complaints, Post-Resolution Rating)
+        // 11. Citizen Feedback Table (1:1 with Complaints, Post-Resolution Rating)
         $pdo->exec("CREATE TABLE IF NOT EXISTS citizen_feedback (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             complaint_id BIGINT UNSIGNED NOT NULL UNIQUE,
@@ -231,6 +252,7 @@ return new class {
         $pdo->exec("DROP TABLE IF EXISTS citizen_feedback;");
         $pdo->exec("DROP TABLE IF EXISTS support_requests;");
         $pdo->exec("DROP TABLE IF EXISTS task_evidence;");
+        $pdo->exec("DROP TABLE IF EXISTS field_task_assignments;");
         $pdo->exec("DROP TABLE IF EXISTS field_tasks;");
         $pdo->exec("DROP TABLE IF EXISTS complaint_supporters;");
         $pdo->exec("DROP TABLE IF EXISTS complaint_ownership_history;");

@@ -10,6 +10,15 @@ use Throwable;
 
 /**
  * Lightweight Repeatable MySQL Migration Engine.
+ *
+ * NOTE ON MYSQL DDL TRANSACTIONS:
+ * In MySQL/InnoDB, DDL statements (such as CREATE TABLE, ALTER TABLE, DROP TABLE) trigger
+ * an implicit commit and cannot be rolled back atomically via standard PDO transactions.
+ * Therefore, migration reliability is guaranteed through:
+ * 1. Strict dependency ordering (numbered prefixes).
+ * 2. Immutable tracking in the _migrations table.
+ * 3. Atomic single-responsibility migration files.
+ * 4. Verified, symmetrical down() rollback routines.
  */
 class MigrationRunner
 {

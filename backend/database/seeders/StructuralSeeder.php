@@ -155,27 +155,28 @@ class StructuralSeeder
 
     private static function seedRolesAndPermissions(PDO $pdo): void
     {
+        // 1. Canonical 22 Roles from ROLE_PERMISSION_MATRIX.md
         $roles = [
+            ['slug' => 'public_viewer', 'name_bn' => 'সাধারণ দর্শনার্থী', 'name_en' => 'Public Viewer'],
             ['slug' => 'citizen', 'name_bn' => 'নাগরিক', 'name_en' => 'Citizen'],
-            ['slug' => 'field_worker', 'name_bn' => 'মাঠকর্মী', 'name_en' => 'Field Worker'],
-            ['slug' => 'team_leader', 'name_bn' => 'দলনেতা', 'name_en' => 'Team Leader'],
-            ['slug' => 'field_supervisor', 'name_bn' => 'মাঠ তদারককারী / সুপারভাইজার', 'name_en' => 'Field Supervisor'],
-            ['slug' => 'ward_responsible_officer', 'name_bn' => 'ওয়ার্ড দায়িত্বপ্রাপ্ত কর্মকর্তা', 'name_en' => 'Ward Responsible Officer'],
-            ['slug' => 'ward_inspector', 'name_bn' => 'ওয়ার্ড পরিদর্শক', 'name_en' => 'Ward Inspector'],
-            ['slug' => 'general_councillor', 'name_bn' => 'সাধারণ কাউন্সিলর', 'name_en' => 'General Councillor'],
-            ['slug' => 'reserved_councillor', 'name_bn' => 'সংরক্ষিত নারী কাউন্সিলর', 'name_en' => 'Reserved Councillor'],
-            ['slug' => 'zone_executive_officer', 'name_bn' => 'আঞ্চলিক নির্বাহী কর্মকর্তা', 'name_en' => 'Zone Executive Officer'],
-            ['slug' => 'department_head', 'name_bn' => 'বিভাগীয় প্রধান', 'name_en' => 'Department Head'],
-            ['slug' => 'service_unit_in_charge', 'name_bn' => 'শাখা ইন-চার্জ', 'name_en' => 'Service Unit In-Charge'],
-            ['slug' => 'ceo', 'name_bn' => 'প্রধান নির্বাহী কর্মকর্তা (সিইও)', 'name_en' => 'Chief Executive Officer'],
             ['slug' => 'mayor', 'name_bn' => 'মেয়র', 'name_en' => 'Mayor'],
             ['slug' => 'administrator', 'name_bn' => 'প্রশাসক', 'name_en' => 'Administrator'],
-            ['slug' => 'triage_officer', 'name_bn' => 'অভিযোগ বাছাই ও যাচাইকারী', 'name_en' => 'Triage Officer'],
-            ['slug' => 'communication_officer', 'name_bn' => 'যোগাযোগ কর্মকর্তা', 'name_en' => 'Communication Officer'],
-            ['slug' => 'public_relation_officer', 'name_bn' => 'জনসংযোগ কর্মকর্তা', 'name_en' => 'Public Relations Officer'],
-            ['slug' => 'data_analyst', 'name_bn' => 'ডাটা অ্যানালিস্ট', 'name_en' => 'Data Analyst'],
-            ['slug' => 'finance_budget_officer', 'name_bn' => 'অর্থ ও বাজেট সমন্বয়কারী', 'name_en' => 'Finance & Budget Officer'],
-            ['slug' => 'external_agency_coordinator', 'name_bn' => 'বাহ্যিক সংস্থা সমন্বয়কারী', 'name_en' => 'External Agency Coordinator'],
+            ['slug' => 'ceo', 'name_bn' => 'প্রধান নির্বাহী কর্মকর্তা (সিইও)', 'name_en' => 'Chief Executive Officer'],
+            ['slug' => 'general_councillor', 'name_bn' => 'সাধারণ ওয়ার্ড কাউন্সিলর', 'name_en' => 'General Councillor'],
+            ['slug' => 'reserved_women_councillor', 'name_bn' => 'সংরক্ষিত নারী কাউন্সিলর', 'name_en' => 'Reserved Women Councillor'],
+            ['slug' => 'responsible_officer', 'name_bn' => 'দায়িত্বপ্রাপ্ত কর্মকর্তা', 'name_en' => 'Responsible Officer'],
+            ['slug' => 'department_head', 'name_bn' => 'বিভাগীয় প্রধান', 'name_en' => 'Department Head'],
+            ['slug' => 'department_officer', 'name_bn' => 'বিভাগীয় কর্মকর্তা', 'name_en' => 'Department Officer'],
+            ['slug' => 'zone_officer', 'name_bn' => 'আঞ্চলিক কর্মকর্তা', 'name_en' => 'Zone Officer'],
+            ['slug' => 'ward_officer', 'name_bn' => 'ওয়ার্ড কর্মকর্তা / পরিদর্শক', 'name_en' => 'Ward Officer'],
+            ['slug' => 'supervisor', 'name_bn' => 'সুপারভাইজার', 'name_en' => 'Supervisor'],
+            ['slug' => 'team_leader', 'name_bn' => 'দলনেতা', 'name_en' => 'Team Leader'],
+            ['slug' => 'field_worker', 'name_bn' => 'মাঠকর্মী / পরিচ্ছন্নতাকর্মী', 'name_en' => 'Field Worker'],
+            ['slug' => 'call_center_operator', 'name_bn' => 'কল সেন্টার অপারেটর', 'name_en' => 'Call Center Operator'],
+            ['slug' => 'control_room_officer', 'name_bn' => 'নিয়ন্ত্রণ কক্ষ / বাছাই কর্মকর্তা', 'name_en' => 'Control Room Officer'],
+            ['slug' => 'public_info_officer', 'name_bn' => 'জনসংযোগ কর্মকর্তা', 'name_en' => 'Public Information Officer'],
+            ['slug' => 'data_monitoring_officer', 'name_bn' => 'তথ্য ও পর্যবেক্ষণ কর্মকর্তা', 'name_en' => 'Data & Monitoring Officer'],
+            ['slug' => 'auditor', 'name_bn' => 'নিরীক্ষক', 'name_en' => 'Auditor'],
             ['slug' => 'platform_super_admin', 'name_bn' => 'প্ল্যাটফর্ম সুপার অ্যাডমিন', 'name_en' => 'Platform Super Admin'],
             ['slug' => 'technical_super_admin', 'name_bn' => 'কারিগরি সুপার অ্যাডমিন', 'name_en' => 'Technical Super Admin'],
         ];
@@ -186,6 +187,111 @@ class StructuralSeeder
             if (!$stmt->fetch()) {
                 $ins = $pdo->prepare("INSERT INTO roles (slug, name_bn, name_en, is_system) VALUES (?, ?, ?, 1)");
                 $ins->execute([$r['slug'], $r['name_bn'], $r['name_en']]);
+            }
+        }
+
+        // 2. Granular Permissions from ROLE_PERMISSION_MATRIX.md
+        $permissions = [
+            // Complaint Lifecycle
+            ['slug' => 'complaint.create', 'name_bn' => 'অভিযোগ তৈরি', 'name_en' => 'Create Complaint'],
+            ['slug' => 'complaint.view', 'name_bn' => 'অভিযোগের মৌলিক তথ্য দেখা', 'name_en' => 'View Complaint Basic'],
+            ['slug' => 'complaint.view_private', 'name_bn' => 'নাগরিকের ব্যক্তিগত তথ্য ও মূল প্রমাণ দেখা', 'name_en' => 'View Private Complaint Data'],
+            ['slug' => 'complaint.add_information', 'name_bn' => 'অভিযোগে অতিরিক্ত তথ্য যোগ', 'name_en' => 'Add Complaint Info'],
+            ['slug' => 'complaint.assign', 'name_bn' => 'অভিযোগ দল বা কর্মীকে দায়িত্ব দেওয়া', 'name_en' => 'Assign Complaint'],
+            ['slug' => 'complaint.start', 'name_bn' => 'মাঠপর্যায়ের কাজ শুরু করা', 'name_en' => 'Start Field Work'],
+            ['slug' => 'complaint.complete_work', 'name_bn' => 'মাঠপর্যায়ের কাজ সম্পন্ন করা ও প্রমাণ আপলোড', 'name_en' => 'Complete Field Work'],
+            ['slug' => 'complaint.verify', 'name_bn' => 'সুপারভাইজার কর্তৃক সমাধান যাচাই', 'name_en' => 'Verify Resolution'],
+            ['slug' => 'complaint.confirm_resolution', 'name_bn' => 'নাগরিক কর্তৃক সমাধান নিশ্চিতকরণ', 'name_en' => 'Confirm Resolution'],
+            ['slug' => 'complaint.needs_more_work', 'name_bn' => 'কাজ অপূর্ণ থাকায় পুনরায় খোলা (রি-ওপেন)', 'name_en' => 'Reopen Complaint'],
+            ['slug' => 'complaint.transfer', 'name_bn' => 'বিভাগ বা শাখার মধ্যে মালিকানা স্থানান্তর', 'name_en' => 'Transfer Ownership'],
+            ['slug' => 'complaint.request_support', 'name_bn' => 'অন্যান্য বিভাগ থেকে অতিরিক্ত সহায়তা চাওয়া', 'name_en' => 'Request Support'],
+            ['slug' => 'complaint.change_priority', 'name_bn' => 'অভিযোগের অগ্রাধিকার পরিবর্তন (P1-P4)', 'name_en' => 'Change Priority'],
+            ['slug' => 'complaint.cancel', 'name_bn' => 'অকার্যকর বা দ্বৈত অভিযোগ বাতিল', 'name_en' => 'Cancel Complaint'],
+            ['slug' => 'complaint.view_history', 'name_bn' => 'অভিযোগের টাইমলাইন ও ইতিহাস দেখা', 'name_en' => 'View Complaint History'],
+
+            // Field Tasks
+            ['slug' => 'task.view', 'name_bn' => 'বরাদ্দকৃত মাঠপর্যায়ের কাজ দেখা', 'name_en' => 'View Field Tasks'],
+            ['slug' => 'task.assign', 'name_bn' => 'মাঠকর্মীকে কাজ বরাদ্দ', 'name_en' => 'Assign Worker to Task'],
+            ['slug' => 'task.start', 'name_bn' => 'মাঠপর্যায়ের কাজ শুরু', 'name_en' => 'Start Task'],
+            ['slug' => 'task.complete', 'name_bn' => 'মাঠপর্যায়ের কাজ সমাপ্তি ঘোষণা', 'name_en' => 'Complete Task'],
+            ['slug' => 'task.return', 'name_bn' => 'অসমর্থতার কারণে কাজ ফেরত পাঠানো', 'name_en' => 'Return Task'],
+            ['slug' => 'task.add_evidence', 'name_bn' => 'কাজের আগের ও পরের ছবি আপলোড', 'name_en' => 'Upload Task Evidence'],
+
+            // Workforce
+            ['slug' => 'employee.view', 'name_bn' => 'কর্মীবাহিনী তালিকা দেখা', 'name_en' => 'View Employees'],
+            ['slug' => 'employee.create', 'name_bn' => 'নতুন কর্মী প্রোফাইল তৈরি', 'name_en' => 'Create Employee'],
+            ['slug' => 'employee.update', 'name_bn' => 'কর্মী তথ্য ও দক্ষতা আপডেট', 'name_en' => 'Update Employee'],
+            ['slug' => 'employee.change_posting', 'name_bn' => 'পোস্টিং ও বদলি ব্যবস্থাপনা', 'name_en' => 'Manage Postings'],
+            ['slug' => 'employee.change_responsibility', 'name_bn' => 'দায়িত্বের এলাকা ও পরিধি পরিবর্তন', 'name_en' => 'Change Responsibility Scope'],
+            ['slug' => 'employee.manage_access', 'name_bn' => 'সিস্টেম লগইন অ্যাকাউন্ট নিয়ন্ত্রণ', 'name_en' => 'Manage User Access'],
+
+            // Governance
+            ['slug' => 'governance.view', 'name_bn' => 'জনপ্রতিনিধি ও দায়িত্বপ্রাপ্তদের তালিকা দেখা', 'name_en' => 'View Representatives'],
+            ['slug' => 'governance.assign', 'name_bn' => 'কাউন্সিলর বা কর্মকর্তা দায়িত্ব অর্পণ', 'name_en' => 'Assign Representative'],
+            ['slug' => 'governance.end_assignment', 'name_bn' => 'মেয়াদ শেষ বা দায়িত্ব অবসান', 'name_en' => 'End Assignment'],
+            ['slug' => 'governance.view_history', 'name_bn' => 'ঐতিহাসিক কার্যকালের তথ্য দেখা', 'name_en' => 'View Governance History'],
+
+            // City & Structure
+            ['slug' => 'ward.view', 'name_bn' => 'ওয়ার্ডের প্রোফাইল দেখা', 'name_en' => 'View Ward Profile'],
+            ['slug' => 'ward.manage', 'name_bn' => 'ওয়ার্ড ও এলাকা কনফিগারেশন', 'name_en' => 'Manage Ward'],
+            ['slug' => 'zone.view', 'name_bn' => 'অঞ্চলের প্রোফাইল দেখা', 'name_en' => 'View Zone Profile'],
+            ['slug' => 'zone.manage', 'name_bn' => 'অঞ্চল কনফিগারেশন', 'name_en' => 'Manage Zone'],
+
+            // Departments & Services
+            ['slug' => 'department.view', 'name_bn' => 'বিভাগ তালিকা দেখা', 'name_en' => 'View Department Directory'],
+            ['slug' => 'department.manage', 'name_bn' => 'বিভাগ ও শাখা পরিচালনা', 'name_en' => 'Manage Departments'],
+            ['slug' => 'service.view', 'name_bn' => 'পৌর সেবাসমূহ দেখা', 'name_en' => 'View Civic Services'],
+            ['slug' => 'service.manage', 'name_bn' => 'সেবা ক্যাটাগরি ও সাবক্যাটাগরি কনফিগারেশন', 'name_en' => 'Manage Services'],
+
+            // Routing & SLAs
+            ['slug' => 'routing.view', 'name_bn' => 'স্বয়ংক্রিয় রাউটিং নিয়ম দেখা', 'name_en' => 'View Routing Rules'],
+            ['slug' => 'routing.manage', 'name_bn' => 'রাউটিং নিয়ম আপডেট', 'name_en' => 'Manage Routing Rules'],
+            ['slug' => 'deadline.view', 'name_bn' => 'সেবা নিষ্পত্তির সময়সীমা দেখা', 'name_en' => 'View Service Deadlines'],
+            ['slug' => 'deadline.manage', 'name_bn' => 'এসএলএ সময়সীমা কনফিগারেশন', 'name_en' => 'Manage Deadlines'],
+
+            // Notices & Reports
+            ['slug' => 'notice.view', 'name_bn' => 'পৌর বিজ্ঞপ্তি দেখা', 'name_en' => 'View Notices'],
+            ['slug' => 'notice.publish', 'name_bn' => 'পৌর বিজ্ঞপ্তি প্রকাশ', 'name_en' => 'Publish Notice'],
+            ['slug' => 'notice.manage', 'name_bn' => 'বিজ্ঞপ্তি সম্পাদনা ও প্রত্যাহার', 'name_en' => 'Manage Notices'],
+            ['slug' => 'report.view', 'name_bn' => 'পরিসংখ্যান ও অ্যানালিটিক্স দেখা', 'name_en' => 'View Reports'],
+            ['slug' => 'report.export', 'name_bn' => 'রিপোর্ট এক্সপোর্ট (CSV/PDF)', 'name_en' => 'Export Reports'],
+
+            // Dashboards
+            ['slug' => 'dashboard.public', 'name_bn' => 'পাবলিক জবাবদিহিতা ড্যাশবোর্ড', 'name_en' => 'Public Dashboard'],
+            ['slug' => 'dashboard.ward', 'name_bn' => 'ওয়ার্ড ড্যাশবোর্ড', 'name_en' => 'Ward Dashboard'],
+            ['slug' => 'dashboard.zone', 'name_bn' => 'অঞ্চল ড্যাশবোর্ড', 'name_en' => 'Zone Dashboard'],
+            ['slug' => 'dashboard.department', 'name_bn' => 'বিভাগীয় ড্যাশবোর্ড', 'name_en' => 'Department Dashboard'],
+            ['slug' => 'dashboard.citywide', 'name_bn' => 'সিটি কর্পোরেশন নির্বাহী ড্যাশবোর্ড', 'name_en' => 'Citywide Executive Dashboard'],
+
+            // Executive Oversight
+            ['slug' => 'executive.attention.view', 'name_bn' => 'জরুরি দৃষ্টি আকর্ষণ কিউ দেখা', 'name_en' => 'View Executive Attention Queue'],
+            ['slug' => 'executive.directive.issue', 'name_bn' => 'মেয়র/প্রশাসক নির্বাহী নির্দেশ জারি', 'name_en' => 'Issue Executive Directive'],
+            ['slug' => 'executive.explanation.request', 'name_bn' => 'ব্যর্থতার ব্যাখ্যা তলব', 'name_en' => 'Request Formal Explanation'],
+            ['slug' => 'executive.support.provide', 'name_bn' => 'নির্বাহী সম্পদ বরাদ্দ অনুমোদন', 'name_en' => 'Approve Executive Support'],
+
+            // Communication & Audit
+            ['slug' => 'communication.send', 'name_bn' => 'অভিযোগ সংক্রান্ত বার্তা পাঠানো', 'name_en' => 'Send Complaint Message'],
+            ['slug' => 'communication.view', 'name_bn' => 'বার্তা ইতিহাস দেখা', 'name_en' => 'View Messages'],
+            ['slug' => 'communication.moderate', 'name_bn' => 'আপত্তিকর বার্তা নিয়ন্ত্রণ', 'name_en' => 'Moderate Messages'],
+            ['slug' => 'audit.view', 'name_bn' => 'সিস্টেম অডিট লগ দেখা', 'name_en' => 'View Audit Logs'],
+
+            // System & Security
+            ['slug' => 'user.manage', 'name_bn' => 'ব্যবহারকারী অ্যাকাউন্ট পরিচালনা', 'name_en' => 'Manage Users'],
+            ['slug' => 'role.manage', 'name_bn' => 'ভূমিকা বরাদ্দ ও পরিচালনা', 'name_en' => 'Manage Roles'],
+            ['slug' => 'permission.manage', 'name_bn' => 'অনুমতিসমূহ পরিচালনা', 'name_en' => 'Manage Permissions'],
+            ['slug' => 'system.health.view', 'name_bn' => 'কারিগরি সিস্টেম স্বাস্থ্য পর্যবেক্ষণ', 'name_en' => 'View System Health'],
+            ['slug' => 'system.integration.manage', 'name_bn' => 'এসএমএস ও ম্যাপ কনফিগারেশন', 'name_en' => 'Manage Integrations'],
+            ['slug' => 'system.backup.manage', 'name_bn' => 'ডাটাবেজ ব্যাকআপ ব্যবস্থাপনা', 'name_en' => 'Manage Backups'],
+            ['slug' => 'system.security.manage', 'name_bn' => 'নিরাপত্তা ও রেট লিমিট কনফিগারেশন', 'name_en' => 'Manage Security'],
+        ];
+
+        foreach ($permissions as $p) {
+            $stmt = $pdo->prepare("SELECT id FROM permissions WHERE slug = ?");
+            $stmt->execute([$p['slug']]);
+            if (!$stmt->fetch()) {
+                $category = explode('.', $p['slug'])[0] ?? 'general';
+                $ins = $pdo->prepare("INSERT INTO permissions (slug, category, name_bn, name_en) VALUES (?, ?, ?, ?)");
+                $ins->execute([$p['slug'], $category, $p['name_bn'], $p['name_en']]);
             }
         }
     }

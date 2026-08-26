@@ -516,7 +516,7 @@ erDiagram
 #### `complaint_locations`
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
-| `complaint_id` | BIGINT UNSIGNED | No | PK, FK $\rightarrow$ `complaints.id` ON DELETE CASCADE | 1:1 Complaint Reference |
+| `complaint_id` | BIGINT UNSIGNED | No | PK, FK $\rightarrow$ `complaints.id` ON DELETE RESTRICT | 1:1 Complaint Reference |
 | `latitude` | DECIMAL(10,8) | No | INDEX | Precise Latitude |
 | `longitude` | DECIMAL(11,8) | No | INDEX | Precise Longitude |
 | `approximate_address` | TEXT | Yes | | Approximate textual address |
@@ -529,9 +529,9 @@ erDiagram
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
-| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE CASCADE, INDEX | Complaint |
-| `uploader_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id` | User who uploaded |
-| `media_type` | ENUM('citizen_photo', 'worker_before_photo', 'worker_after_photo', 'document') | No | INDEX | Media context |
+| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE RESTRICT, INDEX | Complaint |
+| `uploader_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id` ON DELETE RESTRICT | User who uploaded |
+| `media_type` | VARCHAR(32) | No | INDEX | Media context (`citizen_photo`, `worker_before_photo`, `worker_after_photo`, `document`) |
 | `original_file_path` | VARCHAR(255) | No | | Secure internal storage path |
 | `public_derivative_path`| VARCHAR(255)| Yes | | Moderated / stripped public image path |
 | `mime_type` | VARCHAR(64) | No | | Verified MIME type |
@@ -540,20 +540,20 @@ erDiagram
 | `gps_latitude` | DECIMAL(10,8) | Yes | | EXIF GPS Latitude |
 | `gps_longitude` | DECIMAL(11,8) | Yes | | EXIF GPS Longitude |
 | `is_live_capture` | TINYINT(1) | No | Default: 0 | 1 = Direct camera capture |
-| `moderation_status` | ENUM('pending', 'approved_public', 'restricted_internal', 'rejected') | No | Default: 'pending', INDEX | Public visibility state |
+| `moderation_status` | VARCHAR(32) | No | Default: 'pending', INDEX | Public visibility state (`pending`, `approved_public`, `restricted_internal`, `rejected`) |
 | `created_at` | DATETIME | No | Default: CURRENT_TIMESTAMP | |
 
 #### `complaint_status_history`
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
-| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE CASCADE, INDEX | Complaint |
+| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE RESTRICT, INDEX | Complaint |
 | `from_internal_status`| VARCHAR(64) | Yes | | Previous internal status |
 | `to_internal_status` | VARCHAR(64) | No | INDEX | New internal status |
 | `from_citizen_status` | VARCHAR(64) | Yes | | Previous citizen status |
 | `to_citizen_status` | VARCHAR(64) | No | | New citizen status |
 | `action_name` | VARCHAR(64) | No | INDEX | Human action (`start_work`, `verify`, `reopen`, `transfer`) |
-| `actor_user_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `users.id` | Actor who initiated transition (Null for system) |
+| `actor_user_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `users.id` ON DELETE SET NULL | Actor who initiated transition (Null for system) |
 | `reason` | TEXT | Yes | | Structured / textual reason |
 | `created_at` | DATETIME | No | Default: CURRENT_TIMESTAMP, INDEX | Timestamp of transition |
 
@@ -561,21 +561,21 @@ erDiagram
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
-| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE CASCADE, INDEX | Complaint |
-| `from_supervisor_employee_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `employees.id` | Previous Supervisor |
-| `to_supervisor_employee_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `employees.id`, INDEX | New Supervisor |
-| `from_department_id` | INT UNSIGNED | Yes | FK $\rightarrow$ `departments.id` | Previous Dept |
-| `to_department_id` | INT UNSIGNED | No | FK $\rightarrow$ `departments.id` | New Dept |
+| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE RESTRICT, INDEX | Complaint |
+| `from_supervisor_employee_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `employees.id` ON DELETE RESTRICT | Previous Supervisor |
+| `to_supervisor_employee_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `employees.id` ON DELETE RESTRICT, INDEX | New Supervisor |
+| `from_department_id` | INT UNSIGNED | Yes | FK $\rightarrow$ `departments.id` ON DELETE RESTRICT | Previous Dept |
+| `to_department_id` | INT UNSIGNED | No | FK $\rightarrow$ `departments.id` ON DELETE RESTRICT | New Dept |
 | `transfer_reason` | TEXT | Yes | | Reason for ownership handoff |
-| `transferred_by_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id` | Authorizer |
+| `transferred_by_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id` ON DELETE RESTRICT | Authorizer |
 | `created_at` | DATETIME | No | Default: CURRENT_TIMESTAMP | |
 
 #### `complaint_supporters`
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
-| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE CASCADE, INDEX | Complaint Reference |
-| `citizen_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id`, INDEX | Affected Citizen |
+| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE RESTRICT, INDEX | Complaint Reference |
+| `citizen_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id` ON DELETE RESTRICT, INDEX | Affected Citizen |
 | `created_at` | DATETIME | No | Default: CURRENT_TIMESTAMP | |
 | UNIQUE (`complaint_id`, `citizen_user_id`) | | | | "I am also affected" +1 count |
 
@@ -583,41 +583,54 @@ erDiagram
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
-| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE CASCADE, INDEX | Parent Complaint |
+| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE RESTRICT, INDEX | Parent Complaint |
 | `task_code` | VARCHAR(32) | No | UNIQUE | e.g. `TSK-260826-00412` |
-| `assigned_team_id`| INT UNSIGNED | Yes | FK $\rightarrow$ `teams.id`, INDEX | Assigned Team |
-| `assigned_worker_employee_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `employees.id`, INDEX | Assigned Individual Worker |
-| `supervisor_employee_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `employees.id`, INDEX | Supervising Officer |
-| `task_status` | ENUM('pending', 'in_progress', 'completed', 'cannot_complete', 'returned') | No | Default: 'pending', INDEX | Field Status |
-| `failure_reason_code`| ENUM('manpower_needed', 'vehicle_needed', 'equipment_needed', 'other_dept_needed', 'major_repair', 'access_problem', 'location_not_found', 'safety_problem', 'other') | Yes | | Structured failure reason |
+| `assigned_team_id`| INT UNSIGNED | Yes | FK $\rightarrow$ `teams.id` ON DELETE SET NULL, INDEX | Assigned Team |
+| `assigned_worker_employee_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `employees.id` ON DELETE SET NULL, INDEX | Assigned Individual Worker |
+| `supervisor_employee_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `employees.id` ON DELETE RESTRICT, INDEX | Supervising Officer |
+| `task_status` | VARCHAR(32) | No | Default: 'pending', INDEX | Field Status |
+| `failure_reason_code`| VARCHAR(64) | Yes | | Structured failure reason |
 | `failure_notes` | TEXT | Yes | | Additional failure explanation |
 | `instructions` | TEXT | Yes | | Supervisor instructions to field worker |
 | `started_at` | DATETIME | Yes | | Work start timestamp |
 | `completed_at` | DATETIME | Yes | | Work completion timestamp |
 | `created_at` | DATETIME | No | Default: CURRENT_TIMESTAMP | |
 
+#### `field_task_assignments`
+| Column | Type | Nullable | Constraints / Index | Description |
+|---|---|---|---|---|
+| `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
+| `field_task_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `field_tasks.id` ON DELETE RESTRICT, INDEX | Field Task |
+| `assigned_team_id` | INT UNSIGNED | Yes | FK $\rightarrow$ `teams.id` ON DELETE SET NULL | Assigned Team |
+| `assigned_worker_employee_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `employees.id` ON DELETE SET NULL | Assigned Worker |
+| `assigned_by_user_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `users.id` ON DELETE SET NULL | Delegating Supervisor |
+| `assignment_notes` | TEXT | Yes | | Operational dispatch notes |
+| `effective_from` | DATETIME | No | | Start of assignment |
+| `effective_to` | DATETIME | Yes | | End of assignment |
+| `created_at` | DATETIME | No | Default: CURRENT_TIMESTAMP | |
+
 #### `task_evidence`
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
-| `field_task_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `field_tasks.id` ON DELETE CASCADE, INDEX | Task Reference |
-| `media_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaint_media.id`, INDEX | Uploaded Media Reference |
-| `evidence_stage` | ENUM('before', 'after', 'inspection') | No | INDEX | Stage of work |
-| `device_timestamp`| DATETIME | Yes | | Device timestamp |
-| `server_timestamp`| DATETIME | No | Default: CURRENT_TIMESTAMP | Server receipt timestamp |
+| `field_task_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `field_tasks.id` ON DELETE RESTRICT, INDEX | Field Task |
+| `media_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaint_media.id` ON DELETE RESTRICT | Associated Media |
+| `evidence_stage` | VARCHAR(32) | No | INDEX | `before_work`, `in_progress`, `after_work` |
+| `device_timestamp` | DATETIME | Yes | | EXIF / Hardware timestamp |
+| `server_timestamp` | DATETIME | No | Default: CURRENT_TIMESTAMP | Server receipt timestamp |
 
 #### `support_requests`
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
-| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE CASCADE, INDEX | Complaint |
-| `field_task_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `field_tasks.id` | Field Task |
-| `requested_by_employee_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `employees.id` | Requesting Supervisor/Worker |
-| `support_type` | ENUM('additional_manpower', 'vehicle', 'equipment', 'other_department', 'technical_inspection') | No | INDEX | Resource type |
-| `target_department_id` | INT UNSIGNED | Yes | FK $\rightarrow$ `departments.id` | Target Department |
+| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE RESTRICT, INDEX | Complaint |
+| `field_task_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `field_tasks.id` ON DELETE SET NULL | Field Task |
+| `requested_by_employee_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `employees.id` ON DELETE RESTRICT | Requesting Supervisor/Worker |
+| `support_type` | VARCHAR(64) | No | INDEX | Resource type |
+| `target_department_id` | INT UNSIGNED | Yes | FK $\rightarrow$ `departments.id` ON DELETE SET NULL | Target Department |
 | `details` | TEXT | No | | Explanation of support need |
-| `status` | ENUM('pending', 'approved', 'provided', 'rejected') | No | Default: 'pending', INDEX | Request Status |
-| `responded_by_user_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `users.id` | Decision Maker |
+| `status` | VARCHAR(32) | No | Default: 'pending', INDEX | Request Status |
+| `responded_by_user_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `users.id` ON DELETE SET NULL | Decision Maker |
 | `response_notes` | TEXT | Yes | | Resolution notes |
 | `created_at` | DATETIME | No | Default: CURRENT_TIMESTAMP | |
 
@@ -625,10 +638,10 @@ erDiagram
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
-| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE CASCADE, UNIQUE | Complaint (1:1) |
-| `citizen_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id`, INDEX | Citizen |
-| `resolution_confirmation` | ENUM('resolved', 'partially_resolved', 'not_resolved', 'auto_closed_no_response') | No | INDEX | Citizen response |
-| `unresolved_reason_code` | ENUM('problem_still_exists', 'partially_resolved', 'problem_returned', 'wrong_location', 'other') | Yes | | Reason if not resolved |
+| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE RESTRICT, UNIQUE | Complaint (1:1) |
+| `citizen_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id` ON DELETE RESTRICT, INDEX | Citizen |
+| `resolution_confirmation` | VARCHAR(64) | No | INDEX | Citizen response (`resolved`, `partially_resolved`, `not_resolved`, `auto_closed_no_response`) |
+| `unresolved_reason_code` | VARCHAR(64) | Yes | | Reason if not resolved |
 | `rating_score` | TINYINT UNSIGNED | Yes | | 1 to 5 satisfaction rating |
 | `comment` | TEXT | Yes | | Optional feedback comment |
 | `confirmed_at` | DATETIME | No | Default: CURRENT_TIMESTAMP | Confirmation timestamp |
@@ -641,9 +654,9 @@ erDiagram
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
-| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE CASCADE, INDEX | Complaint Reference |
-| `trigger_type` | ENUM('critical_hazard', 'first_deadline_failure', 'first_citizen_reopen', 'repeated_failure', 'high_supporters', 'recurring_hotspot', 'complaint_spike') | No | INDEX | Cause of Executive Attention |
-| `severity` | ENUM('p1_critical', 'p2_high', 'p3_normal') | No | INDEX | Priority rank |
+| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE RESTRICT, INDEX | Complaint Reference |
+| `trigger_type` | VARCHAR(64) | No | INDEX | Cause of Executive Attention |
+| `severity` | VARCHAR(32) | No | INDEX | Priority rank (`p1_critical`, `p2_high`, `p3_normal`) |
 | `is_active` | TINYINT(1) | No | Default: 1, INDEX | Active attention item |
 | `resolved_at` | DATETIME | Yes | INDEX | When condition cleared |
 | `created_at` | DATETIME | No | Default: CURRENT_TIMESTAMP, INDEX | Trigger timestamp |
@@ -652,13 +665,13 @@ erDiagram
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
-| `executive_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id`, INDEX | Mayor / Administrator User |
-| `complaint_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `complaints.id`, INDEX | Linked Complaint |
-| `ward_id` | INT UNSIGNED | Yes | FK $\rightarrow$ `wards.id` | Target Ward |
-| `department_id` | INT UNSIGNED | Yes | FK $\rightarrow$ `departments.id` | Target Department |
-| `directive_type` | ENUM('ask_for_action', 'provide_support', 'request_inspection', 'set_priority') | No | INDEX | Action type |
+| `executive_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id` ON DELETE RESTRICT, INDEX | Mayor / Administrator User |
+| `complaint_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `complaints.id` ON DELETE SET NULL, INDEX | Linked Complaint |
+| `ward_id` | INT UNSIGNED | Yes | FK $\rightarrow$ `wards.id` ON DELETE SET NULL | Target Ward |
+| `department_id` | INT UNSIGNED | Yes | FK $\rightarrow$ `departments.id` ON DELETE SET NULL | Target Department |
+| `directive_type` | VARCHAR(64) | No | INDEX | Action type |
 | `instruction` | TEXT | No | | Executive order text |
-| `status` | ENUM('issued', 'acknowledged', 'in_progress', 'completed') | No | Default: 'issued', INDEX | Directive status |
+| `status` | VARCHAR(32) | No | Default: 'issued', INDEX | Directive status |
 | `response_text` | TEXT | Yes | | Formal administrative response |
 | `responded_at` | DATETIME | Yes | | Response timestamp |
 | `created_at` | DATETIME | No | Default: CURRENT_TIMESTAMP | Directive issue timestamp |
@@ -667,9 +680,9 @@ erDiagram
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
-| `executive_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id` | Requester |
-| `target_employee_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `employees.id`, INDEX | Recipient Officer / Supervisor |
-| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id`, INDEX | Subject Complaint |
+| `executive_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id` ON DELETE RESTRICT | Requester |
+| `target_employee_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `employees.id` ON DELETE RESTRICT, INDEX | Recipient Officer / Supervisor |
+| `complaint_id` | BIGINT UNSIGNED | Yes | FK $\rightarrow$ `complaints.id` ON DELETE SET NULL, INDEX | Subject Complaint |
 | `question` | TEXT | No | | Structured query text |
 | `due_date` | DATETIME | Yes | | Expected reply deadline |
 | `explanation_response`| TEXT | Yes | | Employee explanation |
@@ -684,9 +697,9 @@ erDiagram
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
-| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE CASCADE, INDEX | Complaint |
-| `sender_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id`, INDEX | Citizen or Officer |
-| `message_type` | ENUM('citizen_update', 'staff_reply', 'location_detail', 'followup_request') | No | INDEX | Message context |
+| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE RESTRICT, INDEX | Complaint |
+| `sender_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id` ON DELETE RESTRICT, INDEX | Citizen or Officer |
+| `message_type` | VARCHAR(64) | No | INDEX | Message context |
 | `body` | TEXT | No | | Message text |
 | `is_moderated` | TINYINT(1) | No | Default: 0 | 1 = Flagged by moderation |
 | `created_at` | DATETIME | No | Default: CURRENT_TIMESTAMP, INDEX | |
@@ -695,9 +708,9 @@ erDiagram
 | Column | Type | Nullable | Constraints / Index | Description |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED | No | PK, Auto Increment | Primary Key |
-| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE CASCADE, INDEX | Complaint |
-| `author_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id` | Staff author |
-| `note_type` | ENUM('operational_note', 'private_admin_note') | No | INDEX | Visibility scope |
+| `complaint_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `complaints.id` ON DELETE RESTRICT, INDEX | Complaint |
+| `author_user_id` | BIGINT UNSIGNED | No | FK $\rightarrow$ `users.id` ON DELETE RESTRICT | Staff author |
+| `note_type` | VARCHAR(64) | No | INDEX | Visibility scope |
 | `note_text` | TEXT | No | | Internal note |
 | `created_at` | DATETIME | No | Default: CURRENT_TIMESTAMP | |
 

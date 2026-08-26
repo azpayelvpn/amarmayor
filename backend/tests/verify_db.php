@@ -35,13 +35,15 @@ foreach ($counts as $entity => $count) {
     echo sprintf("%-30s: %d\n", $entity, $count);
 }
 
-// 3. Check for any ENUM columns across the schema
-$enumQuery = "SELECT TABLE_NAME, COLUMN_NAME, COLUMN_TYPE 
-              FROM information_schema.COLUMNS 
-              WHERE TABLE_SCHEMA = DATABASE() AND DATA_TYPE = 'enum'";
-$enums = $pdo->query($enumQuery)->fetchAll(PDO::FETCH_ASSOC);
+// 4. Check for any ON DELETE CASCADE constraints
+$fkQuery = "SELECT rc.CONSTRAINT_NAME, rc.TABLE_NAME, rc.REFERENCED_TABLE_NAME, rc.DELETE_RULE 
+            FROM information_schema.REFERENTIAL_CONSTRAINTS rc 
+            WHERE rc.CONSTRAINT_SCHEMA = DATABASE() AND rc.DELETE_RULE = 'CASCADE'
+            ORDER BY rc.TABLE_NAME";
+$cascades = $pdo->query($fkQuery)->fetchAll(PDO::FETCH_ASSOC);
 
-echo "\n=== ENUM COLUMNS IN SCHEMA: " . count($enums) . " ===\n";
-foreach ($enums as $e) {
-    echo "{$e['TABLE_NAME']}.{$e['COLUMN_NAME']}: {$e['COLUMN_TYPE']}\n";
+echo "\n=== FOREIGN KEYS WITH ON DELETE CASCADE: " . count($cascades) . " ===\n";
+foreach ($cascades as $c) {
+    echo sprintf("%-30s: %-30s -> %s (CASCADE)\n", $c['TABLE_NAME'], $c['CONSTRAINT_NAME'], $c['REFERENCED_TABLE_NAME']);
 }
+

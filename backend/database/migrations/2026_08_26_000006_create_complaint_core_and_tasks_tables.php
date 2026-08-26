@@ -75,7 +75,7 @@ return new class {
             public_longitude DECIMAL(8,4) NULL,
             CONSTRAINT chk_loc_lat CHECK (latitude >= -90.0 AND latitude <= 90.0),
             CONSTRAINT chk_loc_lng CHECK (longitude >= -180.0 AND longitude <= 180.0),
-            CONSTRAINT fk_loc_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+            CONSTRAINT fk_loc_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE RESTRICT,
             INDEX idx_loc_coords (latitude, longitude)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
@@ -95,7 +95,7 @@ return new class {
             is_live_capture TINYINT(1) NOT NULL DEFAULT 0,
             moderation_status VARCHAR(32) NOT NULL DEFAULT 'pending',
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT fk_media_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+            CONSTRAINT fk_media_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE RESTRICT,
             CONSTRAINT fk_media_user FOREIGN KEY (uploader_user_id) REFERENCES users(id) ON DELETE RESTRICT,
             INDEX idx_media_complaint (complaint_id),
             INDEX idx_media_moderation (moderation_status)
@@ -113,7 +113,7 @@ return new class {
             actor_user_id BIGINT UNSIGNED NULL,
             reason TEXT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT fk_csh_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+            CONSTRAINT fk_csh_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE RESTRICT,
             CONSTRAINT fk_csh_actor FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL,
             INDEX idx_csh_complaint (complaint_id),
             INDEX idx_csh_created (created_at)
@@ -130,7 +130,7 @@ return new class {
             transfer_reason TEXT NULL,
             transferred_by_user_id BIGINT UNSIGNED NOT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT fk_coh_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+            CONSTRAINT fk_coh_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE RESTRICT,
             CONSTRAINT fk_coh_from_sup FOREIGN KEY (from_supervisor_employee_id) REFERENCES employees(id) ON DELETE RESTRICT,
             CONSTRAINT fk_coh_to_sup FOREIGN KEY (to_supervisor_employee_id) REFERENCES employees(id) ON DELETE RESTRICT,
             CONSTRAINT fk_coh_from_dept FOREIGN KEY (from_department_id) REFERENCES departments(id) ON DELETE RESTRICT,
@@ -146,7 +146,7 @@ return new class {
             citizen_user_id BIGINT UNSIGNED NOT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             UNIQUE KEY uq_comp_supporter (complaint_id, citizen_user_id),
-            CONSTRAINT fk_csup_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+            CONSTRAINT fk_csup_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE RESTRICT,
             CONSTRAINT fk_csup_user FOREIGN KEY (citizen_user_id) REFERENCES users(id) ON DELETE RESTRICT
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
@@ -165,7 +165,7 @@ return new class {
             started_at DATETIME NULL,
             completed_at DATETIME NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT fk_ft_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+            CONSTRAINT fk_ft_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE RESTRICT,
             CONSTRAINT fk_ft_team FOREIGN KEY (assigned_team_id) REFERENCES teams(id) ON DELETE SET NULL,
             CONSTRAINT fk_ft_worker FOREIGN KEY (assigned_worker_employee_id) REFERENCES employees(id) ON DELETE SET NULL,
             CONSTRAINT fk_ft_sup FOREIGN KEY (supervisor_employee_id) REFERENCES employees(id) ON DELETE RESTRICT,
@@ -187,7 +187,7 @@ return new class {
             effective_to DATETIME NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             CONSTRAINT chk_fta_dates CHECK (effective_to IS NULL OR effective_to >= effective_from),
-            CONSTRAINT fk_fta_task FOREIGN KEY (field_task_id) REFERENCES field_tasks(id) ON DELETE CASCADE,
+            CONSTRAINT fk_fta_task FOREIGN KEY (field_task_id) REFERENCES field_tasks(id) ON DELETE RESTRICT,
             CONSTRAINT fk_fta_team FOREIGN KEY (assigned_team_id) REFERENCES teams(id) ON DELETE SET NULL,
             CONSTRAINT fk_fta_worker FOREIGN KEY (assigned_worker_employee_id) REFERENCES employees(id) ON DELETE SET NULL,
             CONSTRAINT fk_fta_user FOREIGN KEY (assigned_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
@@ -202,8 +202,8 @@ return new class {
             evidence_stage VARCHAR(32) NOT NULL,
             device_timestamp DATETIME NULL,
             server_timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT fk_te_task FOREIGN KEY (field_task_id) REFERENCES field_tasks(id) ON DELETE CASCADE,
-            CONSTRAINT fk_te_media FOREIGN KEY (media_id) REFERENCES complaint_media(id) ON DELETE CASCADE,
+            CONSTRAINT fk_te_task FOREIGN KEY (field_task_id) REFERENCES field_tasks(id) ON DELETE RESTRICT,
+            CONSTRAINT fk_te_media FOREIGN KEY (media_id) REFERENCES complaint_media(id) ON DELETE RESTRICT,
             INDEX idx_te_task (field_task_id),
             INDEX idx_te_stage (evidence_stage)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
@@ -221,7 +221,7 @@ return new class {
             responded_by_user_id BIGINT UNSIGNED NULL,
             response_notes TEXT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT fk_sr_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+            CONSTRAINT fk_sr_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE RESTRICT,
             CONSTRAINT fk_sr_task FOREIGN KEY (field_task_id) REFERENCES field_tasks(id) ON DELETE SET NULL,
             CONSTRAINT fk_sr_req_emp FOREIGN KEY (requested_by_employee_id) REFERENCES employees(id) ON DELETE RESTRICT,
             CONSTRAINT fk_sr_dept FOREIGN KEY (target_department_id) REFERENCES departments(id) ON DELETE SET NULL,
@@ -241,7 +241,7 @@ return new class {
             comment TEXT NULL,
             confirmed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             CONSTRAINT chk_cf_rating CHECK (rating_score IS NULL OR (rating_score >= 1 AND rating_score <= 5)),
-            CONSTRAINT fk_cf_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+            CONSTRAINT fk_cf_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE RESTRICT,
             CONSTRAINT fk_cf_citizen FOREIGN KEY (citizen_user_id) REFERENCES users(id) ON DELETE RESTRICT,
             INDEX idx_cf_confirmation (resolution_confirmation)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");

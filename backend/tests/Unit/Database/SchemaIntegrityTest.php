@@ -233,4 +233,107 @@ class SchemaIntegrityTest extends TestCase
             if ($deptId) $pdo->exec("DELETE FROM departments WHERE id = {$deptId}");
         }
     }
+
+    public function testCivicEvidenceAndHistoryProtectedAgainstCascadeDeletion(): void
+    {
+        $pdo = DatabaseManager::getConnection();
+        $suffix = bin2hex(random_bytes(4));
+
+        $userId = 0;
+        $personId = 0;
+        $empId = 0;
+        $compId = 0;
+        $mediaId = 0;
+        $taskId = 0;
+        $ftaId = 0;
+        $evidenceId = 0;
+
+        try {
+            // 1. Setup User and Employee
+            $uUuid = \AmarMayor\Support\Security::uuid();
+            $pdo->exec("INSERT INTO users (uuid, email, user_type, status, created_at) VALUES ('{$uUuid}', 'citizen_ret_{$suffix}@example.com', 'citizen', 'active', NOW())");
+            $userId = (int)$pdo->lastInsertId();
+
+            $pdo->exec("INSERT INTO persons (full_name_bn, full_name_en, created_at) VALUES ('তদারককারী', 'Supervisor', NOW())");
+            $personId = (int)$pdo->lastInsertId();
+
+            $pdo->exec("INSERT INTO employees (person_id, employee_code, designation_bn, designation_en, created_at) VALUES ({$personId}, 'EMP-RET-{$suffix}', 'তদারককারী', 'Supervisor', NOW())");
+            $empId = (int)$pdo->lastInsertId();
+
+            // 2. Setup Complaint
+            $pdo->exec("INSERT INTO complaints (public_complaint_number, citizen_user_id, category_id, subcategory_id, ward_id, zone_id, description, submitted_at, created_at) 
+                        VALUES ('COMP-RET-{$suffix}', {$userId}, 1, 1, 1, 1, 'Evidence protection test', NOW(), NOW())");
+            $compId = (int)$pdo->lastInsertId();
+
+            // 3. Attach Complaint Media (Evidence)
+            $pdo->exec("INSERT INTO complaint_media (complaint_id, uploader_user_id, media_type, original_file_path, mime_type, file_size_bytes, created_at) 
+                        VALUES ({$compId}, {$userId}, 'image', '/storage/evidence/orig_{$suffix}.jpg', 'image/jpeg', 1048576, NOW())");
+            $mediaId = (int)$pdo->lastInsertId();
+
+            // VERIFICATION 1: Deleting complaint MUST be blocked by RESTRICT on complaint_media
+            $complaintDeleteBlocked = false;
+            try {
+                $pdo->exec("DELETE FROM complaints WHERE id = {$compId}");
+            } catch (\PDOException $e) {
+                // SQLSTATE[23000]: 1451 Cannot delete or update a parent row: a foreign key constraint fails
+                $complaintDeleteBlocked = true;
+            }
+            $this->assertTrue($complaintDeleteBlocked, "Parent complaint deletion must be blocked when complaint_media evidence exists (ON DELETE RESTRICT)");
+
+            // 4. Setup Field Task and Field Task Assignment
+            $pdo->exec("INSERT INTO field_tasks (complaint_id, task_code, supervisor_employee_id, task_status, created_at) 
+                        VALUES ({$compId}, 'TASK-RET-{$suffix}', {$empId}, 'pending', NOW())");
+            $taskId = (int)$pdo->lastInsertId();
+
+            $pdo->exec("INSERT INTO field_task_assignments (field_task_id, assigned_worker_employee_id, effective_from, assignment_notes, created_at) 
+                        VALUES ({$taskId}, {$empId}, NOW(), 'Assignment for test', NOW())");
+            $ftaId = (int)$pdo->lastInsertId();
+
+            // VERIFICATION 2: Deleting field task MUST be blocked by RESTRICT on field_task_assignments
+            $taskDeleteBlockedByAssignment = false;
+            try {
+                $pdo->exec("DELETE FROM field_tasks WHERE id = {$taskId}");
+            } catch (\PDOException $e) {
+                $taskDeleteBlockedByAssignment = true;
+            }
+            $this->assertTrue($taskDeleteBlockedByAssignment, "Task deletion must be blocked when assignment history exists (ON DELETE RESTRICT)");
+
+            // 5. Attach Task Evidence
+            $pdo->exec("INSERT INTO task_evidence (field_task_id, media_id, evidence_stage, server_timestamp) 
+                        VALUES ({$taskId}, {$mediaId}, 'before_work', NOW())");
+            $evidenceId = (int)$pdo->lastInsertId();
+
+            // VERIFICATION 3: Deleting field task MUST be blocked by RESTRICT on task_evidence
+            $pdo->exec("DELETE FROM field_task_assignments WHERE id = {$ftaId}");
+            $ftaId = 0; // Assignment removed, but task_evidence remains
+
+            $taskDeleteBlockedByEvidence = false;
+            try {
+                $pdo->exec("DELETE FROM field_tasks WHERE id = {$taskId}");
+            } catch (\PDOException $e) {
+                $taskDeleteBlockedByEvidence = true;
+            }
+            $this->assertTrue($taskDeleteBlockedByEvidence, "Task deletion must be blocked when task_evidence exists (ON DELETE RESTRICT)");
+
+            // VERIFICATION 4: Deleting complaint media MUST be blocked when referenced in task_evidence
+            $mediaDeleteBlockedByEvidence = false;
+            try {
+                $pdo->exec("DELETE FROM complaint_media WHERE id = {$mediaId}");
+            } catch (\PDOException $e) {
+                $mediaDeleteBlockedByEvidence = true;
+            }
+            $this->assertTrue($mediaDeleteBlockedByEvidence, "Complaint media deletion must be blocked when referenced as task evidence (ON DELETE RESTRICT)");
+
+        } finally {
+            // Clean up in reverse dependency order
+            if ($evidenceId) $pdo->exec("DELETE FROM task_evidence WHERE id = {$evidenceId}");
+            if ($ftaId) $pdo->exec("DELETE FROM field_task_assignments WHERE id = {$ftaId}");
+            if ($taskId) $pdo->exec("DELETE FROM field_tasks WHERE id = {$taskId}");
+            if ($mediaId) $pdo->exec("DELETE FROM complaint_media WHERE id = {$mediaId}");
+            if ($compId) $pdo->exec("DELETE FROM complaints WHERE id = {$compId}");
+            if ($empId) $pdo->exec("DELETE FROM employees WHERE id = {$empId}");
+            if ($personId) $pdo->exec("DELETE FROM persons WHERE id = {$personId}");
+            if ($userId) $pdo->exec("DELETE FROM users WHERE id = {$userId}");
+        }
+    }
 }

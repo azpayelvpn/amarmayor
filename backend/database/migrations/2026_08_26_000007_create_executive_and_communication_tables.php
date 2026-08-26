@@ -14,7 +14,7 @@ return new class {
             is_active TINYINT(1) NOT NULL DEFAULT 1,
             resolved_at DATETIME NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT fk_ea_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+            CONSTRAINT fk_ea_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE RESTRICT,
             INDEX idx_ea_complaint (complaint_id),
             INDEX idx_ea_trigger (trigger_type),
             INDEX idx_ea_active (is_active)
@@ -68,7 +68,7 @@ return new class {
             body TEXT NOT NULL,
             is_moderated TINYINT(1) NOT NULL DEFAULT 0,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT fk_cm_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+            CONSTRAINT fk_cm_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE RESTRICT,
             CONSTRAINT fk_cm_sender FOREIGN KEY (sender_user_id) REFERENCES users(id) ON DELETE RESTRICT,
             INDEX idx_cm_complaint (complaint_id),
             INDEX idx_cm_sender (sender_user_id)
@@ -82,7 +82,7 @@ return new class {
             note_type VARCHAR(64) NOT NULL,
             note_text TEXT NOT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT fk_in_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+            CONSTRAINT fk_in_complaint FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE RESTRICT,
             CONSTRAINT fk_in_author FOREIGN KEY (author_user_id) REFERENCES users(id) ON DELETE RESTRICT,
             INDEX idx_in_complaint (complaint_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");

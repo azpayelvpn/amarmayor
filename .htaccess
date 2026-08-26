@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+    Options -Indexes +FollowSymLinks
+    RewriteEngine On
+
+    # Block sensitive directories and files if accessed directly
+    RewriteRule ^(\.git|docs|backend/app|backend/config|backend/database|backend/tests|backend/lang|backend/storage|mobile|infra|scripts|\.env) - [F,L,NC]
+
+    # Forward all other requests to backend/public
+    RewriteCond %{REQUEST_URI} !^/backend/public/
+    RewriteRule ^(.*)$ backend/public/$1 [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    Options -Indexes
+</IfModule>

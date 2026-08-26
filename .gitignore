@@ -32,3 +32,6 @@ build/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Root Laragon convenience junction
+/public

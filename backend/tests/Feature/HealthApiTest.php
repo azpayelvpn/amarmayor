@@ -19,7 +19,7 @@ class HealthApiTest extends TestCase
         $this->assertTrue($payload['success']);
         $this->assertTrue(isset($payload['data']['status']));
         $this->assertTrue(isset($payload['data']['services']['database']));
-        $this->assertTrue(isset($payload['data']['services']['cache_fast_storage']));
+        $this->assertTrue(isset($payload['data']['services']['cache']));
         $this->assertTrue(isset($payload['meta']['request_id']));
     }
 }

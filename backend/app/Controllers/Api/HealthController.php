@@ -22,7 +22,17 @@ class HealthController
         $redisHealth = RedisClient::checkHealth();
 
         $overallStatus = ($dbHealth['connected']) ? 'healthy' : 'degraded';
+        $isDebug = (bool)Config::get('app.debug', false);
+        $isProduction = Config::get('app.env') === 'production';
 
+        // Production-safe public response: minimal without internal topology leak
+        if ($isProduction || !$isDebug) {
+            return Response::json([
+                'status' => $overallStatus,
+            ]);
+        }
+
+        // Local development debug response
         return Response::json([
             'status' => $overallStatus,
             'app' => [
@@ -34,12 +44,9 @@ class HealthController
             'services' => [
                 'database' => [
                     'status' => $dbHealth['status'],
-                    'connected' => $dbHealth['connected'],
                 ],
-                'cache_fast_storage' => [
+                'cache' => [
                     'status' => $redisHealth['status'],
-                    'connected' => $redisHealth['connected'],
-                    'driver' => $redisHealth['driver'] ?? 'unknown',
                 ],
             ],
         ]);

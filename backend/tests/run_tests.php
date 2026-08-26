@@ -20,7 +20,9 @@ $testClasses = [
     \AmarMayor\Tests\Unit\SecurityTest::class,
     \AmarMayor\Tests\Unit\ContainerTest::class,
     \AmarMayor\Tests\Unit\TranslatorTest::class,
+    \AmarMayor\Tests\Unit\SessionPersistenceTest::class,
     \AmarMayor\Tests\Feature\HealthApiTest::class,
+    \AmarMayor\Tests\Feature\HealthApiHardeningTest::class,
     \AmarMayor\Tests\Feature\WebLandingTest::class,
 ];
 

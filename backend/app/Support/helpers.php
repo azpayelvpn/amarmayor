@@ -86,6 +86,27 @@ if (!function_exists('redirect')) {
     }
 }
 
+if (!function_exists('to_bn_number')) {
+    function to_bn_number(int|float|string $number): string
+    {
+        return Translator::toBanglaNumber($number);
+    }
+}
+
+if (!function_exists('format_date_bn')) {
+    function format_date_bn(string|DateTimeInterface|null $dateTime, string $format = 'medium', ?string $locale = null): string
+    {
+        return Translator::formatDate($dateTime, $format, $locale);
+    }
+}
+
+if (!function_exists('format_money')) {
+    function format_money(int|float $amount, ?string $locale = null): string
+    {
+        return Translator::formatMoney($amount, $locale);
+    }
+}
+
 if (!function_exists('now_dhaka')) {
     function now_dhaka(): DateTimeImmutable
     {

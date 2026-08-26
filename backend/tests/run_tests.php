@@ -13,22 +13,21 @@ echo "\n========================================================\n";
 echo " Amar Mayor — Phase 1 Core Backend Test Suite Runner\n";
 echo "========================================================\n\n";
 
-$testClasses = [
-    \AmarMayor\Tests\Unit\RouterTest::class,
-    \AmarMayor\Tests\Unit\ResponseEnvelopeTest::class,
-    \AmarMayor\Tests\Unit\ValidatorTest::class,
-    \AmarMayor\Tests\Unit\SecurityTest::class,
-    \AmarMayor\Tests\Unit\ContainerTest::class,
-    \AmarMayor\Tests\Unit\TranslatorTest::class,
-    \AmarMayor\Tests\Unit\SessionPersistenceTest::class,
-    \AmarMayor\Tests\Unit\Database\SchemaIntegrityTest::class,
-    \AmarMayor\Tests\Unit\Database\StructuralSeedDataTest::class,
-    \AmarMayor\Tests\Unit\Database\GovernanceAndWorkforceTest::class,
-    \AmarMayor\Tests\Unit\Database\ComplaintHistoryAndAuditTest::class,
-    \AmarMayor\Tests\Feature\HealthApiTest::class,
-    \AmarMayor\Tests\Feature\HealthApiHardeningTest::class,
-    \AmarMayor\Tests\Feature\WebLandingTest::class,
-];
+$testsDir = __DIR__;
+$testFiles = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($testsDir));
+$testClasses = [];
+
+foreach ($testFiles as $file) {
+    if ($file->isFile() && str_ends_with($file->getFilename(), 'Test.php')) {
+        require_once $file->getPathname();
+        $relativePath = substr($file->getPathname(), strlen($testsDir) + 1);
+        $classWithoutExt = substr($relativePath, 0, -4);
+        $className = 'AmarMayor\\Tests\\' . str_replace(['/', '\\'], '\\', $classWithoutExt);
+        if (class_exists($className)) {
+            $testClasses[] = $className;
+        }
+    }
+}
 
 $totalTests = 0;
 $passedTests = 0;

@@ -90,4 +90,24 @@ abstract class TestCase
             throw new \AssertionError($message ?: "String [{$haystack}] does not contain [{$needle}]");
         }
     }
+
+    protected function assertStringContainsString(string $needle, string $haystack, string $message = ''): void
+    {
+        $this->assertStringContains($needle, $haystack, $message);
+    }
+
+    protected function assertCount(int $expectedCount, array|\Countable $array, string $message = ''): void
+    {
+        $actualCount = count($array);
+        if ($expectedCount !== $actualCount) {
+            throw new \AssertionError($message ?: "Expected count {$expectedCount}, got {$actualCount}");
+        }
+    }
+
+    protected function assertArrayHasKey(string|int $key, array $array, string $message = ''): void
+    {
+        if (!array_key_exists($key, $array)) {
+            throw new \AssertionError($message ?: "Array does not contain key [{$key}]");
+        }
+    }
 }

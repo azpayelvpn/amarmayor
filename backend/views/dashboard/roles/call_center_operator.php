@@ -17,7 +17,7 @@
             <div class="mt-4 pt-3 border-top">
                 <label class="form-label fw-semibold small text-muted"><?= ($locale ?? 'bn') === 'bn' ? 'দ্রুত নাগরিক ট্র্যাকিং অনুসন্ধান:' : 'Quick Status Lookup:' ?></label>
                 <form action="/track" method="GET" class="d-flex gap-2">
-                    <input type="text" name="tracking" placeholder="MCC-XXXX-XXXXX" required class="form-control form-control-sm font-monospace">
+                    <input type="text" name="tracking_number" placeholder="MCC-XXXX-XXXXX" required class="form-control form-control-sm font-monospace">
                     <button type="submit" class="btn btn-sm btn-outline-primary"><?= ($locale ?? 'bn') === 'bn' ? 'খুঁজুন' : 'Search' ?></button>
                 </form>
             </div>

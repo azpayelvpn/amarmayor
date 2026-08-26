@@ -42,7 +42,7 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-info-subtle text-info-emphasis px-2 py-1">
-                                            <?= e($c['internal_status']) ?>
+                                            <?= e(human_status($c['internal_status'], $locale)) ?>
                                         </span>
                                     </td>
                                     <td class="text-end pe-3">

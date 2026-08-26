@@ -41,6 +41,9 @@
 
             <!-- Quick Action Links -->
             <div class="d-flex align-items-center gap-2">
+                <a href="/" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-globe me-1"></i> <?= ($locale ?? 'bn') === 'bn' ? 'পাবলিক সাইট দেখুন' : 'View Public Site' ?>
+                </a>
                 <a href="/dev/testing-access" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-shuffle me-1"></i> <?= ($locale ?? 'bn') === 'bn' ? 'অন্য রোল পরীক্ষা করুন' : 'Switch Demo Role' ?>
                 </a>

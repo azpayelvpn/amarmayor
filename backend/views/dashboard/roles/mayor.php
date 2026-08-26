@@ -28,19 +28,25 @@
                 </div>
                 <div class="col-6 col-md-4 col-lg-2">
                     <div class="p-3 bg-light rounded-3 text-center">
-                        <div class="fs-2 fw-bold text-secondary"><?= to_bn_number((string)($kpis['reopen_rate_percent'] ?? 0)) ?>%</div>
+                        <div class="fs-2 fw-bold text-secondary">
+                            <?= ($kpis['total_complaints'] ?? 0) > 0 ? to_bn_number((string)($kpis['reopen_rate_percent'] ?? 0)) . '%' : '-' ?>
+                        </div>
                         <small class="text-muted"><?= ($locale ?? 'bn') === 'bn' ? 'পুনরায় খোলা হার' : 'Reopen Rate' ?></small>
                     </div>
                 </div>
                 <div class="col-6 col-md-4 col-lg-2">
                     <div class="p-3 bg-light rounded-3 text-center">
-                        <div class="fs-2 fw-bold text-success"><?= to_bn_number((string)($kpis['citizen_satisfaction_percent'] ?? 100)) ?>%</div>
+                        <div class="fs-2 fw-bold text-success">
+                            <?= ($kpis['total_complaints'] ?? 0) > 0 ? to_bn_number((string)($kpis['citizen_satisfaction_percent'] ?? 100)) . '%' : '-' ?>
+                        </div>
                         <small class="text-muted"><?= ($locale ?? 'bn') === 'bn' ? 'নাগরিক সন্তুষ্টি' : 'Citizen Satisfaction' ?></small>
                     </div>
                 </div>
                 <div class="col-6 col-md-4 col-lg-2">
                     <div class="p-3 bg-light rounded-3 text-center">
-                        <div class="fs-2 fw-bold text-dark"><?= to_bn_number((string)($kpis['avg_resolution_hours'] ?? 0)) ?>h</div>
+                        <div class="fs-2 fw-bold text-dark">
+                            <?= ($kpis['avg_resolution_hours'] ?? 0) > 0 ? to_bn_number((string)($kpis['avg_resolution_hours'] ?? 0)) . 'h' : '-' ?>
+                        </div>
                         <small class="text-muted"><?= ($locale ?? 'bn') === 'bn' ? 'গড় সময়' : 'Avg Hours' ?></small>
                     </div>
                 </div>
@@ -102,7 +108,7 @@
                         <div class="list-group-item px-0 py-3 border-bottom">
                             <div class="d-flex justify-content-between align-items-start mb-1">
                                 <strong class="text-dark font-monospace"><?= e($item['public_complaint_number'] ?? $item['tracking_number'] ?? '') ?></strong>
-                                <span class="badge bg-danger"><?= e($item['trigger_type'] ?? 'overdue') ?></span>
+                                <span class="badge bg-danger"><?= e(human_status($item['trigger_type'] ?? 'overdue', $locale)) ?></span>
                             </div>
                             <p class="mb-2 small text-muted">
                                 <?= ($locale ?? 'bn') === 'bn' ? e($item['subcategory_name_bn'] ?? '') : e($item['subcategory_name_en'] ?? '') ?>

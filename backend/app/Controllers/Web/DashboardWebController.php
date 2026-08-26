@@ -224,7 +224,7 @@ class DashboardWebController
                 $data['auditLogs'] = $pdo->query("
                     SELECT al.*, u.email as actor_email
                     FROM audit_logs al
-                    LEFT JOIN users u ON u.id = al.user_id
+                    LEFT JOIN users u ON u.id = al.actor_user_id
                     ORDER BY al.id DESC LIMIT 25
                 ")->fetchAll(PDO::FETCH_ASSOC);
                 break;
@@ -252,7 +252,7 @@ class DashboardWebController
     public function startTask(Request $request, string $id): Response
     {
         if (!Auth::check() || !Auth::user()->can('field_tasks:execute')) {
-            return Response::html("<h1>403 Forbidden</h1><p>You do not have permission to execute field tasks.</p>", 403);
+            return Response::html(\AmarMayor\View\View::render('errors/403', ['locale' => Translator::getLocale()]), 403);
         }
 
         $taskId = (int)$id;
@@ -283,7 +283,7 @@ class DashboardWebController
     public function completeTask(Request $request, string $id): Response
     {
         if (!Auth::check() || !Auth::user()->can('field_tasks:execute')) {
-            return Response::html("<h1>403 Forbidden</h1><p>You do not have permission to execute field tasks.</p>", 403);
+            return Response::html(\AmarMayor\View\View::render('errors/403', ['locale' => Translator::getLocale()]), 403);
         }
 
         $taskId = (int)$id;
@@ -315,7 +315,7 @@ class DashboardWebController
     public function verifyTask(Request $request, string $id): Response
     {
         if (!Auth::check() || !Auth::user()->can('complaints:verify')) {
-            return Response::html("<h1>403 Forbidden</h1><p>You do not have permission to verify complaint resolution.</p>", 403);
+            return Response::html(\AmarMayor\View\View::render('errors/403', ['locale' => Translator::getLocale()]), 403);
         }
 
         $taskId = (int)$id;
@@ -341,7 +341,7 @@ class DashboardWebController
     public function issueDirective(Request $request): Response
     {
         if (!Auth::check() || (!Auth::user()->hasRole('mayor') && !Auth::user()->hasRole('administrator'))) {
-            return Response::html("<h1>403 Forbidden</h1><p>Executive directive permission required.</p>", 403);
+            return Response::html(\AmarMayor\View\View::render('errors/403', ['locale' => Translator::getLocale()]), 403);
         }
 
         $complaintId = (int)$request->input('complaint_id');

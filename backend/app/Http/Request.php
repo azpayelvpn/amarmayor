@@ -36,6 +36,13 @@ class Request
         ?string $requestId = null
     ) {
         $this->method = strtoupper($method);
+        if (empty($query) && str_contains($uri, '?')) {
+            $queryString = parse_url($uri, PHP_URL_QUERY);
+            if ($queryString) {
+                parse_str($queryString, $parsedQuery);
+                $query = is_array($parsedQuery) ? $parsedQuery : [];
+            }
+        }
         $this->uri = $this->sanitizeUri($uri);
         $this->query = $query;
         $this->post = $post;

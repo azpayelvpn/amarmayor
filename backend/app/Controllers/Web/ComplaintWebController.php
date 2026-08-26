@@ -58,7 +58,7 @@ class ComplaintWebController
     public function store(Request $request): Response
     {
         $user = Auth::user();
-        $citizenUserId = $user ? (int)$user['id'] : null;
+        $citizenUserId = $user ? $user->id : null;
 
         // If not logged in, obtain or register citizen phone
         $phone = trim((string)$request->input('phone', ''));
@@ -149,7 +149,7 @@ class ComplaintWebController
     {
         $number = $trackingNumber ?: trim((string)$request->input('tracking_number', ''));
         $user = Auth::user();
-        $viewingUserId = $user ? (int)$user['id'] : null;
+        $viewingUserId = $user ? $user->id : null;
 
         $complaint = null;
         $error = null;
@@ -179,7 +179,7 @@ class ComplaintWebController
         $complaintId = (int)$id;
         $action = (string)$request->input('action'); // 'confirm' or 'reject'
         $user = Auth::user();
-        $citizenUserId = $user ? (int)$user['id'] : 1;
+        $citizenUserId = $user ? $user->id : 1;
 
         $pdo = DatabaseManager::getConnection();
         $stmt = $pdo->prepare("SELECT public_complaint_number, citizen_user_id FROM complaints WHERE id = ? LIMIT 1");
@@ -196,13 +196,13 @@ class ComplaintWebController
         if ($action === 'confirm') {
             $rating = max(1, min(5, (int)$request->input('rating', 5)));
             $notes = trim((string)$request->input('feedback_notes', ''));
-            $this->resolutionService->citizenConfirm($complaintId, $actualCitizenId, $rating, !empty($notes) ? $notes : null);
+            $this->resolutionService->citizenConfirm($complaintId, $actualCitizenId, true, $rating, !empty($notes) ? $notes : null);
             
             return Response::redirect("/track/{$trackingNumber}?success=" . urlencode('আপনার সন্তুষ্টির মতামত গ্রহণ করা হয়েছে। ধন্যবাদ!'));
         } elseif ($action === 'reject') {
             $reason = trim((string)$request->input('reopen_reason', 'কাজ অসম্পূর্ণ রয়েছে'));
             $notes = trim((string)$request->input('feedback_notes', ''));
-            $this->resolutionService->citizenReject($complaintId, $actualCitizenId, $reason, !empty($notes) ? $notes : null);
+            $this->resolutionService->citizenConfirm($complaintId, $actualCitizenId, false, null, !empty($notes) ? $notes : null, $reason);
 
             return Response::redirect("/track/{$trackingNumber}?success=" . urlencode('আপনার মতামত রেকর্ড করা হয়েছে। আবার কাজের নির্দেশ প্রদান করা হয়েছে।'));
         }
@@ -217,10 +217,15 @@ class ComplaintWebController
     {
         $user = Auth::user();
         if (!$user) {
-            return Response::redirect('/login?tab=citizen');
+            return Response::redirect('/login?tab=citizen&error=auth_required');
         }
 
-        $complaints = $this->complaintService->getCitizenComplaints((int)$user['id']);
+        // If authenticated as non-citizen staff/representative, safely redirect to their dashboard
+        if ($user->userType !== 'citizen' && !$user->hasRole('citizen')) {
+            return Response::redirect('/dashboard');
+        }
+
+        $complaints = $this->complaintService->getCitizenComplaints($user->id);
 
         return view('complaints/my_complaints', [
             'locale' => Translator::getLocale(),

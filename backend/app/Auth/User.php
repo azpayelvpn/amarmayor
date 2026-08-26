@@ -7,7 +7,7 @@ namespace AmarMayor\Auth;
 use AmarMayor\Database\DatabaseManager;
 use PDO;
 
-class User
+class User implements \ArrayAccess
 {
     public int $id;
     public string $uuid;
@@ -145,7 +145,24 @@ class User
 
     public function can(string $permission): bool
     {
-        return in_array($permission, $this->getPermissionSlugs(), true);
+        $perms = $this->getPermissionSlugs();
+        if (in_array($permission, $perms, true)) {
+            return true;
+        }
+        $dotPerm = str_replace(':', '.', $permission);
+        $colonPerm = str_replace('.', ':', $permission);
+        if (in_array($dotPerm, $perms, true) || in_array($colonPerm, $perms, true)) {
+            return true;
+        }
+        if (in_array($permission, ['field_tasks:execute', 'task:execute', 'task.execute'], true) && 
+            (in_array('task.start', $perms, true) || in_array('task.complete', $perms, true))) {
+            return true;
+        }
+        if (in_array($permission, ['complaints:verify', 'complaint:verify', 'complaints.verify'], true) && 
+            in_array('complaint.verify', $perms, true)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -197,5 +214,53 @@ class User
         }
 
         return $data;
+    }
+
+    public function offsetExists(mixed $offset): bool
+    {
+        $key = (string)$offset;
+        if (in_array($key, ['roles', 'permissions', 'scopes'], true)) {
+            return true;
+        }
+        if (property_exists($this, $key)) {
+            return true;
+        }
+        $camelKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
+        return property_exists($this, $camelKey);
+    }
+
+    public function offsetGet(mixed $offset): mixed
+    {
+        $key = (string)$offset;
+        if ($key === 'roles') {
+            return $this->getRoleSlugs();
+        }
+        if ($key === 'permissions') {
+            return $this->getPermissionSlugs();
+        }
+        if ($key === 'scopes') {
+            return $this->getScopes();
+        }
+        if (property_exists($this, $key)) {
+            return $this->$key;
+        }
+        $camelKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
+        if (property_exists($this, $camelKey)) {
+            return $this->$camelKey;
+        }
+        return null;
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        $key = (string)$offset;
+        if (property_exists($this, $key)) {
+            $this->$key = $value;
+        }
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        // Immutable property unsetting
     }
 }

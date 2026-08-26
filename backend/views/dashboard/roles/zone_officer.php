@@ -43,7 +43,7 @@
                                         <strong><?= ($locale ?? 'bn') === 'bn' ? e($c['subcategory_name_bn'] ?? '') : e($c['subcategory_name_en'] ?? '') ?></strong>
                                     </td>
                                     <td>
-                                        <span class="badge bg-info-subtle text-info-emphasis px-2 py-1"><?= e($c['internal_status']) ?></span>
+                                        <span class="badge bg-info-subtle text-info-emphasis px-2 py-1"><?= e(human_status($c['internal_status'], $locale)) ?></span>
                                     </td>
                                     <td class="text-end pe-3">
                                         <a href="/track/<?= urlencode($c['public_complaint_number'] ?? '') ?>" class="btn btn-sm btn-outline-primary">

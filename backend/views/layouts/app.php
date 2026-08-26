@@ -65,10 +65,17 @@
                     <!-- Auth Actions -->
                     <?php if (\AmarMayor\Auth\Auth::check()): ?>
                         <?php $user = \AmarMayor\Auth\Auth::user(); ?>
-                        <a href="/my-complaints" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1">
-                            <i class="bi bi-person-circle"></i>
-                            <span><?= ($locale ?? 'bn') === 'bn' ? 'আমার অভিযোগ' : 'My Complaints' ?></span>
-                        </a>
+                        <?php if ($user && ($user->userType !== 'citizen' || count($user->getRoleSlugs()) > 1 || !$user->hasRole('citizen'))): ?>
+                            <a href="/dashboard" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1">
+                                <i class="bi bi-speedometer2"></i>
+                                <span><?= ($locale ?? 'bn') === 'bn' ? 'ড্যাশবোর্ড' : 'Dashboard' ?></span>
+                            </a>
+                        <?php else: ?>
+                            <a href="/my-complaints" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1">
+                                <i class="bi bi-person-circle"></i>
+                                <span><?= ($locale ?? 'bn') === 'bn' ? 'আমার অভিযোগ' : 'My Complaints' ?></span>
+                            </a>
+                        <?php endif; ?>
                         <form action="/logout" method="POST" class="d-inline">
                             <?= csrf_field() ?>
                             <button type="submit" class="btn btn-sm btn-outline-secondary">

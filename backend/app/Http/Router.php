@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AmarMayor\Http;
 
+use AmarMayor\Support\Translator;
+use AmarMayor\View\View;
 use Closure;
 use RuntimeException;
 
@@ -83,14 +85,14 @@ class Router
                     'allowed_methods' => array_unique($allowedMethods)
                 ]);
             }
-            return Response::html('<h1>405 Method Not Allowed</h1>', 405);
+            return Response::html(View::render('errors/404', ['locale' => Translator::getLocale()]), 405);
         }
 
         if ($request->isJson() || str_starts_with($path, '/api/')) {
             return Response::error('ROUTE_NOT_FOUND', 'Requested endpoint not found.', 404);
         }
 
-        return Response::html('<h1>404 Not Found</h1><p>The requested page does not exist.</p>', 404);
+        return Response::html(View::render('errors/404', ['locale' => Translator::getLocale()]), 404);
     }
 
     private function addRoute(string $method, string $path, Closure|array|string $handler, array $middleware): self

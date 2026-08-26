@@ -120,3 +120,51 @@ if (!function_exists('now_dhaka')) {
         return new DateTimeImmutable('now', new DateTimeZone('Asia/Dhaka'));
     }
 }
+
+if (!function_exists('human_status')) {
+    function human_status(string $status, ?string $locale = null): string
+    {
+        $loc = $locale ?: Translator::getLocale();
+        $transKey = "complaints.internal_status.{$status}";
+        $trans = __($transKey, [], $loc);
+        if ($trans !== $transKey) {
+            return $trans;
+        }
+        $citizenKey = "complaints.citizen_status.{$status}";
+        $transCitizen = __($citizenKey, [], $loc);
+        if ($transCitizen !== $citizenKey) {
+            return $transCitizen;
+        }
+        $commonBn = [
+            'deadline_breach' => 'সময়সীমা পেরিয়েছে',
+            'citizen_reopen' => 'নাগরিক কর্তৃক পুনরায় চালু',
+            'overdue' => 'সময়সীমা পেরিয়েছে',
+            'pending' => 'অপেক্ষমাণ',
+            'completed' => 'কাজ সম্পন্ন (যাচাই বাকি)',
+            'in_progress' => 'কাজ চলছে',
+            'verified' => 'যাচাই সম্পন্ন',
+            'active' => 'সক্রিয়',
+            'inactive' => 'নিষ্ক্রিয়',
+            'healthy' => 'স্বাস্থ্যকর / সচল',
+        ];
+        $commonEn = [
+            'deadline_breach' => 'Deadline Breached',
+            'citizen_reopen' => 'Citizen Reopened',
+            'overdue' => 'Overdue',
+            'pending' => 'Pending',
+            'completed' => 'Completed',
+            'in_progress' => 'In Progress',
+            'verified' => 'Verified',
+            'active' => 'Active',
+            'inactive' => 'Inactive',
+            'healthy' => 'Healthy',
+        ];
+        if ($loc === 'bn' && isset($commonBn[$status])) {
+            return $commonBn[$status];
+        }
+        if ($loc === 'en' && isset($commonEn[$status])) {
+            return $commonEn[$status];
+        }
+        return ucwords(str_replace('_', ' ', $status));
+    }
+}

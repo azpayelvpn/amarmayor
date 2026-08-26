@@ -24,6 +24,7 @@ return [
     'unauthorized' => 'You are not authorized to perform this action.',
     'forbidden' => 'Access forbidden. You do not have permission or scope for this resource.',
     'session_expired' => 'Your session has expired. Please log in again.',
+    'auth_required' => 'Please log in to view this page.',
     'logout_success' => 'Logged out successfully.',
     'remember_me' => 'Remember Me',
 ];

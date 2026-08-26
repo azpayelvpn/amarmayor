@@ -15,7 +15,9 @@ class WebLandingTest extends TestCase
 
         $this->assertEquals(200, $res->getStatusCode());
         $this->assertStringContains('আমার ময়মনসিংহ', $res->getContent());
-        $this->assertStringContains('Phase 1 — Core Backend Foundation Ready', $res->getContent());
+        $this->assertStringContains('অভিযোগ করুন', $res->getContent());
+        $this->assertStringContains('আমার ওয়ার্ড', $res->getContent());
+        $this->assertStringContains('কে দায়িত্বে আছেন?', $res->getContent());
     }
 
     public function testHtmxStatusPartial(): void
@@ -24,6 +26,7 @@ class WebLandingTest extends TestCase
         $res = $this->get('/htmx/status-check', ['hx-request' => 'true']);
 
         $this->assertEquals(200, $res->getStatusCode());
-        $this->assertStringContains('সিস্টেম আর্কিটেকচার ও সংযোগ স্থিতি', $res->getContent());
+        $this->assertStringContains('মোট অভিযোগ', $res->getContent());
+        $this->assertStringContains('কাজ চলছে', $res->getContent());
     }
 }

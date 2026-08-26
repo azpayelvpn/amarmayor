@@ -88,14 +88,14 @@ class PublicAccountabilityService
         $pdo = DatabaseManager::getConnection();
 
         $query = "
-            SELECT id, notice_code, category, title_bn, title_en, body_bn, body_en, published_at, expires_at
+            SELECT id, notice_type, title_bn, title_en, body_bn, body_en, published_at, expires_at
             FROM city_notices
             WHERE is_published = 1 AND (expires_at IS NULL OR expires_at > NOW())
         ";
 
         $params = [];
         if ($category !== null) {
-            $query .= " AND category = ?";
+            $query .= " AND notice_type = ?";
             $params[] = $category;
         }
 

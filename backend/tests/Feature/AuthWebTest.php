@@ -15,9 +15,9 @@ class AuthWebTest extends TestCase
     {
         $response = $this->get('/login');
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertStringContains('লগইন করুন', $response->getBody());
-        $this->assertStringContains('নাগরিক লগইন', $response->getBody());
-        $this->assertStringContains('কর্মকর্তা ও দায়িত্বপ্রাপ্তদের লগইন', $response->getBody());
+        $this->assertStringContains('লগইন', $response->getBody());
+        $this->assertStringContains('নাগরিক', $response->getBody());
+        $this->assertStringContains('কর্মকর্তা ও কর্মচারী', $response->getBody());
     }
 
     public function testWebStaffPasswordLoginAndLogout(): void

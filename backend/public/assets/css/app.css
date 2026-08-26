@@ -1,51 +1,317 @@
 /* ==============================================================================
-   Amar Mayor — Mymensingh City Citizen Service Platform (Phase 1 CSS Tokens)
+   Amar Mayor — Mymensingh City Citizen Platform (Civic Design System)
    ============================================================================== */
 
 :root {
-    --am-primary: #0d6efd;
-    --am-success: #198754;
-    --am-warning: #ffc107;
-    --am-danger: #dc3545;
+    --am-primary: #006a4e; /* Bangladesh Civic Green */
+    --am-primary-dark: #004d38;
+    --am-primary-light: #e6f3ee;
+    --am-accent: #f42a41;  /* Civic Red */
+    --am-dark: #1e293b;
+    --am-muted: #64748b;
+    --am-card-border: #e2e8f0;
+    --am-bg: #f8fafc;
     --am-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
     --am-font-bengali: 'Hind Siliguri', 'SolaimanLipi', 'Noto Sans Bengali', system-ui, sans-serif;
 }
 
 body {
     font-family: var(--am-font-bengali);
-    background-color: #f8f9fa;
-    color: #212529;
+    background-color: var(--am-bg);
+    color: var(--am-dark);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    margin: 0;
 }
 
 main {
     flex: 1 0 auto;
 }
 
-/* Brand styling */
+/* Typography & Focus states */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    color: var(--am-dark);
+}
+
+a:focus, button:focus, input:focus, select:focus, textarea:focus {
+    outline: 2px solid var(--am-primary);
+    outline-offset: 2px;
+}
+
+/* Header & Brand */
+.navbar-civic {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--am-card-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
 .brand-badge {
-    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    background: linear-gradient(135deg, var(--am-primary) 0%, var(--am-primary-dark) 100%);
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: #ffffff;
 }
 
 .brand-title {
-    font-size: 1.15rem;
-    letter-spacing: -0.01em;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--am-primary);
+    line-height: 1.1;
 }
 
-/* Card aesthetics */
-.card {
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+/* Hero Section */
+.hero-civic {
+    background: linear-gradient(135deg, #005840 0%, #003828 100%);
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 2.5rem 1.5rem;
+    box-shadow: 0 4px 14px rgba(0, 77, 56, 0.15);
 }
 
-/* HTMX loading indicator */
-.htmx-indicator {
-    display: none;
+.hero-title {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: #ffffff;
 }
-.htmx-request .htmx-indicator {
-    display: inline-block;
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 650px;
 }
-.htmx-request.htmx-indicator {
-    display: inline-block;
+
+/* Action Cards */
+.action-card {
+    background: #ffffff;
+    border: 1px solid var(--am-card-border);
+    border-radius: 14px;
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    text-decoration: none;
+    color: var(--am-dark);
+    display: block;
+    height: 100%;
+}
+
+.action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    border-color: var(--am-primary);
+    color: var(--am-primary);
+}
+
+.action-card .icon-circle {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem auto;
+    font-size: 1.6rem;
+    transition: transform 0.15s ease;
+}
+
+.action-card:hover .icon-circle {
+    transform: scale(1.08);
+}
+
+.icon-green { background-color: #e6f3ee; color: var(--am-primary); }
+.icon-blue { background-color: #e0f2fe; color: #0284c7; }
+.icon-amber { background-color: #fef3c7; color: #d97706; }
+.icon-purple { background-color: #f3e8ff; color: #7c3aed; }
+.icon-teal { background-color: #ccfbf1; color: #0d9488; }
+
+.action-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.action-card-desc {
+    font-size: 0.875rem;
+    color: var(--am-muted);
+    margin-bottom: 0;
+}
+
+/* Metric / Snapshot Cards */
+.metric-box {
+    background: #ffffff;
+    border: 1px solid var(--am-card-border);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.metric-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.metric-label {
+    font-size: 0.85rem;
+    color: var(--am-muted);
+    font-weight: 500;
+}
+
+/* Buttons */
+.btn-civic-primary {
+    background-color: var(--am-primary);
+    border-color: var(--am-primary);
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.65rem 1.4rem;
+}
+
+.btn-civic-primary:hover, .btn-civic-primary:focus {
+    background-color: var(--am-primary-dark);
+    border-color: var(--am-primary-dark);
+    color: #ffffff;
+}
+
+.btn-civic-outline {
+    border: 2px solid var(--am-primary);
+    color: var(--am-primary);
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.6rem 1.3rem;
+    background: transparent;
+}
+
+.btn-civic-outline:hover, .btn-civic-outline:focus {
+    background-color: var(--am-primary);
+    color: #ffffff;
+}
+
+/* Status Badges */
+.badge-status {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.85rem;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.status-received { background-color: #e0f2fe; color: #0369a1; }
+.status-assigned { background-color: #e6f3ee; color: #006a4e; }
+.status-in_progress { background-color: #fef3c7; color: #b45309; }
+.status-work_completed { background-color: #f3e8ff; color: #6b21a8; }
+.status-confirmation_needed { background-color: #ffedd5; color: #c2410c; }
+.status-resolved { background-color: #dcfce7; color: #15803d; }
+.status-needs_more_work { background-color: #fee2e2; color: #b91c1c; }
+
+/* Timeline UI */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+    border-left: 2px solid #cbd5e1;
+    margin-left: 1rem;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2.45rem;
+    top: 0.25rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    border: 3px solid var(--am-primary);
+}
+
+.timeline-item.active::before {
+    background-color: var(--am-primary);
+}
+
+/* Form Styles */
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--am-primary);
+    box-shadow: 0 0 0 3px rgba(0, 106, 78, 0.15);
+}
+
+/* Step Wizard */
+.step-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.step-indicator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #e2e8f0;
+    z-index: 1;
+}
+
+.step-item {
+    position: relative;
+    z-index: 2;
+    background-color: #ffffff;
+    padding: 0 0.5rem;
+    text-align: center;
+}
+
+.step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #f1f5f9;
+    border: 2px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.25rem auto;
+    font-weight: 700;
+    color: var(--am-muted);
+}
+
+.step-item.active .step-circle {
+    background-color: var(--am-primary);
+    border-color: var(--am-primary);
+    color: #ffffff;
+}
+
+.step-item.completed .step-circle {
+    background-color: #e6f3ee;
+    border-color: var(--am-primary);
+    color: var(--am-primary);
+}
+
+.step-label {
+    font-size: 0.8rem;
+    color: var(--am-muted);
+    font-weight: 600;
+}
+
+.step-item.active .step-label {
+    color: var(--am-primary);
 }

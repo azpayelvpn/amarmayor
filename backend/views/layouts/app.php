@@ -20,24 +20,73 @@
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 </head>
 <body>
-    <!-- Main Header & Navigation -->
-    <header class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-2">
+    <!-- Main Public Header & Navigation -->
+    <header class="navbar navbar-expand-lg navbar-civic sticky-top py-2">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-                <div class="brand-badge bg-primary text-white rounded d-flex align-items-center justify-content-center" style="width:38px;height:38px;">
+                <div class="brand-badge">
                     <i class="bi bi-buildings fs-5"></i>
                 </div>
                 <div>
-                    <div class="brand-title fw-bold text-dark lh-1"><?= e(__('common.app_name')) ?></div>
+                    <div class="brand-title"><?= e(__('common.app_name')) ?></div>
                     <small class="text-muted d-block" style="font-size: 0.75rem;"><?= e(__('common.mcc_full_name')) ?></small>
                 </div>
             </a>
 
-            <div class="d-flex align-items-center gap-3 ms-auto">
-                <!-- Language Switcher Toggle -->
-                <div class="btn-group btn-group-sm" role="group" aria-label="Language Selector">
-                    <a href="?lang=bn" class="btn btn-outline-primary <?= ($locale ?? 'bn') === 'bn' ? 'active' : '' ?>">বাংলা</a>
-                    <a href="?lang=en" class="btn btn-outline-primary <?= ($locale ?? 'bn') === 'en' ? 'active' : '' ?>">EN</a>
+            <!-- Mobile Hamburger Toggle -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#civicNavbar" aria-controls="civicNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navigation Links -->
+            <div class="collapse navbar-collapse" id="civicNavbar">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-2" href="/"><?= ($locale ?? 'bn') === 'bn' ? 'হোম' : 'Home' ?></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-2" href="/complaints/create"><?= ($locale ?? 'bn') === 'bn' ? 'অভিযোগ করুন' : 'Submit Complaint' ?></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-2" href="/track"><?= ($locale ?? 'bn') === 'bn' ? 'অভিযোগ ট্র্যাক করুন' : 'Track Complaint' ?></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-2" href="/wards"><?= ($locale ?? 'bn') === 'bn' ? 'আমার ওয়ার্ড' : 'My Ward' ?></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-2" href="/who-is-responsible"><?= ($locale ?? 'bn') === 'bn' ? 'দায়িত্বে কে?' : 'Who is Responsible?' ?></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-2" href="/notices"><?= ($locale ?? 'bn') === 'bn' ? 'নোটিশ' : 'Notices' ?></a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                    <!-- Auth Actions -->
+                    <?php if (\AmarMayor\Auth\Auth::check()): ?>
+                        <?php $user = \AmarMayor\Auth\Auth::user(); ?>
+                        <a href="/my-complaints" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1">
+                            <i class="bi bi-person-circle"></i>
+                            <span><?= ($locale ?? 'bn') === 'bn' ? 'আমার অভিযোগ' : 'My Complaints' ?></span>
+                        </a>
+                        <form action="/logout" method="POST" class="d-inline">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                <?= ($locale ?? 'bn') === 'bn' ? 'লগআউট' : 'Logout' ?>
+                            </button>
+                        </form>
+                    <?php else: ?>
+                        <a href="/login" class="btn btn-sm btn-civic-primary d-flex align-items-center gap-1">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            <span><?= ($locale ?? 'bn') === 'bn' ? 'প্রবেশ' : 'Login' ?></span>
+                        </a>
+                    <?php endif; ?>
+
+                    <!-- Language Switcher Toggle -->
+                    <div class="btn-group btn-group-sm ms-2" role="group" aria-label="Language Selector">
+                        <a href="?lang=bn" class="btn btn-outline-secondary <?= ($locale ?? 'bn') === 'bn' ? 'active' : '' ?>">বাংলা</a>
+                        <a href="?lang=en" class="btn btn-outline-secondary <?= ($locale ?? 'bn') === 'en' ? 'active' : '' ?>">EN</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -48,11 +97,22 @@
         <?= $content ?? '' ?>
     </main>
 
-    <!-- Footer -->
-    <footer class="footer mt-auto py-4 bg-light border-top text-center text-muted">
+    <!-- Public Footer -->
+    <footer class="footer mt-auto py-4 bg-white border-top">
         <div class="container">
-            <p class="mb-1 fw-semibold text-dark"><?= e(__('common.mcc_full_name')) ?></p>
-            <p class="mb-0 small">&copy; <?= date('Y') ?> <?= e(__('common.all_rights_reserved')) ?> | <?= e(__('common.app_slogan')) ?></p>
+            <div class="row align-items-center gy-3">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-1 fw-bold text-dark"><?= e(__('common.mcc_full_name')) ?></p>
+                    <p class="mb-0 text-muted small">
+                        জরুরি হেল্পলাইন: <strong>১৬১০৬</strong> | কন্ট্রোল রুম: <strong>০২৯৯৬৬-৬৩১২৩</strong>
+                    </p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0 text-muted small">
+                        &copy; <?= date('Y') ?> <?= e(__('common.all_rights_reserved')) ?> | <?= e(__('common.app_name')) ?>
+                    </p>
+                </div>
+            </div>
         </div>
     </footer>
 

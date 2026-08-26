@@ -100,6 +100,13 @@ if (!function_exists('format_date_bn')) {
     }
 }
 
+if (!function_exists('format_bn_date')) {
+    function format_bn_date(string|DateTimeInterface|null $dateTime, string $format = 'medium', ?string $locale = null): string
+    {
+        return Translator::formatDate($dateTime, $format, $locale);
+    }
+}
+
 if (!function_exists('format_money')) {
     function format_money(int|float $amount, ?string $locale = null): string
     {

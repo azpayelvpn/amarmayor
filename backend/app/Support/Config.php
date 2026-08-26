@@ -57,13 +57,20 @@ class Config
         }
 
         $current = &self::$items[$file];
-        foreach ($parts as $part) {
+        while (count($parts) > 1) {
+            $part = array_shift($parts);
             if (!isset($current[$part]) || !is_array($current[$part])) {
                 $current[$part] = [];
             }
             $current = &$current[$part];
         }
-        $current = $value;
+
+        $finalKey = array_shift($parts);
+        if ($finalKey !== null) {
+            $current[$finalKey] = $value;
+        } else {
+            self::$items[$file] = is_array($value) ? $value : [];
+        }
     }
 
     /**

@@ -24,6 +24,11 @@ abstract class TestCase
         $baseDir = dirname(__DIR__);
         require_once $baseDir . '/bootstrap/app.php';
 
+        \AmarMayor\Auth\Auth::setUser(null);
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION = [];
+        }
+
         $this->container = Container::getInstance();
         $this->router = $this->container->get(Router::class);
     }

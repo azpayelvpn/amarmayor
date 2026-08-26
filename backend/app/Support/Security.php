@@ -100,4 +100,36 @@ class Security
         $sessionToken = $_SESSION['_csrf_token'] ?? '';
         return is_string($sessionToken) && $sessionToken !== '' && self::timingSafeEquals($sessionToken, $token);
     }
+
+    /**
+     * Normalizes Bangladeshi mobile numbers to standard E.164 (+8801XXXXXXXXX).
+     */
+    public static function normalizePhone(?string $phone): ?string
+    {
+        if ($phone === null) {
+            return null;
+        }
+
+        // Convert Bengali numerals if present
+        $phone = Translator::toEnglishNumber(trim($phone));
+
+        // Remove non-numeric characters except leading plus
+        $phone = preg_replace('/[^\d+]/', '', $phone);
+
+        if (preg_match('/^(\+?88)?(01[3-9]\d{8})$/', $phone, $matches)) {
+            return '+88' . $matches[2];
+        }
+
+        return null;
+    }
+
+    /**
+     * Generates HMAC-SHA256 keyed lookup hash for privacy-safe phone lookups.
+     */
+    public static function phoneLookupHash(string $phone): string
+    {
+        $normalized = self::normalizePhone($phone) ?: $phone;
+        $key = Config::get('app.key', 'amar_mayor_default_secret_key');
+        return hash_hmac('sha256', $normalized, $key);
+    }
 }

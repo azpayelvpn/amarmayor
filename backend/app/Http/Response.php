@@ -103,6 +103,21 @@ class Response
         return $this->content;
     }
 
+    public function getBody(): string
+    {
+        return $this->content;
+    }
+
+    public function getHeader(string $name): ?string
+    {
+        foreach ($this->headers as $k => $v) {
+            if (strcasecmp($k, $name) === 0) {
+                return $v;
+            }
+        }
+        return null;
+    }
+
     public function setHeader(string $name, string $value): self
     {
         $this->headers[$name] = $value;

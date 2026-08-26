@@ -146,6 +146,16 @@ class Request
         return (string)($this->server['REMOTE_ADDR'] ?? '127.0.0.1');
     }
 
+    public function getClientIp(): string
+    {
+        return $this->getIp();
+    }
+
+    public function getHeader(string $name, mixed $default = null): mixed
+    {
+        return $this->header($name, $default);
+    }
+
     public function setAttribute(string $key, mixed $value): void
     {
         $this->attributes[$key] = $value;

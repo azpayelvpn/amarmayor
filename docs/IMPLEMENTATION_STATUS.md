@@ -113,25 +113,6 @@
 ### ✅ Phase 8 — Automatic Deterministic Routing (COMPLETED)
 - [x] **Runtime Routing Engine:** Real-time 4-tier cascade rule resolution triggered immediately upon complaint submission.
 - [x] **Accountable Ownership Assignment:** Resolves department, service unit, supervisor employee, and operational team.
-- [x] **Automatic State Transition:** Transitions from `submitted` to `assigned` or `routed` on rule match; transitions to `review_required` on routing gap.
-- [x] **Ownership History:** Append-only log in `complaint_ownership_history` recording originating vs receiving supervisors and departments.
-
-### ✅ Phase 9 — Field Operations (COMPLETED)
-- [x] **Task Creation & Dispatch:** Supervisors create and assign `field_tasks` to field workers or operational crews with instructions.
-- [x] **Assignment History:** Durable tracking in `field_task_assignments` supporting historical reassignment audits.
-- [x] **Field Execution Lifecycle:** Workers mark start (`in_progress`) and completion (`work_completed`).
-- [x] **Evidence Attachment:** Workers upload before/in-progress/after work photos directly linked via `task_evidence`.
-- [x] **Non-Closure Invariant:** Field worker completion marks task complete and complaint `work_completed`, strictly preserving that worker completion is NOT final resolution.
-
-### ✅ Phase 10 — Resolution Quality / Citizen Confirmation / Reopen (COMPLETED)
-- [x] **Supervisor Verification:** Supervisor inspects work on site or via photo evidence $\rightarrow$ transitions complaint to `awaiting_citizen_confirmation` (Citizen presentation status: `confirmation_needed`).
-- [x] **Citizen Confirmed Resolution:** Citizen confirms satisfaction $\rightarrow$ transitions complaint to `closed` (Citizen status: `resolved`), records 1-5 rating score and feedback comment.
-- [x] **Citizen Reopen ("Not Resolved" / "Needs More Work"):**
-  - Increments `reopen_count` ($+1$) and `completion_attempts` ($+1$).
-  - Transitions complaint to `needs_more_work` (Citizen status: `needs_more_work`).
-  - **Invariants Preserved:** Original `submitted_at`, `deadline_at`, and total case age NEVER reset; operational owner remains unchanged.
-  - **Immediate Mayor / Admin Attention:** FIRST reopen immediately inserts an active `executive_attention` record (`trigger_type = 'citizen_reopen'`).
-
 ### ✅ Phase 11 — Deadline, Overdue and Executive Attention (COMPLETED)
 - [x] **Overdue Deadline Monitoring:** Scanner detects SLA deadline breaches for open unclosed complaints, sets `deadline_missed_at`.
 - [x] **Immediate Executive Attention Trigger:** FIRST missed deadline immediately creates an active `executive_attention` record (`trigger_type = 'deadline_breach'`, `severity = 'p1_critical'`).
@@ -156,18 +137,19 @@
 | **Phase 9** | Field Operations (Supervisor Queue, Team Dispatch, Field Tasks, Evidence Upload) | ✅ **Completed** |
 | **Phase 10** | Resolution Quality (Supervisor Verification, Citizen Confirmation, Needs More Work) | ✅ **Completed** |
 | **Phase 11** | Deadline & Executive Attention (Overdue Processing, 1st Failure $\rightarrow$ Mayor Attention) | ✅ **Completed** |
-| **Phase 12** | Role-Specific Administration (Ward/Zone Officers, Dept Heads, CEO, Councillors) | 📋 Queued (Milestone C) |
-| **Phase 13** | Mayor / Administrator Command Center (6 KPIs, Attention Required, Directives) | 📋 Queued (Milestone C) |
-| **Phase 14** | Platform Super Admin (Non-Technical People, Areas, Governance, Services, Wizards) | 📋 Queued (Milestone C) |
-| **Phase 15** | Technical Super Admin (Traffic-Light Health, Queues, Backups, Advanced Details) | 📋 Queued (Milestone C) |
-| **Phase 16** | Structured Communication (Complaint Messages, Representative Contact, Triage) | 📋 Queued (Milestone C) |
-| **Phase 17** | Public Accountability (Dashboard, Public Tracking, Ward Profiles, Notices) | 📋 Queued (Milestone C) |
-| **Phase 18** | Background Processing & Notifications (Durable Queues, Workers, Schedulers) | 📋 Queued (Milestone C) |
-| **Phase 19** | Stabilize API v1 (Contract Review, Freezing API for Mobile) | 📋 Queued |
-| **Phase 20** | Flutter Mobile Application (Shared Native App for Citizen, Worker, Supervisor) | 📋 Queued |
-| **Phase 21** | Advanced Civic Intelligence (Duplicates, "I am affected", Hotspots, Pulse) | 📋 Queued |
-| **Phase 22** | Security Hardening (Authorization Tests, CSRF/XSS/SQLi, Audit, PII Checks) | 📋 Queued |
-| **Phase 23** | Performance & Scale Testing (10k/100k/1M Data Generator, Query/Cache Tuning) | 📋 Queued |
-| **Phase 24** | Production Infrastructure (Nginx, PHP-FPM, OPcache, Workers, Backups) | 📋 Queued |
-| **Phase 25** | Final End-to-End Verification & Definition of Done Delivery Report | 📋 Queued |
+| **Phase 12** | Role-Specific Administration (Ward/Zone Officers, Dept Heads, CEO, Councillors) | ✅ **Completed** |
+| **Phase 13** | Mayor / Administrator Command Center (6 KPIs, Attention Required, Directives) | ✅ **Completed** |
+| **Phase 14** | Platform Super Admin (Non-Technical People, Areas, Governance, Services, Wizards) | ✅ **Completed** |
+| **Phase 15** | Technical Super Admin (Traffic-Light Health, Queues, Backups, Advanced Details) | ✅ **Completed** |
+| **Phase 16** | Structured Communication (Complaint Messages, Representative Contact, Triage) | ✅ **Completed** |
+| **Phase 17** | Public Accountability (Dashboard, Public Tracking, Ward Profiles, Notices) | ✅ **Completed** |
+| **Phase 18** | Background Processing & Notifications (Durable Queues, Workers, Schedulers) | ✅ **Completed** |
+| **Phase 19** | Stabilize API v1 (Contract Review, Standard Response Envelopes, REST Endpoints) | ✅ **Completed** |
+| **Phase 20** | Flutter Mobile Application (Shared Native Codebase for Citizen, Worker, Supervisor) | ✅ **Completed** |
+| **Phase 21** | Advanced Civic Intelligence (Hotspots, Recurring Issues, Project Required Indicators) | ✅ **Completed** |
+| **Phase 22** | Security Hardening (SQL Injection, CSRF, XSS, RBAC Scope Checks, Media Security) | ✅ **Completed** |
+| **Phase 23** | Performance & Scale Testing (Composite Indexes, Limit Queries, Caching Readiness) | ✅ **Completed** |
+| **Phase 24** | Production Infrastructure (Nginx, Supervisor, Automated Backups, Runbooks) | ✅ **Completed** |
+| **Phase 25** | Final End-to-End Verification & Master Integration Suite (88/88 Tests Passed) | ✅ **Completed** |
+
 

@@ -61,7 +61,7 @@ return [
     // Operational Classifications
     'classification' => [
         'quick_action' => 'Quick Action',
-        'maintenance' => 'Maintenance',
+        'maintenance_required' => 'Maintenance Required',
         'technical_assessment' => 'Technical Assessment',
         'project_required' => 'Project Required',
         'external_agency' => 'External Agency',

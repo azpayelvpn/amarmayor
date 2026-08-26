@@ -5,24 +5,17 @@ declare(strict_types=1);
 namespace AmarMayor\Domain\ComplaintConfig;
 
 use AmarMayor\Database\DatabaseManager;
-use AmarMayor\Support\Config;
 use DateTimeImmutable;
 use DateTimeInterface;
 use PDO;
 
 class DeadlineConfigService
 {
-    private const DEFAULT_HOURS = [
-        'p1_critical' => 8,
-        'p2_high' => 24,
-        'p3_normal' => 48,
-        'p4_low' => 120,
-    ];
-
     /**
-     * Resolves the configured SLA expected hours for a complaint.
+     * Resolves the configured SLA expected hours for a complaint from active municipal rules.
+     * Returns null if no rule is configured (does not invent official MCC policy).
      */
-    public function getExpectedHours(int $categoryId, ?int $subcategoryId, string $priority, string $classification): int
+    public function getExpectedHours(int $categoryId, ?int $subcategoryId, string $priority, string $classification): ?int
     {
         $pdo = DatabaseManager::getConnection();
 
@@ -76,15 +69,13 @@ class DeadlineConfigService
             return (int)$hours;
         }
 
-        // 5. System Priority Default Fallback
-        $configKey = "default_sla_hours_" . str_replace(['p1_critical', 'p2_high', 'p3_normal', 'p4_low'], ['p1', 'p2', 'p3', 'p4'], $priority);
-        $settingHours = (int)Config::get("settings.{$configKey}", 0);
-
-        return $settingHours > 0 ? $settingHours : (self::DEFAULT_HOURS[$priority] ?? 48);
+        // Return null if no official municipal rule is configured
+        return null;
     }
 
     /**
-     * Calculates the exact deadline timestamp for a complaint.
+     * Calculates the exact deadline timestamp for a complaint based on active configured rules.
+     * Returns null if no deadline rule exists for the complaint type.
      */
     public function calculateDeadline(
         int $categoryId,
@@ -92,8 +83,12 @@ class DeadlineConfigService
         string $priority,
         string $classification,
         ?DateTimeInterface $submissionTime = null
-    ): DateTimeImmutable {
+    ): ?DateTimeImmutable {
         $hours = $this->getExpectedHours($categoryId, $subcategoryId, $priority, $classification);
+        if ($hours === null || $hours <= 0) {
+            return null;
+        }
+
         $base = $submissionTime ? DateTimeImmutable::createFromInterface($submissionTime) : now_dhaka();
 
         return $base->modify("+{$hours} hours");

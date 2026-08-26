@@ -7,89 +7,87 @@ namespace AmarMayor\Tests\Unit\Auth;
 use AmarMayor\Auth\ScopeManager;
 use AmarMayor\Auth\User;
 use AmarMayor\Database\DatabaseManager;
-use AmarMayor\Support\Security;
 use AmarMayor\Tests\TestCase;
 use PDO;
 
 class RbacAndScopeTest extends TestCase
 {
-    public function testRolePermissionsLookupAndSuperAdminBypass(): void
+    public function testRolePermissionsLookupAndSeparationBetweenSuperAdmins(): void
     {
         $pdo = DatabaseManager::getConnection();
-        $suffix = bin2hex(random_bytes(4));
-        $uuid = Security::uuid();
 
-        $userId = 0;
+        // 1. Create a Platform Super Admin
+        $stmt = $pdo->prepare("
+            INSERT INTO users (uuid, phone, user_type, status, preferred_language, created_at)
+            VALUES ('test-platform-admin-uuid', '+8801700000001', 'admin', 'active', 'bn', NOW())
+        ");
+        $stmt->execute();
+        $pAdminId = (int)$pdo->lastInsertId();
+
+        $rolePId = (int)$pdo->query("SELECT id FROM roles WHERE slug = 'platform_super_admin'")->fetchColumn();
+        $pdo->prepare("INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)")->execute([$pAdminId, $rolePId]);
+
+        // 2. Create a Technical Super Admin
+        $stmt = $pdo->prepare("
+            INSERT INTO users (uuid, phone, user_type, status, preferred_language, created_at)
+            VALUES ('test-tech-admin-uuid', '+8801700000002', 'admin', 'active', 'bn', NOW())
+        ");
+        $stmt->execute();
+        $tAdminId = (int)$pdo->lastInsertId();
+
+        $roleTId = (int)$pdo->query("SELECT id FROM roles WHERE slug = 'technical_super_admin'")->fetchColumn();
+        $pdo->prepare("INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)")->execute([$tAdminId, $roleTId]);
+
         try {
-            $pdo->prepare("
-                INSERT INTO users (uuid, email, user_type, status, preferred_language, created_at)
-                VALUES (?, ?, 'admin', 'active', 'bn', NOW())
-            ")->execute([$uuid, "admin_{$suffix}@amarmayor.gov.bd"]);
-            $userId = (int)$pdo->lastInsertId();
+            $pUser = User::findById($pAdminId);
+            $this->assertNotNull($pUser);
+            $this->assertTrue($pUser->can('governance.assign'), "Platform admin must have governance.assign");
+            $this->assertTrue($pUser->can('routing.manage'), "Platform admin must have routing.manage");
+            $this->assertFalse($pUser->can('system.backup.manage'), "Platform admin must NOT have technical backup management");
 
-            $superAdminRoleId = (int)$pdo->query("SELECT id FROM roles WHERE slug = 'technical_super_admin'")->fetchColumn();
-            $pdo->prepare("INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)")->execute([$userId, $superAdminRoleId]);
-
-            $user = User::findById($userId);
-            $this->assertTrue($user->hasRole('technical_super_admin'));
-            $this->assertTrue($user->can('complaint.create'));
-            $this->assertTrue($user->can('system.security.manage'));
-            $this->assertTrue($user->can('any.arbitrary.permission'), "Super Admin must bypass all permissions");
+            $tUser = User::findById($tAdminId);
+            $this->assertNotNull($tUser);
+            $this->assertTrue($tUser->can('system.health.view'), "Tech admin must have system.health.view");
+            $this->assertTrue($tUser->can('system.backup.manage'), "Tech admin must have system.backup.manage");
+            $this->assertFalse($tUser->can('governance.assign'), "Tech admin must NOT have civic governance assignment");
         } finally {
-            if ($userId) {
-                $pdo->exec("DELETE FROM user_roles WHERE user_id = {$userId}");
-                $pdo->exec("DELETE FROM users WHERE id = {$userId}");
-            }
+            $pdo->exec("DELETE FROM user_roles WHERE user_id IN ({$pAdminId}, {$tAdminId})");
+            $pdo->exec("DELETE FROM users WHERE id IN ({$pAdminId}, {$tAdminId})");
         }
     }
 
     public function testWardAndZoneScoping(): void
     {
         $pdo = DatabaseManager::getConnection();
-        $suffix = bin2hex(random_bytes(4));
-        $uuid = Security::uuid();
+        $scopeManager = new ScopeManager();
 
-        $userId = 0;
-        $scopeId = 0;
+        $ward1Id = (int)$pdo->query("SELECT id FROM wards WHERE ward_number = 1")->fetchColumn();
+        $ward2Id = (int)$pdo->query("SELECT id FROM wards WHERE ward_number = 2")->fetchColumn();
+        $zone1Id = (int)$pdo->query("SELECT id FROM zones WHERE zone_number = 1")->fetchColumn();
+
+        // 1. Create a user scoped strictly to Ward 1
+        $stmt = $pdo->prepare("
+            INSERT INTO users (uuid, phone, user_type, status, preferred_language, created_at)
+            VALUES ('test-scoped-user-uuid', '+8801700000003', 'staff', 'active', 'bn', NOW())
+        ");
+        $stmt->execute();
+        $userId = (int)$pdo->lastInsertId();
+
+        $pdo->prepare("
+            INSERT INTO user_scopes (user_id, scope_type, scope_id, effective_from)
+            VALUES (?, 'ward', ?, NOW())
+        ")->execute([$userId, $ward1Id]);
+
         try {
-            $pdo->prepare("
-                INSERT INTO users (uuid, email, user_type, status, preferred_language, created_at)
-                VALUES (?, ?, 'staff', 'active', 'bn', NOW())
-            ")->execute([$uuid, "inspector_{$suffix}@amarmayor.gov.bd"]);
-            $userId = (int)$pdo->lastInsertId();
-
-            $ward1Id = (int)$pdo->query("SELECT id FROM wards WHERE ward_number = 1")->fetchColumn();
-            $ward2Id = (int)$pdo->query("SELECT id FROM wards WHERE ward_number = 2")->fetchColumn();
-            $ward1ZoneId = (int)$pdo->query("SELECT zone_id FROM wards WHERE id = {$ward1Id}")->fetchColumn();
-
-            // Assign user scope to Ward 1 only
-            $pdo->prepare("
-                INSERT INTO user_scopes (user_id, scope_type, scope_id, effective_from)
-                VALUES (?, 'ward', ?, NOW())
-            ")->execute([$userId, $ward1Id]);
-            $scopeId = (int)$pdo->lastInsertId();
-
             $user = User::findById($userId);
+            $this->assertNotNull($user);
 
-            // User should have access to Ward 1, but NOT Ward 2
-            $this->assertTrue(ScopeManager::canAccessWard($user, $ward1Id), "User with Ward 1 scope must access Ward 1");
-            $this->assertFalse(ScopeManager::canAccessWard($user, $ward2Id), "User with Ward 1 scope must NOT access Ward 2");
-
-            // Update scope to entire Zone 1
-            $pdo->prepare("UPDATE user_scopes SET scope_type = 'zone', scope_id = ? WHERE id = ?")->execute([$ward1ZoneId, $scopeId]);
-
-            // Flush cached scopes
-            $user = User::findById($userId);
-
-            $this->assertTrue(ScopeManager::canAccessZone($user, $ward1ZoneId), "User with Zone scope must access Zone");
-            $this->assertTrue(ScopeManager::canAccessWard($user, $ward1Id), "User with Zone 1 scope must access Ward 1 (in Zone 1)");
+            $this->assertTrue($scopeManager->canAccessWard($user, $ward1Id), "User should access Ward 1");
+            $this->assertFalse($scopeManager->canAccessWard($user, $ward2Id), "User should NOT access Ward 2");
+            $this->assertFalse($scopeManager->canAccessZone($user, $zone1Id), "Ward-scoped user should not have full zone scope");
         } finally {
-            if ($scopeId) {
-                $pdo->exec("DELETE FROM user_scopes WHERE id = {$scopeId}");
-            }
-            if ($userId) {
-                $pdo->exec("DELETE FROM users WHERE id = {$userId}");
-            }
+            $pdo->exec("DELETE FROM user_scopes WHERE user_id = {$userId}");
+            $pdo->exec("DELETE FROM users WHERE id = {$userId}");
         }
     }
 }

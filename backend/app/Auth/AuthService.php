@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace AmarMayor\Auth;
 
+use AmarMayor\Auth\Otp\MockOtpProvider;
+use AmarMayor\Auth\Otp\OtpProviderInterface;
+use AmarMayor\Auth\Otp\SmsGatewayProvider;
 use AmarMayor\Database\DatabaseManager;
 use AmarMayor\Support\Config;
 use AmarMayor\Support\RedisClient;
 use AmarMayor\Support\Security;
-use RuntimeException;
 use PDO;
 
 class AuthService
@@ -16,6 +18,18 @@ class AuthService
     private const OTP_TTL_SECONDS = 300; // 5 Minutes
     private const OTP_RATE_LIMIT_MAX = 5; // Max 5 requests per 10 minutes
     private const TOKEN_LIFETIME_DAYS = 30;
+
+    private OtpProviderInterface $otpProvider;
+
+    public function __construct(?OtpProviderInterface $otpProvider = null)
+    {
+        if ($otpProvider !== null) {
+            $this->otpProvider = $otpProvider;
+        } else {
+            $driver = Config::get('services.sms_driver', 'mock');
+            $this->otpProvider = ($driver === 'gateway') ? new SmsGatewayProvider() : new MockOtpProvider();
+        }
+    }
 
     /**
      * Authenticates a user by email or phone with password (Staff / Officer / Admin).
@@ -55,6 +69,22 @@ class AuthService
     }
 
     /**
+     * Checks if a user requires multi-factor authentication (Mayor, Administrator, CEO, Super Admins).
+     */
+    public function requiresMfa(User $user): bool
+    {
+        $privilegedRoles = [
+            'mayor',
+            'administrator',
+            'ceo',
+            'platform_super_admin',
+            'technical_super_admin',
+        ];
+
+        return $user->hasRole($privilegedRoles);
+    }
+
+    /**
      * Requests a 6-digit OTP for citizen phone authentication.
      *
      * @return array{success: bool, message: string, mock_otp?: string}
@@ -86,8 +116,8 @@ class AuthService
         RedisClient::set($otpStorageKey, $otp, self::OTP_TTL_SECONDS);
         RedisClient::set($rateLimitKey, (string)($attempts + 1), 600); // 10 minute window
 
-        // Send SMS via mock/configured driver
-        $this->sendSms($normalizedPhone, "আপনার আমার ময়মনসিংহ ওটিপি (OTP) কোড হলো: {$otp}। মেয়াদ ৫ মিনিট।");
+        // Send OTP via configured provider
+        $this->otpProvider->sendOtp($normalizedPhone, $otp);
 
         $response = [
             'success' => true,
@@ -203,14 +233,5 @@ class AuthService
         $tokenHash = hash('sha256', trim($plainToken));
         $pdo = DatabaseManager::getConnection();
         $pdo->prepare("UPDATE user_tokens SET revoked_at = NOW() WHERE token_hash = ?")->execute([$tokenHash]);
-    }
-
-    private function sendSms(string $phone, string $message): void
-    {
-        // Mock SMS logger / delivery handler
-        $driver = Config::get('services.sms_driver', 'mock');
-        if ($driver === 'mock') {
-            // Logs internally for debugging; production plugs real SMS gateway adapter
-        }
     }
 }

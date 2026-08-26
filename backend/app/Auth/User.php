@@ -145,11 +145,6 @@ class User
 
     public function can(string $permission): bool
     {
-        // Technical & Platform Super Admins have all permissions
-        if ($this->hasRole(['platform_super_admin', 'technical_super_admin'])) {
-            return true;
-        }
-
         return in_array($permission, $this->getPermissionSlugs(), true);
     }
 

@@ -419,6 +419,132 @@ class StructuralSeeder
                 $ins->execute([$p['slug'], $category, $p['name_bn'], $p['name_en']]);
             }
         }
+
+        self::seedRolePermissionsMapping($pdo);
+    }
+
+    private static function seedRolePermissionsMapping(PDO $pdo): void
+    {
+        $rolePermMap = [
+            'public_viewer' => [
+                'dashboard.public', 'ward.view', 'department.view', 'notice.view', 'governance.view', 'service.view'
+            ],
+            'citizen' => [
+                'complaint.create', 'complaint.view', 'complaint.add_information', 'complaint.confirm_resolution',
+                'complaint.needs_more_work', 'communication.send', 'dashboard.public', 'notice.view'
+            ],
+            'field_worker' => [
+                'task.view', 'task.start', 'task.complete', 'task.return', 'task.add_evidence'
+            ],
+            'team_leader' => [
+                'task.view', 'task.start', 'task.complete', 'task.return', 'task.add_evidence'
+            ],
+            'supervisor' => [
+                'complaint.view', 'complaint.view_private', 'complaint.assign', 'complaint.verify',
+                'complaint.request_support', 'task.view', 'task.assign', 'task.return',
+                'communication.view', 'communication.send', 'dashboard.ward'
+            ],
+            'ward_officer' => [
+                'complaint.view', 'complaint.view_private', 'complaint.request_support', 'dashboard.ward',
+                'employee.view', 'communication.view', 'communication.send'
+            ],
+            'zone_officer' => [
+                'complaint.view', 'complaint.view_private', 'complaint.transfer', 'dashboard.zone',
+                'employee.view', 'report.view', 'communication.view'
+            ],
+            'department_head' => [
+                'complaint.view', 'complaint.view_private', 'complaint.transfer', 'complaint.change_priority',
+                'dashboard.department', 'employee.view', 'report.view', 'report.export',
+                'communication.view', 'communication.send'
+            ],
+            'general_councillor' => [
+                'complaint.view', 'complaint.view_private', 'complaint.request_support', 'dashboard.ward',
+                'communication.view', 'communication.send', 'notice.view'
+            ],
+            'reserved_women_councillor' => [
+                'complaint.view', 'complaint.view_private', 'complaint.request_support', 'dashboard.ward',
+                'communication.view', 'communication.send', 'notice.view'
+            ],
+            'responsible_officer' => [
+                'complaint.view', 'complaint.view_private', 'complaint.request_support', 'dashboard.ward',
+                'communication.view', 'communication.send', 'notice.view'
+            ],
+            'ceo' => [
+                'complaint.view', 'complaint.view_private', 'complaint.transfer', 'complaint.change_priority',
+                'dashboard.citywide', 'dashboard.department', 'dashboard.zone', 'dashboard.ward',
+                'employee.view', 'report.view', 'report.export', 'executive.attention.view',
+                'executive.directive.issue', 'executive.support.provide'
+            ],
+            'mayor' => [
+                'dashboard.citywide', 'executive.attention.view', 'executive.directive.issue',
+                'executive.explanation.request', 'executive.support.provide', 'complaint.view',
+                'complaint.view_private', 'complaint.change_priority', 'report.view', 'report.export',
+                'communication.view'
+            ],
+            'administrator' => [
+                'dashboard.citywide', 'executive.attention.view', 'executive.directive.issue',
+                'executive.explanation.request', 'executive.support.provide', 'complaint.view',
+                'complaint.view_private', 'complaint.change_priority', 'report.view', 'report.export',
+                'communication.view'
+            ],
+            'call_center_operator' => [
+                'complaint.create', 'complaint.view', 'complaint.add_information'
+            ],
+            'control_room_officer' => [
+                'complaint.view', 'complaint.view_private', 'complaint.transfer', 'complaint.change_priority',
+                'complaint.cancel', 'notice.view'
+            ],
+            'public_info_officer' => [
+                'notice.view', 'notice.publish', 'notice.manage', 'communication.moderate', 'dashboard.public'
+            ],
+            'data_monitoring_officer' => [
+                'dashboard.citywide', 'dashboard.department', 'dashboard.zone', 'dashboard.ward',
+                'report.view', 'report.export', 'complaint.view'
+            ],
+            'auditor' => [
+                'audit.view', 'complaint.view', 'complaint.view_private', 'complaint.view_history',
+                'employee.view', 'governance.view', 'governance.view_history', 'report.view', 'report.export'
+            ],
+            'platform_super_admin' => [
+                'employee.view', 'employee.create', 'employee.update', 'employee.change_posting',
+                'employee.change_responsibility', 'employee.manage_access', 'governance.view',
+                'governance.assign', 'governance.end_assignment', 'governance.view_history',
+                'ward.view', 'ward.manage', 'zone.view', 'zone.manage', 'department.view',
+                'department.manage', 'service.view', 'service.manage', 'routing.view',
+                'routing.manage', 'deadline.view', 'deadline.manage', 'notice.view',
+                'notice.publish', 'notice.manage', 'user.manage', 'role.manage', 'report.view',
+                'report.export', 'audit.view'
+            ],
+            'technical_super_admin' => [
+                'system.health.view', 'system.integration.manage', 'system.backup.manage',
+                'system.security.manage', 'audit.view', 'user.manage'
+            ],
+        ];
+
+        foreach ($rolePermMap as $roleSlug => $permSlugs) {
+            $rStmt = $pdo->prepare("SELECT id FROM roles WHERE slug = ?");
+            $rStmt->execute([$roleSlug]);
+            $roleId = $rStmt->fetchColumn();
+
+            if (!$roleId) {
+                continue;
+            }
+
+            foreach ($permSlugs as $pSlug) {
+                $pStmt = $pdo->prepare("SELECT id FROM permissions WHERE slug = ?");
+                $pStmt->execute([$pSlug]);
+                $permId = $pStmt->fetchColumn();
+
+                if ($permId) {
+                    $rpStmt = $pdo->prepare("SELECT 1 FROM role_permissions WHERE role_id = ? AND permission_id = ?");
+                    $rpStmt->execute([$roleId, $permId]);
+                    if (!$rpStmt->fetch()) {
+                        $pdo->prepare("INSERT INTO role_permissions (role_id, permission_id) VALUES (?, ?)")
+                            ->execute([$roleId, $permId]);
+                    }
+                }
+            }
+        }
     }
 
     private static function seedComplaintTaxonomy(PDO $pdo): void
@@ -537,14 +663,14 @@ class StructuralSeeder
 
     private static function seedClassificationsAndPriorities(PDO $pdo): void
     {
-        // 1. Classifications
+        // 1. Canonical Operational Classifications from MASTER_SPEC.md
         $classifications = [
             ['slug' => 'quick_action', 'name_bn' => 'তাৎক্ষণিক ব্যবস্থা (Quick Action)', 'name_en' => 'Quick Action'],
-            ['slug' => 'maintenance', 'name_bn' => 'রক্ষণাবেক্ষণ প্রয়োজন (Maintenance)', 'name_en' => 'Maintenance Required'],
-            ['slug' => 'technical_assessment', 'name_bn' => 'কারিগরি মূল্যায়ন প্রয়োজন (Technical Assessment)', 'name_en' => 'Technical Assessment Required'],
+            ['slug' => 'maintenance_required', 'name_bn' => 'রক্ষণাবেক্ষণ প্রয়োজন (Maintenance Required)', 'name_en' => 'Maintenance Required'],
+            ['slug' => 'technical_assessment', 'name_bn' => 'কারিগরি মূল্যায়ন প্রয়োজন (Technical Assessment)', 'name_en' => 'Technical Assessment'],
             ['slug' => 'project_required', 'name_bn' => 'উন্নয়ন প্রকল্প প্রয়োজন (Project Required)', 'name_en' => 'Project Required'],
-            ['slug' => 'external_agency', 'name_bn' => 'বাহ্যিক সংস্থায় প্রেরণ (External Agency)', 'name_en' => 'External Agency Referral'],
-            ['slug' => 'administrative_service', 'name_bn' => 'প্রশাসনিক / দাপ্তরিক সেবা (Administrative)', 'name_en' => 'Administrative Service'],
+            ['slug' => 'external_agency', 'name_bn' => 'বহিঃসংস্থা সমন্বয় (External Agency)', 'name_en' => 'External Agency'],
+            ['slug' => 'administrative_service', 'name_bn' => 'প্রশাসনিক / দাপ্তরিক সেবা (Administrative Service)', 'name_en' => 'Administrative Service'],
         ];
 
         foreach ($classifications as $c) {
@@ -600,15 +726,12 @@ class StructuralSeeder
 
     private static function seedCoreSettings(PDO $pdo): void
     {
+        // Core baseline settings (zero invented official SLA policy; deadlines are configurable via service_deadline_rules)
         $settings = [
             ['key_name' => 'app_name_bn', 'value_text' => 'আমার ময়মনসিংহ', 'value_type' => 'string', 'is_public' => 1],
             ['key_name' => 'app_name_en', 'value_text' => 'My Mymensingh', 'value_type' => 'string', 'is_public' => 1],
             ['key_name' => 'mcc_official_phone', 'value_text' => '+8809166666', 'value_type' => 'string', 'is_public' => 1],
             ['key_name' => 'mcc_official_email', 'value_text' => 'info@mcc.gov.bd', 'value_type' => 'string', 'is_public' => 1],
-            ['key_name' => 'default_sla_hours_p1', 'value_text' => '8', 'value_type' => 'integer', 'is_public' => 0],
-            ['key_name' => 'default_sla_hours_p2', 'value_text' => '24', 'value_type' => 'integer', 'is_public' => 0],
-            ['key_name' => 'default_sla_hours_p3', 'value_text' => '48', 'value_type' => 'integer', 'is_public' => 0],
-            ['key_name' => 'default_sla_hours_p4', 'value_text' => '120', 'value_type' => 'integer', 'is_public' => 0],
         ];
 
         foreach ($settings as $setting) {

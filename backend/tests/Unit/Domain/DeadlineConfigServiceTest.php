@@ -20,26 +20,20 @@ class DeadlineConfigServiceTest extends TestCase
         $this->deadlineService = new DeadlineConfigService();
     }
 
-    public function testDefaultSlaHoursFallback(): void
+    public function testUnconfiguredSlaReturnsNull(): void
     {
         $pdo = DatabaseManager::getConnection();
         $catId = (int)$pdo->query("SELECT id FROM complaint_categories LIMIT 1")->fetchColumn();
 
-        // System defaults
-        $h1 = $this->deadlineService->getExpectedHours($catId, null, 'p1_critical', 'quick_action');
-        $this->assertEquals(8, $h1);
+        // When no specific municipal SLA rule is configured, expected hours and deadline return null
+        $hours = $this->deadlineService->getExpectedHours($catId, null, 'p1_critical', 'quick_action');
+        $this->assertNull($hours, "Unconfigured SLA should return null to prevent inventing MCC policy");
 
-        $h2 = $this->deadlineService->getExpectedHours($catId, null, 'p2_high', 'quick_action');
-        $this->assertEquals(24, $h2);
-
-        $h3 = $this->deadlineService->getExpectedHours($catId, null, 'p3_normal', 'quick_action');
-        $this->assertEquals(48, $h3);
-
-        $h4 = $this->deadlineService->getExpectedHours($catId, null, 'p4_low', 'quick_action');
-        $this->assertEquals(120, $h4);
+        $deadline = $this->deadlineService->calculateDeadline($catId, null, 'p1_critical', 'quick_action');
+        $this->assertNull($deadline, "Unconfigured deadline should return null");
     }
 
-    public function testSpecificDeadlineRuleOverride(): void
+    public function testSpecificDeadlineRuleConfiguration(): void
     {
         $pdo = DatabaseManager::getConnection();
         $catId = (int)$pdo->query("SELECT id FROM complaint_categories WHERE slug = 'cleanliness'")->fetchColumn();
@@ -47,7 +41,7 @@ class DeadlineConfigServiceTest extends TestCase
 
         $ruleId = 0;
         try {
-            // Override P1 Dead Animal to 4 hours (emergency quick action)
+            // Configure explicit SLA for P1 Dead Animal to 4 hours (emergency quick action)
             $ruleId = $this->deadlineService->createDeadlineRule([
                 'category_id' => $catId,
                 'subcategory_id' => $subId,
@@ -62,6 +56,7 @@ class DeadlineConfigServiceTest extends TestCase
             $submission = new DateTimeImmutable('2026-08-26 10:00:00');
             $deadline = $this->deadlineService->calculateDeadline($catId, $subId, 'p1_critical', 'quick_action', $submission);
 
+            $this->assertNotNull($deadline);
             $this->assertEquals('2026-08-26 14:00:00', $deadline->format('Y-m-d H:i:s'));
         } finally {
             if ($ruleId) {

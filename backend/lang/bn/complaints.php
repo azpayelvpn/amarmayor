@@ -61,7 +61,7 @@ return [
     // Operational Classifications
     'classification' => [
         'quick_action' => 'দ্রুত পদক্ষেপ (Quick Action)',
-        'maintenance' => 'নিয়মিত রক্ষণাবেক্ষণ (Maintenance)',
+        'maintenance_required' => 'নিয়মিত রক্ষণাবেক্ষণ (Maintenance Required)',
         'technical_assessment' => 'প্রকৌশল যাচাই প্রয়োজন (Technical Assessment)',
         'project_required' => 'উন্নয়ন প্রকল্প প্রয়োজন (Project Required)',
         'external_agency' => 'অন্যান্য সরকারি সংস্থা সংশ্লিষ্ট (External Agency)',

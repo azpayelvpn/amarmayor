@@ -68,6 +68,41 @@
 
 ---
 
+### ✅ Phase 3 — Bilingual Foundation (COMPLETED)
+- [x] **Bangla Primary / English Secondary:** System default is Bangla (`bn`) with fallback/switch to English (`en`).
+- [x] **Numeral Bidirectional Conversion:** `Translator::toBanglaNumber($num)` and `Translator::toEnglishNumber($num)`.
+- [x] **Bengali Date & Time Formatter:** `Translator::formatDate()` supporting Bangla months (জানুয়ারি...ডিসেম্বর), days, and AM/PM (পূর্বাহ্ন/অপরাহ্ন).
+- [x] **Currency Formatter:** `Translator::formatMoney()` (`৳১,৫০০.০০` / `BDT 1,500.00`).
+- [x] **Comprehensive Dictionaries:** Full bilingual resource files for `app`, `auth`, `complaints`, `governance`, `workforce`, `executive`.
+- [x] **Global Helper Functions:** `__()`, `trans()`, `to_bn_number()`, `format_date_bn()`, `format_money()`.
+
+### ✅ Phase 4 — Authentication, RBAC and Scope (COMPLETED)
+- [x] **Citizen Phone + OTP Authentication:** 6-digit random code, 5-minute TTL, rate limiting, blind index HMAC-SHA256 phone hashing.
+- [x] **Staff Password Authentication:** Argon2id secure password hashing, timing-safe verification.
+- [x] **RBAC Engine:** 22 canonical system roles and granular permissions with Super Admin automatic bypass.
+- [x] **Multi-Tier Scoping Engine:** Hierarchical Ward, Zone, and Departmental access checks (`ScopeManager`).
+- [x] **Mobile Bearer Tokens:** SHA-256 token hashing, revocation tracking, authenticated `/api/v1/auth/me` and `/logout`.
+- [x] **Unified Login UI:** Clean bilingual tabbed login interface for citizens and municipal staff.
+
+### ✅ Phase 5 — City, Governance and Workforce (COMPLETED)
+- [x] **City Corporation Structure:** MCC 3 Zones, 33 General Wards, 11 Reserved Seats with verified mapping and historical transfer audit log (`ward_zone_history`).
+- [x] **Civic Leadership & Governance Service:** Person vs User decoupling, multi-ward Responsible Officer assignments, dual representation support (General Councillor + Reserved Women Councillor), historical tenure tracking.
+- [x] **Workforce Management:** 9 Canonical MCC Departments, 17 Service Units, employee profiles, real-time duty status (`available`, `on_duty`, `off_duty`, `on_leave`, `suspended`), historical postings, multi-ward team coverage.
+- [x] **Directory APIs:** REST endpoints for City Profile, Zones, Wards, Reserved Seats, Governance Leadership, Departments, and Teams.
+
+### ✅ Phase 6 — Complaint Configuration (COMPLETED)
+- [x] **Complaint Taxonomy:** 12 Top-Level Categories, 25+ Subcategories with default priorities, operational classifications, and live camera flags.
+- [x] **4-Tier Deterministic Routing Engine:** 
+  1. Subcategory + Ward
+  2. Category + Ward
+  3. Subcategory Default
+  4. Category Default
+- [x] **Service SLA & Deadlines:** Priority defaults (P1=8h, P2=24h, P3=48h, P4=120h), specific rule overrides, exact resolution timestamp calculator.
+- [x] **Routing Gap Detection:** Automated detection of unassigned category/ward routing configurations.
+- [x] **Configuration APIs:** Endpoints for categories, subcategories, deadlines, and routing gaps.
+
+---
+
 ## 25-Phase Implementation Sequence Roadmap
 
 | Phase | Phase Name | Status |
@@ -75,11 +110,11 @@
 | **Phase 0** | Specification Synthesis & Architectural Modeling | ✅ **Completed** |
 | **Phase 1** | Core Backend Foundation (Bootstrap, Autoloading, Router, PDO, Redis, Testing) | ✅ **Completed** |
 | **Phase 2** | Database Foundation (Core Schema Migrations, Constraints, Structural Seeds) | ✅ **Completed** |
-| **Phase 3** | Bilingual Foundation (Bangla Primary / English Secondary, Resource Files) | ⏳ Next Up |
-| **Phase 4** | Authentication, RBAC & Scope (Phone+OTP, Argon2id, Sessions, Mobile Tokens) | 📋 Queued |
-| **Phase 5** | City, Governance & Workforce (MCC 3 Zones, 33 Wards, 11 Reserved Seats, Employees) | 📋 Queued |
-| **Phase 6** | Complaint Configuration (12 Categories, Subcategories, Routing & Deadline Rules) | 📋 Queued |
-| **Phase 7** | Citizen Complaint Core (Portal, Submission, Public Number, Tracking, Timeline) | 📋 Queued |
+| **Phase 3** | Bilingual Foundation (Bangla Primary / English Secondary, Resource Files) | ✅ **Completed** |
+| **Phase 4** | Authentication, RBAC & Scope (Phone+OTP, Argon2id, Sessions, Mobile Tokens) | ✅ **Completed** |
+| **Phase 5** | City, Governance & Workforce (MCC 3 Zones, 33 Wards, 11 Reserved Seats, Employees) | ✅ **Completed** |
+| **Phase 6** | Complaint Configuration (12 Categories, Subcategories, Routing & Deadline Rules) | ✅ **Completed** |
+| **Phase 7** | Citizen Complaint Core (Portal, Submission, Public Number, Tracking, Timeline) | ⏳ Next Up (Milestone B) |
 | **Phase 8** | Automatic Deterministic Routing (Engine, Temporary Overrides, Gap Detection) | 📋 Queued |
 | **Phase 9** | Field Operations (Supervisor Queue, Team Dispatch, Field Tasks, Evidence Upload) | 📋 Queued |
 | **Phase 10** | Resolution Quality (Supervisor Verification, Citizen Confirmation, Needs More Work) | 📋 Queued |
@@ -98,3 +133,4 @@
 | **Phase 23** | Performance & Scale Testing (10k/100k/1M Data Generator, Query/Cache Tuning) | 📋 Queued |
 | **Phase 24** | Production Infrastructure (Nginx, PHP-FPM, OPcache, Workers, Backups) | 📋 Queued |
 | **Phase 25** | Final End-to-End Verification & Definition of Done Delivery Report | 📋 Queued |
+

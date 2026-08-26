@@ -70,3 +70,12 @@
 * **Context:** Public accountability requires transparency without exposing citizen PII or precise doorstep residential GPS coordinates.
 * **Decision:** Obfuscate public map coordinates to ~100m neighborhood centroids (`public_latitude`, `public_longitude`), hide citizen phone/email, and require explicit moderation for public photo evidence derivatives.
 * **Consequences:** Total citizen privacy protection compliant with government data governance standards.
+
+---
+
+## ADR-0008: Configurable Classifications vs Rigid Database ENUMs
+* **Date:** 2026-08-26
+* **Status:** Accepted
+* **Context:** Municipal administration requires dynamic addition of employment types, workforce skills, operational service classifications, public notice types, and failure reasons without requiring DDL schema migrations.
+* **Decision:** Avoid rigid MySQL `ENUM` definitions for administrator-configurable entities. Implement relational lookup tables (`skills`, `operational_classifications`, `priorities`) and configurable `VARCHAR(64)` code fields for employment classifications, failure reasons, and notice categories. Rigid ENUMs/constrained values are reserved strictly for immutable internal machine state lifecycles (e.g., job queue states, complaint state machine statuses).
+* **Consequences:** Enables non-technical platform administrators to adjust municipal taxonomies without database downtime or schema changes.

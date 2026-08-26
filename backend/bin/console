@@ -113,12 +113,65 @@ switch ($command) {
         passthru("php -S 127.0.0.1:{$port} -t {$baseDir}/public");
         break;
 
+    case 'seed:structural':
+        try {
+            echo "Seeding structural data (City, Zones, Wards, Reserved Seats, Taxonomies, Roles)...\n";
+            \AmarMayor\Database\Seeders\StructuralSeeder::run();
+            echo "✅ Structural seeding completed successfully.\n";
+        } catch (\Throwable $e) {
+            echo "❌ Structural seeding failed: " . $e->getMessage() . "\n";
+            exit(1);
+        }
+        break;
+
+    case 'seed:demo':
+        try {
+            echo "Seeding fictional demo data (Demo Employees, Teams, Users)...\n";
+            \AmarMayor\Database\Seeders\DemoSeeder::run();
+            echo "✅ Demo seeding completed successfully.\n";
+        } catch (\Throwable $e) {
+            echo "❌ Demo seeding failed: " . $e->getMessage() . "\n";
+            exit(1);
+        }
+        break;
+
+    case 'migrate:fresh':
+        try {
+            echo "Dropping all database tables...\n";
+            $pdo = DatabaseManager::getConnection();
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
+            $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+            foreach ($tables as $table) {
+                $pdo->exec("DROP TABLE IF EXISTS `{$table}`;");
+            }
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
+            echo "  ✅ Dropped " . count($tables) . " tables.\n";
+
+            $runner = new MigrationRunner();
+            echo "Running all migrations...\n";
+            $executed = $runner->migrate();
+            foreach ($executed as $mig) {
+                echo "  ✅ Migrated: {$mig}\n";
+            }
+
+            echo "Running structural seed...\n";
+            \AmarMayor\Database\Seeders\StructuralSeeder::run();
+            echo "✅ Database freshly migrated and structurally seeded.\n";
+        } catch (\Throwable $e) {
+            echo "❌ migrate:fresh failed: " . $e->getMessage() . "\n";
+            exit(1);
+        }
+        break;
+
     case 'help':
     default:
         echo "Available Commands:\n";
         echo "  migrate           Run all pending database migrations\n";
         echo "  migrate:status    Show migration execution status\n";
         echo "  migrate:rollback  Rollback the latest migration batch\n";
+        echo "  migrate:fresh     Drop all tables, re-run all migrations & structural seed\n";
+        echo "  seed:structural   Run official MCC structural seeder\n";
+        echo "  seed:demo         Run fictional development demo seeder\n";
         echo "  make:migration    Generate a new migration template\n";
         echo "  health            Check system connectivity and component health\n";
         echo "  serve [port]      Start PHP built-in web server (default: 8000)\n";

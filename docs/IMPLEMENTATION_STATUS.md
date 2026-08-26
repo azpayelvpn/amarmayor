@@ -42,6 +42,30 @@
 - [x] **Migration Engine & CLI Console:** Standalone migration runner (`_migrations` metadata) and CLI entrypoint (`backend/bin/console`) supporting `migrate`, `migrate:status`, `migrate:rollback`, `make:migration`, `health`.
 - [x] **Automated Test Suite:** 21 unit and feature tests covering Router, API envelopes, Validator, Security, Container, Translator, and Web/API endpoints (`backend/tests/run_tests.php`). 100% PASSED.
 
+### ✅ Phase 2 — Database Foundation (COMPLETED)
+- [x] **Core Schema Migrations (8 Files, 35+ Tables):**
+  1. `2026_08_26_000001_create_users_and_rbac_tables.php` (`users`, `roles`, `permissions`, `role_permissions`, `user_roles`, `user_scopes`, `user_tokens`)
+  2. `2026_08_26_000002_create_city_structure_tables.php` (`cities`, `zones`, `wards`, `ward_zone_history`, `offices`, `reserved_seats`, `reserved_seat_wards`)
+  3. `2026_08_26_000003_create_governance_tables.php` (`persons`, `representation_types`, `representation_assignments`, `representation_areas`)
+  4. `2026_08_26_000004_create_workforce_tables.php` (`departments`, `service_units`, `employees`, `employee_postings`, `employee_responsibilities`, `skills`, `employee_skills`, `teams`, `team_members`)
+  5. `2026_08_26_000005_create_complaint_taxonomy_and_routing_tables.php` (`complaint_categories`, `complaint_subcategories`, `operational_classifications`, `priorities`, `service_deadline_rules`, `routing_rules`)
+  6. `2026_08_26_000006_create_complaint_core_and_tasks_tables.php` (`complaints`, `complaint_locations`, `complaint_media`, `complaint_status_history`, `complaint_ownership_history`, `complaint_supporters`, `field_tasks`, `task_evidence`, `support_requests`, `citizen_feedback`)
+  7. `2026_08_26_000007_create_executive_and_communication_tables.php` (`executive_attention`, `executive_directives`, `explanation_requests`, `complaint_messages`, `internal_notes`, `office_messages`, `city_notices`, `citizen_pulse`, `notifications`, `notification_preferences`)
+  8. `2026_08_26_000008_create_audit_jobs_and_settings_tables.php` (`audit_logs`, `background_jobs`, `settings`)
+- [x] **Configurability & Anti-Rigid-ENUM Guardrails:** Relational lookup tables and flexible VARCHAR codes implemented for skills, employment types, failure reasons, classifications, and notice categories.
+- [x] **Person != Employee != User Decoupling:** Implemented and tested independent profiles for non-login employees and citizen users.
+- [x] **Structural Seeding (MCC Structure & Taxonomies):**
+  - MCC City Corporation (1)
+  - 3 Zones
+  - 33 General Wards with verified Zone-Ward mapping from Spec (Zone 1 = 10, Zone 2 = 12, Zone 3 = 11)
+  - 11 Reserved Seats (coverage mapping left unassigned; zero fabricated arithmetic grouping)
+  - 8 Representation Types, 22 System Roles
+  - 12 Top-Level Complaint Categories + 25+ Subcategories
+  - 6 Operational Classifications, 4 Priorities, 9 Skills, Core System Settings
+- [x] **Fictional Demo Seeding:** `DemoSeeder` isolated with explicit `Demo ...` prefixes and test profiles.
+- [x] **Database Automated Test Suite:** 34 tests covering Schema Integrity, Check Constraints, Structural Seed verification, Governance multi-ward & dual representation, Employee postings history, and Complaint status history preservation. 100% PASSED.
+- [x] **Reversibility & Rollback:** Tested complete migration batch rollback and re-migration.
+
 ---
 
 ## 25-Phase Implementation Sequence Roadmap
@@ -50,8 +74,8 @@
 |---|---|---|
 | **Phase 0** | Specification Synthesis & Architectural Modeling | ✅ **Completed** |
 | **Phase 1** | Core Backend Foundation (Bootstrap, Autoloading, Router, PDO, Redis, Testing) | ✅ **Completed** |
-| **Phase 2** | Database Foundation (Core Schema Migrations, Constraints, Structural Seeds) | ⏳ Next Up |
-| **Phase 3** | Bilingual Foundation (Bangla Primary / English Secondary, Resource Files) | 📋 Queued |
+| **Phase 2** | Database Foundation (Core Schema Migrations, Constraints, Structural Seeds) | ✅ **Completed** |
+| **Phase 3** | Bilingual Foundation (Bangla Primary / English Secondary, Resource Files) | ⏳ Next Up |
 | **Phase 4** | Authentication, RBAC & Scope (Phone+OTP, Argon2id, Sessions, Mobile Tokens) | 📋 Queued |
 | **Phase 5** | City, Governance & Workforce (MCC 3 Zones, 33 Wards, 11 Reserved Seats, Employees) | 📋 Queued |
 | **Phase 6** | Complaint Configuration (12 Categories, Subcategories, Routing & Deadline Rules) | 📋 Queued |

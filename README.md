@@ -55,6 +55,9 @@ The platform provides a lightweight command entrypoint at `backend/bin/console`:
 * `php backend/bin/console migrate:status`: View applied and pending database migrations.
 * `php backend/bin/console migrate`: Run pending database migrations.
 * `php backend/bin/console migrate:rollback`: Rollback the latest migration batch.
+* `php backend/bin/console migrate:fresh`: Drop all tables, re-run all migrations & structural seed.
+* `php backend/bin/console seed:structural`: Run official MCC structural seeder.
+* `php backend/bin/console seed:demo`: Run fictional development demo seeder.
 * `php backend/bin/console make:migration <name>`: Create a new migration file.
 * `php backend/bin/console serve [port]`: Launch PHP built-in web server.
 
@@ -74,12 +77,13 @@ Complete specifications and models are maintained in `docs/`:
 * [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md): Authentication, encryption, IDOR, and audit trails.
 * [docs/UX_RULES.md](docs/UX_RULES.md): Interface simplicity, persona guidelines, and non-technical admin rules.
 * [docs/API_SPEC.md](docs/API_SPEC.md): Full REST API v1 contract and machine error codes.
-* [docs/DECISIONS.md](docs/DECISIONS.md): Architectural Decision Records (ADR-0001 to ADR-0007).
+* [docs/DECISIONS.md](docs/DECISIONS.md): Architectural Decision Records (ADR-0001 to ADR-0008).
 * [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md): Milestone progress tracker.
 
 ---
 
 ## 📋 Current Implementation Status
 * **Phase 0 (Specification Synthesis):** ✅ Complete.
-* **Phase 1 (Core Backend Foundation):** ✅ Complete (Bootstrap, Router, PDO, Redis adapter, Request/Response envelopes, Validator, Bilingual Translator, View engine, Security helpers, Migration CLI, Test suite).
-* **Next Milestone:** Phase 2 — Database Foundation (Core Schema Migrations & Structural Seeds).
+* **Phase 1 (Core Backend Foundation):** ✅ Complete.
+* **Phase 2 (Database Foundation):** ✅ Complete (8 Migrations, 35+ Tables, Structural Seeders, Fictional Demo Seeders, 34 Automated Tests).
+* **Next Milestone:** Phase 3 — Bilingual Foundation (Bangla Primary / English Secondary, Resource Files).

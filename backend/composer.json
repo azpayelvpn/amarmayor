@@ -11,7 +11,8 @@
   },
   "autoload": {
     "psr-4": {
-      "AmarMayor\\": "app/"
+      "AmarMayor\\": "app/",
+      "AmarMayor\\Database\\Seeders\\": "database/seeders/"
     },
     "files": [
       "app/Support/helpers.php"

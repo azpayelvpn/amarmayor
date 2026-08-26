@@ -74,6 +74,16 @@ abstract class TestCase
         $this->assert($condition === false, $message ?: 'Expected false, got true');
     }
 
+    protected function assertNull(mixed $actual, string $message = ''): void
+    {
+        $this->assert($actual === null, $message ?: 'Expected null, got non-null');
+    }
+
+    protected function assertNotNull(mixed $actual, string $message = ''): void
+    {
+        $this->assert($actual !== null, $message ?: 'Expected non-null, got null');
+    }
+
     protected function assertStringContains(string $needle, string $haystack, string $message = ''): void
     {
         if (!str_contains($haystack, $needle)) {

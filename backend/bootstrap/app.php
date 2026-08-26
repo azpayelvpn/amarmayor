@@ -27,7 +27,7 @@ if (file_exists($baseDir . '/vendor/autoload.php')) {
     require_once $baseDir . '/vendor/autoload.php';
 }
 
-// Ensure explicit PSR-4 mapping for AmarMayor and AmarMayor\Tests
+// Ensure explicit PSR-4 mapping for AmarMayor, AmarMayor\Database\Seeders, and AmarMayor\Tests
 spl_autoload_register(function (string $class) use ($baseDir) {
     $prefix = 'AmarMayor\\';
     if (str_starts_with($class, $prefix)) {
@@ -35,6 +35,9 @@ spl_autoload_register(function (string $class) use ($baseDir) {
         if (str_starts_with($relativeClass, 'Tests\\')) {
             $testRelative = substr($relativeClass, strlen('Tests\\'));
             $file = $baseDir . '/tests/' . str_replace('\\', '/', $testRelative) . '.php';
+        } elseif (str_starts_with($relativeClass, 'Database\\Seeders\\')) {
+            $seederRelative = substr($relativeClass, strlen('Database\\Seeders\\'));
+            $file = $baseDir . '/database/seeders/' . str_replace('\\', '/', $seederRelative) . '.php';
         } else {
             $file = $baseDir . '/app/' . str_replace('\\', '/', $relativeClass) . '.php';
         }

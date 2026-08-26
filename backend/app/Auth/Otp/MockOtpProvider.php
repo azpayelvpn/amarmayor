@@ -16,7 +16,6 @@ class MockOtpProvider implements OtpProviderInterface
     {
         Logger::info("Mock OTP Dispatched (DEV/TEST)", [
             'phone' => substr($phone, 0, 7) . '****',
-            'code' => $otpCode,
         ]);
 
         // Record for Developer OTP Inbox inspection in development mode

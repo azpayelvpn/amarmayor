@@ -39,7 +39,15 @@ $r->post('/auth/otp/request', [AuthController::class, 'requestOtp']);
 $r->post('/auth/otp/verify', [AuthController::class, 'verifyOtp']);
 $r->post('/logout', [AuthController::class, 'logout']);
 
+// Internal Role Working Dashboards & Staff Operations
+$r->get('/dashboard', [\AmarMayor\Controllers\Web\DashboardWebController::class, 'index']);
+$r->post('/dashboard/tasks/{id}/start', [\AmarMayor\Controllers\Web\DashboardWebController::class, 'startTask']);
+$r->post('/dashboard/tasks/{id}/complete', [\AmarMayor\Controllers\Web\DashboardWebController::class, 'completeTask']);
+$r->post('/dashboard/tasks/{id}/verify', [\AmarMayor\Controllers\Web\DashboardWebController::class, 'verifyTask']);
+$r->post('/dashboard/executive/directive', [\AmarMayor\Controllers\Web\DashboardWebController::class, 'issueDirective']);
+
 // Local Development Testing Tools (Strictly 404 in Production)
 $r->get('/dev/otp-inbox', [\AmarMayor\Controllers\Web\DevTestingController::class, 'otpInbox']);
 $r->get('/dev/testing-access', [\AmarMayor\Controllers\Web\DevTestingController::class, 'testingAccess']);
+
 

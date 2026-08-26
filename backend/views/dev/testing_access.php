@@ -69,11 +69,11 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th class="ps-4 py-3">Role</th>
+                        <th class="ps-4 py-3">Role & Scope</th>
                         <th class="py-3">Demo Name</th>
-                        <th class="py-3">Login Identifier (Email)</th>
+                        <th class="py-3">Login Email</th>
                         <th class="py-3">Password</th>
-                        <th class="text-end pe-4 py-3">Direct Action</th>
+                        <th class="text-end pe-4 py-3">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -104,14 +104,19 @@
                                     <code>Demo@12345</code>
                                 </td>
                                 <td class="text-end pe-4">
-                                    <form action="/login/password" method="POST" class="d-inline">
-                                        <?= csrf_field() ?>
-                                        <input type="hidden" name="identifier" value="<?= e($u['email']) ?>">
-                                        <input type="hidden" name="password" value="Demo@12345">
-                                        <button type="submit" class="btn btn-sm btn-outline-primary">
-                                            1-Click Login &rarr;
-                                        </button>
-                                    </form>
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <form action="/login/password" method="POST" class="d-inline">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="identifier" value="<?= e($u['email']) ?>">
+                                            <input type="hidden" name="password" value="Demo@12345">
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                Login &rarr;
+                                            </button>
+                                        </form>
+                                        <a href="/dashboard" class="btn btn-sm btn-outline-secondary">
+                                            Dashboard
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

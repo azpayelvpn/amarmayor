@@ -25,8 +25,8 @@ class PlatformAdminService
         $pdo = DatabaseManager::getConnection();
 
         $totalWards = (int)$pdo->query("SELECT COUNT(*) FROM wards WHERE status = 'active'")->fetchColumn();
-        $totalZones = (int)$pdo->query("SELECT COUNT(*) FROM zones WHERE is_active = 1")->fetchColumn();
-        $totalEmployees = (int)$pdo->query("SELECT COUNT(*) FROM employees WHERE is_active = 1")->fetchColumn();
+        $totalZones = (int)$pdo->query("SELECT COUNT(*) FROM zones WHERE status = 'active'")->fetchColumn();
+        $totalEmployees = (int)$pdo->query("SELECT COUNT(*) FROM employees WHERE duty_status != 'terminated'")->fetchColumn();
         $totalCategories = (int)$pdo->query("SELECT COUNT(*) FROM complaint_categories WHERE is_active = 1")->fetchColumn();
         $routingGaps = $this->routingConfigService->detectRoutingGaps();
 

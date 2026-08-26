@@ -240,4 +240,78 @@ class FieldTaskService
 
         return $tasks;
     }
+
+    /**
+     * Retrieves all field tasks assigned to a specific worker or worker's teams.
+     */
+    public function getTasksForWorker(int $workerUserId): array
+    {
+        $pdo = DatabaseManager::getConnection();
+        $stmt = $pdo->prepare("
+            SELECT ft.*, 
+                   c.public_complaint_number, cl.landmark, cl.approximate_address, c.description,
+                   w.ward_number, z.name_bn as zone_name_bn, z.name_en as zone_name_en,
+                   sc.name_bn as subcategory_name_bn, sc.name_en as subcategory_name_en,
+                   cat.name_bn as category_name_bn, cat.name_en as category_name_en,
+                   p_sup.full_name_bn as supervisor_name_bn, p_sup.full_name_en as supervisor_name_en
+            FROM field_tasks ft
+            INNER JOIN complaints c ON c.id = ft.complaint_id
+            LEFT JOIN complaint_locations cl ON cl.complaint_id = c.id
+            LEFT JOIN wards w ON w.id = c.ward_id
+            LEFT JOIN zones z ON z.id = w.zone_id
+            LEFT JOIN complaint_subcategories sc ON sc.id = c.subcategory_id
+            LEFT JOIN complaint_categories cat ON cat.id = sc.category_id
+            LEFT JOIN employees e_worker ON e_worker.id = ft.assigned_worker_employee_id
+            LEFT JOIN persons p_worker ON p_worker.id = e_worker.person_id
+            LEFT JOIN employees e_sup ON e_sup.id = ft.supervisor_employee_id
+            LEFT JOIN persons p_sup ON p_sup.id = e_sup.person_id
+            WHERE p_worker.user_id = ? OR ft.assigned_team_id IN (
+                SELECT tm.team_id FROM team_members tm
+                INNER JOIN employees ew ON ew.id = tm.employee_id
+                INNER JOIN persons pw ON pw.id = ew.person_id
+                WHERE pw.user_id = ?
+            )
+            ORDER BY ft.id DESC
+        ");
+        $stmt->execute([$workerUserId, $workerUserId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Retrieves all field tasks and complaints under a supervisor's jurisdiction.
+     */
+    public function getTasksForSupervisor(int $supervisorUserId): array
+    {
+        $pdo = DatabaseManager::getConnection();
+        $stmt = $pdo->prepare("
+            SELECT ft.*, 
+                   c.public_complaint_number, cl.landmark, cl.approximate_address, c.description, c.internal_status as complaint_status,
+                   w.ward_number, z.name_bn as zone_name_bn, z.name_en as zone_name_en,
+                   sc.name_bn as subcategory_name_bn, sc.name_en as subcategory_name_en,
+                   cat.name_bn as category_name_bn, cat.name_en as category_name_en,
+                   p_worker.full_name_bn as worker_name_bn, p_worker.full_name_en as worker_name_en,
+                   t.name_bn as team_name_bn, t.name_en as team_name_en
+            FROM field_tasks ft
+            INNER JOIN complaints c ON c.id = ft.complaint_id
+            LEFT JOIN complaint_locations cl ON cl.complaint_id = c.id
+            LEFT JOIN wards w ON w.id = c.ward_id
+            LEFT JOIN zones z ON z.id = w.zone_id
+            LEFT JOIN complaint_subcategories sc ON sc.id = c.subcategory_id
+            LEFT JOIN complaint_categories cat ON cat.id = sc.category_id
+            LEFT JOIN employees e_sup ON e_sup.id = ft.supervisor_employee_id
+            LEFT JOIN persons p_sup ON p_sup.id = e_sup.person_id
+            LEFT JOIN employees e_worker ON e_worker.id = ft.assigned_worker_employee_id
+            LEFT JOIN persons p_worker ON p_worker.id = e_worker.person_id
+            LEFT JOIN teams t ON t.id = ft.assigned_team_id
+            WHERE p_sup.user_id = ? OR ft.assigned_team_id IN (
+                SELECT team.id FROM teams team
+                INNER JOIN employees es ON es.id = team.supervisor_employee_id
+                INNER JOIN persons ps ON ps.id = es.person_id
+                WHERE ps.user_id = ?
+            )
+            ORDER BY ft.id DESC
+        ");
+        $stmt->execute([$supervisorUserId, $supervisorUserId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

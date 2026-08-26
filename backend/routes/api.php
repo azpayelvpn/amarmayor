@@ -5,10 +5,14 @@ declare(strict_types=1);
 use AmarMayor\Controllers\Api\HealthController;
 use AmarMayor\Http\Controllers\AuthController;
 use AmarMayor\Http\Controllers\CityController;
+use AmarMayor\Http\Controllers\AdminOpsController;
+use AmarMayor\Http\Controllers\CommandCenterController;
+use AmarMayor\Http\Controllers\CommunicationController;
 use AmarMayor\Http\Controllers\ComplaintConfigController;
 use AmarMayor\Http\Controllers\ComplaintController;
 use AmarMayor\Http\Controllers\ExecutiveController;
 use AmarMayor\Http\Controllers\GovernanceController;
+use AmarMayor\Http\Controllers\PublicAccountabilityController;
 use AmarMayor\Http\Controllers\WorkforceController;
 use AmarMayor\Middleware\AuthenticateMiddleware;
 use AmarMayor\Http\Router;
@@ -65,6 +69,26 @@ $r->post('/complaints/{id}/confirm', [ComplaintController::class, 'confirm'], [A
 $r->get('/executive/attention-queue', [ExecutiveController::class, 'getAttentionQueue'], [AuthenticateMiddleware::class]);
 $r->post('/executive/directives', [ExecutiveController::class, 'issueDirective'], [AuthenticateMiddleware::class]);
 $r->post('/executive/explanation-requests', [ExecutiveController::class, 'requestExplanation'], [AuthenticateMiddleware::class]);
+$r->get('/command-center/kpis', [CommandCenterController::class, 'getKpis'], [AuthenticateMiddleware::class]);
+$r->get('/command-center/daily-brief', [CommandCenterController::class, 'getDailyBrief'], [AuthenticateMiddleware::class]);
+$r->get('/command-center/dashboard', [CommandCenterController::class, 'getDashboard'], [AuthenticateMiddleware::class]);
+
+// Structured Communication
+$r->post('/complaints/{id}/messages', [CommunicationController::class, 'sendMessage'], [AuthenticateMiddleware::class]);
+$r->get('/complaints/{id}/messages', [CommunicationController::class, 'getMessages'], [AuthenticateMiddleware::class]);
+$r->post('/complaints/{id}/notes', [CommunicationController::class, 'addNote'], [AuthenticateMiddleware::class]);
+$r->post('/office-messages', [CommunicationController::class, 'sendOfficeMessage'], [AuthenticateMiddleware::class]);
+
+// Public Accountability & Directory
+$r->get('/public/metrics', [PublicAccountabilityController::class, 'getMetrics']);
+$r->get('/public/who-is-responsible', [PublicAccountabilityController::class, 'getWhoIsResponsible']);
+$r->get('/public/notices', [PublicAccountabilityController::class, 'getNotices']);
+
+// Admin Operations & Health
+$r->get('/admin/platform/overview', [AdminOpsController::class, 'getPlatformOverview'], [AuthenticateMiddleware::class]);
+$r->get('/admin/system/health', [AdminOpsController::class, 'getSystemHealth'], [AuthenticateMiddleware::class]);
+$r->post('/admin/system/run-scheduler', [AdminOpsController::class, 'runScheduler'], [AuthenticateMiddleware::class]);
+
 
 
 

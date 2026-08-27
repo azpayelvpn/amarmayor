@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AmarMayor\Auth\Otp;
 
 use AmarMayor\Support\Config;
+use AmarMayor\Support\Security;
 
 /**
  * Transient Mock OTP Inbox Service for Local Development & Automated Testing.
@@ -91,9 +92,11 @@ class DevOtpInboxService
 
         $entries = self::loadEntries();
         $updated = false;
+        $normTarget = Security::normalizePhone($phone) ?: $phone;
 
         foreach ($entries as &$entry) {
-            if ($entry['phone'] === $phone && $entry['otp'] === $otp && !$entry['used']) {
+            $normEntry = Security::normalizePhone($entry['phone']) ?: $entry['phone'];
+            if ($normEntry === $normTarget && $entry['otp'] === $otp && !$entry['used']) {
                 $entry['used'] = true;
                 $updated = true;
                 break;

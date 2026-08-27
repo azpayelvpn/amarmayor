@@ -71,7 +71,7 @@
                                 <label for="otp_code" class="form-label fw-semibold small text-muted">
                                     <?= ($locale ?? 'bn') === 'bn' ? 'যাচাইকরণ কোড (৬ সংখ্যা)' : 'Verification Code (6 Digits)' ?>
                                 </label>
-                                <input type="text" id="otp_code" name="otp_code" required autofocus maxlength="6" pattern="[0-9]{6}"
+                                <input type="text" id="otp_code" name="otp_code" value="" autocomplete="off" required autofocus maxlength="6" pattern="[0-9]{6}"
                                        placeholder="123456"
                                        class="form-control form-control-lg text-center fs-4 letter-spacing-2">
                             </div>

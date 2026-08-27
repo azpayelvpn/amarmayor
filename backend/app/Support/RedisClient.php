@@ -16,6 +16,7 @@ class RedisClient
     private static mixed $client = null;
     private static bool $connected = false;
     private static array $memoryFallback = [];
+    private static ?string $fallbackDir = null;
 
     public static function getClient(): mixed
     {
@@ -41,10 +42,13 @@ class RedisClient
             }
         }
 
+        $expiresAt = $ttlSeconds > 0 ? time() + $ttlSeconds : 0;
         self::$memoryFallback[$prefixedKey] = [
             'value' => $encoded,
-            'expires_at' => $ttlSeconds > 0 ? time() + $ttlSeconds : 0,
+            'expires_at' => $expiresAt,
         ];
+        self::writeFallbackFile($prefixedKey, $encoded, $expiresAt);
+
         return true;
     }
 
@@ -65,6 +69,7 @@ class RedisClient
             }
         }
 
+        // 1. Check in-process static memory cache
         if (isset(self::$memoryFallback[$prefixedKey])) {
             $item = self::$memoryFallback[$prefixedKey];
             if ($item['expires_at'] === 0 || $item['expires_at'] >= time()) {
@@ -73,6 +78,20 @@ class RedisClient
                 return (json_last_error() === JSON_ERROR_NONE && !is_numeric($val)) ? $decoded : $val;
             }
             unset(self::$memoryFallback[$prefixedKey]);
+            self::deleteFallbackFile($prefixedKey);
+            return $default;
+        }
+
+        // 2. Check persistent disk fallback (cross-request survival)
+        $diskItem = self::readFallbackFile($prefixedKey);
+        if ($diskItem !== null) {
+            if ($diskItem['expires_at'] === 0 || $diskItem['expires_at'] >= time()) {
+                self::$memoryFallback[$prefixedKey] = $diskItem;
+                $val = $diskItem['value'];
+                $decoded = json_decode((string)$val, true);
+                return (json_last_error() === JSON_ERROR_NONE && !is_numeric($val)) ? $decoded : $val;
+            }
+            self::deleteFallbackFile($prefixedKey);
         }
 
         return $default;
@@ -82,6 +101,7 @@ class RedisClient
     {
         $prefixedKey = self::prefix($key);
         unset(self::$memoryFallback[$prefixedKey]);
+        self::deleteFallbackFile($prefixedKey);
 
         if (self::isConnected()) {
             try {
@@ -155,6 +175,70 @@ class RedisClient
     public static function flushFallback(): void
     {
         self::$memoryFallback = [];
+        $dir = self::getFallbackDir();
+        if (is_dir($dir)) {
+            $files = glob($dir . '/*.cache');
+            if (is_array($files)) {
+                foreach ($files as $file) {
+                    if (is_file($file)) {
+                        @unlink($file);
+                    }
+                }
+            }
+        }
+    }
+
+    private static function getFallbackDir(): string
+    {
+        if (self::$fallbackDir === null) {
+            self::$fallbackDir = dirname(__DIR__, 2) . '/storage/cache/redis_fallback';
+        }
+        if (!is_dir(self::$fallbackDir)) {
+            @mkdir(self::$fallbackDir, 0777, true);
+        }
+        return self::$fallbackDir;
+    }
+
+    private static function getFallbackFilePath(string $prefixedKey): string
+    {
+        return self::getFallbackDir() . '/' . sha1($prefixedKey) . '.cache';
+    }
+
+    private static function writeFallbackFile(string $prefixedKey, string $encoded, int $expiresAt): void
+    {
+        $file = self::getFallbackFilePath($prefixedKey);
+        $payload = json_encode([
+            'key' => $prefixedKey,
+            'value' => $encoded,
+            'expires_at' => $expiresAt,
+        ]);
+        if ($payload !== false) {
+            @file_put_contents($file, $payload, LOCK_EX);
+        }
+    }
+
+    private static function readFallbackFile(string $prefixedKey): ?array
+    {
+        $file = self::getFallbackFilePath($prefixedKey);
+        if (!file_exists($file)) {
+            return null;
+        }
+
+        $raw = @file_get_contents($file);
+        if (!$raw) {
+            return null;
+        }
+
+        $decoded = json_decode($raw, true);
+        return is_array($decoded) && isset($decoded['value'], $decoded['expires_at']) ? $decoded : null;
+    }
+
+    private static function deleteFallbackFile(string $prefixedKey): void
+    {
+        $file = self::getFallbackFilePath($prefixedKey);
+        if (file_exists($file)) {
+            @unlink($file);
+        }
     }
 
     private static function connect(): void

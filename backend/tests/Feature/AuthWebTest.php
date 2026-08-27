@@ -60,4 +60,82 @@ class AuthWebTest extends TestCase
             }
         }
     }
+
+    public function testWebCitizenOtpLoginAndVerificationFlow(): void
+    {
+        $phone = '01711' . random_int(100000, 999999);
+
+        // 1. Request OTP via POST /auth/otp/request
+        $reqResponse = $this->post('/auth/otp/request', [
+            'phone' => $phone,
+            '_csrf_token' => Security::generateCsrfToken(),
+        ]);
+        $this->assertEquals(302, $reqResponse->getStatusCode());
+        $location = $reqResponse->getHeader('Location');
+        $this->assertStringContains('/login?step=verify', $location);
+
+        // 2. Fetch the generated OTP from DevOtpInbox
+        $otps = \AmarMayor\Auth\Otp\DevOtpInboxService::getRecentOtps();
+        $normalizedPhone = Security::normalizePhone($phone);
+        $foundOtp = null;
+        foreach ($otps as $entry) {
+            if (Security::normalizePhone($entry['phone']) === $normalizedPhone && !$entry['used']) {
+                $foundOtp = $entry['otp'];
+                break;
+            }
+        }
+        $this->assertNotNull($foundOtp, "Active OTP must exist in DevOtpInbox for {$phone}");
+
+        // 3. Test wrong OTP rejection
+        $wrongResponse = $this->post('/auth/otp/verify', [
+            'phone' => $phone,
+            'otp_code' => '999999',
+            '_csrf_token' => Security::generateCsrfToken(),
+        ]);
+        $this->assertEquals(302, $wrongResponse->getStatusCode());
+        $this->assertStringContains('error=invalid_otp', $wrongResponse->getHeader('Location'));
+
+        // 4. Verify with exact correct OTP
+        $verifyResponse = $this->post('/auth/otp/verify', [
+            'phone' => $phone,
+            'otp_code' => $foundOtp,
+            '_csrf_token' => Security::generateCsrfToken(),
+        ]);
+        $this->assertEquals(302, $verifyResponse->getStatusCode());
+        $this->assertEquals('/dashboard', $verifyResponse->getHeader('Location'));
+
+        // 5. Check that session is created
+        $this->assertTrue(\AmarMayor\Auth\Auth::check(), "Citizen must be authenticated in session");
+        $user = \AmarMayor\Auth\Auth::user();
+        $this->assertNotNull($user);
+        $this->assertEquals('citizen', $user->userType);
+
+        // 6. Test OTP cannot be reused
+        $reuseResponse = $this->post('/auth/otp/verify', [
+            'phone' => $phone,
+            'otp_code' => $foundOtp,
+            '_csrf_token' => Security::generateCsrfToken(),
+        ]);
+        $this->assertEquals(302, $reuseResponse->getStatusCode());
+        $this->assertStringContains('error=invalid_otp', $reuseResponse->getHeader('Location'));
+
+        // Cleanup
+        $pdo = DatabaseManager::getConnection();
+        $pdo->prepare("DELETE FROM user_roles WHERE user_id = ?")->execute([$user->id]);
+        $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$user->id]);
+        \AmarMayor\Auth\Auth::logout();
+    }
+
+    public function testPhoneNormalizationAcrossFormats(): void
+    {
+        $raw1 = '01711000001';
+        $raw2 = '8801711000001';
+        $raw3 = '+8801711000001';
+        $raw4 = '০১৭১১০০০০০১';
+
+        $this->assertEquals('+8801711000001', Security::normalizePhone($raw1));
+        $this->assertEquals('+8801711000001', Security::normalizePhone($raw2));
+        $this->assertEquals('+8801711000001', Security::normalizePhone($raw3));
+        $this->assertEquals('+8801711000001', Security::normalizePhone($raw4));
+    }
 }

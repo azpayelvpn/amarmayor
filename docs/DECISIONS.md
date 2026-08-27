@@ -79,3 +79,22 @@
 * **Context:** Municipal administration requires dynamic addition of employment types, workforce skills, operational service classifications, public notice types, and failure reasons without requiring DDL schema migrations.
 * **Decision:** Avoid rigid MySQL `ENUM` definitions for administrator-configurable entities. Implement relational lookup tables (`skills`, `operational_classifications`, `priorities`) and configurable `VARCHAR(64)` code fields for employment classifications, failure reasons, and notice categories. Rigid ENUMs/constrained values are reserved strictly for immutable internal machine state lifecycles (e.g., job queue states, complaint state machine statuses).
 * **Consequences:** Enables non-technical platform administrators to adjust municipal taxonomies without database downtime or schema changes.
+
+---
+
+## ADR-0009: Hard Integrity Rules for Realistic Demo Data and Verified Data Provenance
+* **Date:** 2026-08-27
+* **Status:** Accepted
+* **Context:** Expanding realistic demo data and importing official MCC municipal records must not corrupt data boundaries, leak citizen PII, fabricate official records, or compromise system security.
+* **Decision:** Enforce 10 Non-Negotiable Hard Integrity Rules:
+  1. **Guest Complaint Ownership:** Arbitrary phone submissions do not automatically claim citizen account ownership without verified OTP. Call center complaints preserve both complainant identity and staff actor identity in audit trails.
+  2. **Verified Data Provenance:** Official records maintain `source_name`, `source_url`, `source_checked_at`, `verification_status`, `effective_from`, and `effective_to`.
+  3. **Official Ward Responsibility Source:** Import Ward councillor / responsible officer records only from reliably parsed official MCC documents (e.g. *“দায়িত্বপ্রাপ্ত কাউন্সিলরগণের নাম, ওয়ার্ড নং, মোবাইল নং”*). Unparsed gaps are logged in `REAL_DATA_GAPS.md` without guessing or fabricating names.
+  4. **Data Verification Status:** Explicitly distinguish `verified_current`, `verified_historical`, `pending_verification`, `structural`, and `demo_test`.
+  5. **Three Distinct Complaint Information Contracts:** Strict separation between Public Tracking (coarse/privacy-safe), Citizen Owner View (authenticated actions/communication), and Staff/Official View (scoped operational data).
+  6. **Public Tracking is Not Authorization:** Knowing a tracking number does not authorize viewing private citizen PII, internal notes, or private communication.
+  7. **Real Official ≠ System User:** Importing verified officials creates `Person` / `Employee` / `Governance Assignment` records only; user logins and credentials require independent provisioning.
+  8. **Public Viewer ≠ Citizen:** OTP authentication always resolves to Citizen; Public Viewer remains an unauthenticated read-only browsing role.
+  9. **Verified Data Priority:** Verified official data takes strict institutional precedence over Demo/Test data.
+  10. **Data Cleanup Guarantee:** `demo:clear` and `demo:reset` purge only positively identified Demo/Test records, permanently preserving structural, verified, historical, and governance history data.
+* **Consequences:** Permanent institutional reliability, absolute data integrity, and strict adherence to privacy and security boundaries.

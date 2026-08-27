@@ -92,7 +92,7 @@ class CityStructureService
         $repStmt = $pdo->prepare("
             SELECT p.id as person_id, p.full_name_bn, p.full_name_en, p.official_phone as phone, p.photo_url,
                    rt.slug as role_slug, rt.name_bn as role_name_bn, rt.name_en as role_name_en,
-                   ra.authority_basis, ra.effective_from, ra.effective_to, ra.official_order_no as order_number
+                   ra.authority_basis, ra.raw_source_title, ra.status_note, ra.effective_from, ra.effective_to, ra.official_order_no as order_number
             FROM representation_areas area
             INNER JOIN representation_assignments ra ON ra.id = area.representation_assignment_id
             INNER JOIN persons p ON p.id = ra.person_id
@@ -103,6 +103,26 @@ class CityStructureService
         ");
         $repStmt->execute([$wardId]);
         $ward['active_representatives'] = $repStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Active operational officer & leave substitute
+        $opStmt = $pdo->prepare("
+            SELECT 
+                p_pri.full_name_bn as op_name_bn, p_pri.full_name_en as op_name_en, p_pri.official_phone as op_phone,
+                e_pri.designation_bn as op_designation_bn, e_pri.designation_en as op_designation_en, e_pri.employee_code as op_code,
+                p_sub.full_name_bn as sub_name_bn, p_sub.full_name_en as sub_name_en, p_sub.official_phone as sub_phone,
+                e_sub.designation_bn as sub_designation_bn, e_sub.designation_en as sub_designation_en
+            FROM employee_responsibilities er
+            INNER JOIN employees e_pri ON e_pri.id = er.employee_id
+            INNER JOIN persons p_pri ON p_pri.id = e_pri.person_id
+            LEFT JOIN employees e_sub ON e_sub.id = er.substitute_employee_id
+            LEFT JOIN persons p_sub ON p_sub.id = e_sub.person_id
+            WHERE er.area_type = 'ward' AND er.area_id = ? AND er.is_demo = 0 AND er.responsibility_type = 'primary'
+              AND er.effective_from <= NOW() AND (er.effective_to IS NULL OR er.effective_to >= NOW())
+            LIMIT 1
+        ");
+        $opStmt->execute([$wardId]);
+        $opRow = $opStmt->fetch(PDO::FETCH_ASSOC);
+        $ward['operational_officer'] = $opRow ?: null;
 
         return $ward;
     }

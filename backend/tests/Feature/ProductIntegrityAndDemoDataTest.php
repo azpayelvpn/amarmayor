@@ -242,8 +242,9 @@ class ProductIntegrityAndDemoDataTest extends TestCase
 
         $this->assertStringContainsString('আমার নির্ধারিত ওয়ার্ড', $content);
         $this->assertStringContainsString('ওয়ার্ড নং ১', $content);
-        $this->assertStringContainsString('প্রশাসনিক ও সেবা দায়িত্ব', $content);
-        $this->assertStringContainsString('+8809166666', $content);
+        $this->assertStringContainsString('জনপ্রতিনিধিত্ব / শাসনভার', $content);
+        $this->assertStringContainsString('নাজিয়া উদ্দিন', $content);
+        $this->assertStringContainsString('01723-089233', $content);
         $this->assertStringContainsString('সাধারণ ওয়ার্ড', $content);
         Auth::logout();
     }
@@ -255,9 +256,9 @@ class ProductIntegrityAndDemoDataTest extends TestCase
         $this->assertEquals(200, $resp->getStatusCode());
         $content = $resp->getContent();
 
-        $this->assertStringContainsString('এই ওয়ার্ডের যাচাইকৃত প্রতিনিধিত্ব/দায়িত্বপ্রাপ্ত তথ্য এখনো যোগ হয়নি।', $content);
-        $this->assertStringContainsString('সেবা ও প্রশাসনিক দায়িত্ব:', $content);
-        $this->assertStringContainsString('+8809166666', $content);
+        $this->assertStringContainsString('কে দায়িত্বে আছেন?', $content);
+        $this->assertStringContainsString('জনপ্রতিনিধিত্ব / দায়িত্বপ্রাপ্ত কর্মকর্তা', $content);
+        $this->assertStringContainsString('মসিক সেবা ও প্রশাসনিক কর্মকর্তা', $content);
         $this->assertStringContainsString('id="noWardsFound"', $content);
     }
 

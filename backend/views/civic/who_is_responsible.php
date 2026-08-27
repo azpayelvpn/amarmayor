@@ -2,29 +2,36 @@
     <!-- Header -->
     <div class="mb-4">
         <h3 class="fw-bold text-dark mb-1">
-            <i class="bi bi-person-badge-fill text-teal me-2"></i>
-            <?= ($locale ?? 'bn') === 'bn' ? 'কে দায়িত্বে আছেন? — নাগরিক জবাবদিহিতা নির্দেশিকা' : 'Who is Responsible? — Civic Accountability Directory' ?>
+            <i class="bi bi-person-badge-fill text-primary me-2"></i>
+            <?= ($locale ?? 'bn') === 'bn' ? 'কে দায়িত্বে আছেন? — নাগরিক জবাবদিহিতা ও দায়িত্বপ্রাপ্ত কর্মকর্তা নির্দেশিকা' : 'Who is Responsible? — Civic Accountability & Ward Responsibility Directory' ?>
         </h3>
         <p class="text-muted small mb-0">
-            <?= ($locale ?? 'bn') === 'bn' ? 'আপনার ওয়ার্ডের দায়িত্বপ্রাপ্ত জনপ্রতিনিধি ও দায়িত্বপ্রাপ্ত কর্মকর্তাদের তালিকা।' : 'Official representation and assigned administrative officers across all 33 MCC Wards.' ?>
+            <?= ($locale ?? 'bn') === 'bn' ? 'ময়মনসিংহ সিটি কর্পোরেশনের ৩৩টি সাধারণ ওয়ার্ডের সরকারি আদেশে নিয়োজিত দায়িত্বপ্রাপ্ত কর্মকর্তা ও মসিক সেবা কর্মকর্তাদের অফিসিয়াল তালিকা।' : 'Official directory of Appointed Responsible Officers and MCC Operational Ward Officers across all 33 Wards.' ?>
         </p>
     </div>
 
-    <!-- Ward Filter / Search -->
+    <!-- Ward Filter / Search & Source Provenance Banner -->
     <div class="card border shadow-sm rounded-4 p-3 bg-white mb-4">
-        <div class="row align-items-center g-2">
+        <div class="row align-items-center g-3">
             <div class="col-md-6">
                 <label for="wardSearch" class="form-label small fw-semibold text-muted mb-1">
-                    <?= ($locale ?? 'bn') === 'bn' ? 'ওয়ার্ড অনুযায়ী খুঁজুন' : 'Search by Ward Number' ?>
+                    <i class="bi bi-search me-1"></i>
+                    <?= ($locale ?? 'bn') === 'bn' ? 'ওয়ার্ড নম্বর বা নাম দিয়ে খুঁজুন' : 'Search by Ward Number or Name' ?>
                 </label>
-                <input type="text" id="wardSearch" class="form-control"
-                       placeholder="<?= ($locale ?? 'bn') === 'bn' ? 'ওয়ার্ড নম্বর লিখুন (উদাঃ ১, ২, ৩৩)...' : 'Enter ward number (e.g. 1, 2, 33)...' ?>"
+                <input type="text" id="wardSearch" class="form-control rounded-3"
+                       placeholder="<?= ($locale ?? 'bn') === 'bn' ? 'ওয়ার্ড নম্বর লিখুন (উদাঃ ১, ১৯, ৩৩)...' : 'Enter ward number (e.g. 1, 19, 33)...' ?>"
                        onkeyup="filterWards()">
             </div>
-            <div class="col-md-6 text-md-end pt-2 pt-md-4">
-                <span class="badge bg-light text-muted border px-3 py-2">
-                    <?= ($locale ?? 'bn') === 'bn' ? 'মোট ৩৩টি সাধারণ ওয়ার্ড' : 'Total 33 General Wards' ?>
-                </span>
+            <div class="col-md-6 text-md-end">
+                <div class="d-inline-flex flex-wrap gap-2 justify-content-md-end">
+                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">
+                        <i class="bi bi-patch-check-fill text-success me-1"></i>
+                        <?= ($locale ?? 'bn') === 'bn' ? 'অফিসিয়াল নথি তারিখ: ১৮.০৩.২০২৬' : 'Official Source Date: 18.03.2026' ?>
+                    </span>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
+                        <?= ($locale ?? 'bn') === 'bn' ? 'মোট ৩৩টি ওয়ার্ড সম্পূর্ণ আচ্ছাদিত' : 'Total 33 Wards Covered' ?>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
@@ -38,89 +45,156 @@
                 $wardNameEn = $item['ward_name_en'] ?? '';
                 $zoneName = ($locale ?? 'bn') === 'bn' ? ($item['zone_name_bn'] ?? '') : ($item['zone_name_en'] ?? '');
                 $rep = $item['general_representation'] ?? [];
+                $op = $item['operational_responsibility'] ?? [];
+                $sub = $op['substitute'] ?? null;
                 $resRep = $item['reserved_seat_representation'] ?? [];
             ?>
-            <div class="col-12 col-md-6 col-lg-4 ward-card-col" data-ward-no="<?= e($wardNo) ?>">
-                <div class="card border shadow-sm rounded-4 h-100 bg-white p-3">
-                    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
-                        <div>
-                            <span class="badge bg-primary px-2 py-1">
+            <div class="col-12 col-md-6 col-xl-4 ward-card-col" data-ward-no="<?= e($wardNo) ?>">
+                <div class="card border shadow-sm rounded-4 h-100 bg-white d-flex flex-column overflow-hidden">
+                    <!-- Ward Header -->
+                    <div class="card-header bg-light border-bottom py-3 px-3 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary fs-6 px-3 py-1 rounded-pill">
                                 <?= ($locale ?? 'bn') === 'bn' ? 'ওয়ার্ড নং ' . to_bn_number($wardNo) : 'Ward ' . $wardNo ?>
                             </span>
-                            <h5 class="fw-bold text-dark mt-1 mb-0">
+                            <h6 class="fw-bold text-dark mb-0">
                                 <?= ($locale ?? 'bn') === 'bn' ? e($wardNameBn) : e($wardNameEn) ?>
-                            </h5>
+                            </h6>
                         </div>
-                        <small class="text-muted"><?= e($zoneName) ?></small>
+                        <span class="badge bg-secondary-subtle text-secondary border px-2 py-1 small">
+                            <?= e($zoneName) ?>
+                        </span>
                     </div>
 
-                    <!-- General Representative / Officer -->
-                    <div class="mb-3">
-                        <span class="text-muted small fw-semibold d-block">
-                            <i class="bi bi-person-badge text-primary me-1"></i>
-                            <?= ($locale ?? 'bn') === 'bn' ? 'সাধারণ ওয়ার্ড প্রতিনিধিত্ব:' : 'General Ward Representation:' ?>
-                        </span>
-                        <?php if (!empty($rep['name_bn'])): ?>
-                            <div class="fw-bold text-dark fs-6 mt-1">
-                                <?= ($locale ?? 'bn') === 'bn' ? e($rep['name_bn']) : e($rep['name_en']) ?>
+                    <div class="card-body p-3 d-flex flex-column gap-3">
+                        <!-- 1. REPRESENTATION / GOVERNANCE RESPONSIBILITY -->
+                        <div class="p-3 rounded-3 border bg-light-subtle">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="small fw-bold text-primary">
+                                    <i class="bi bi-shield-check me-1"></i>
+                                    <?= ($locale ?? 'bn') === 'bn' ? '১. জনপ্রতিনিধিত্ব / দায়িত্বপ্রাপ্ত কর্মকর্তা' : '1. Governance / Responsible Officer' ?>
+                                </span>
+                                <?php if (!empty($rep['authority_basis']) && $rep['authority_basis'] === 'appointed'): ?>
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle small">
+                                        <?= ($locale ?? 'bn') === 'bn' ? 'দায়িত্বপ্রাপ্ত কর্মকর্তা' : 'Responsible Officer' ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="badge bg-success-subtle text-success border small">
+                                        <?= ($locale ?? 'bn') === 'bn' ? 'কাউন্সিলর' : 'Councillor' ?>
+                                    </span>
+                                <?php endif; ?>
                             </div>
-                            <div class="small text-primary fw-semibold">
-                                <?php
-                                    if (($rep['type'] ?? '') === 'responsible_officer') {
-                                        echo ($locale ?? 'bn') === 'bn' ? 'দায়িত্বপ্রাপ্ত কর্মকর্তা' : 'Responsible Officer';
-                                    } else {
-                                        echo ($locale ?? 'bn') === 'bn' ? 'কাউন্সিলর' : 'Ward Councillor';
-                                    }
-                                ?>
-                            </div>
-                        <?php else: ?>
-                            <div class="text-muted small mt-1 p-2 bg-light rounded border border-light-subtle">
-                                <i class="bi bi-info-circle text-secondary me-1"></i>
-                                <?= ($locale ?? 'bn') === 'bn' ? 'এই ওয়ার্ডের যাচাইকৃত প্রতিনিধিত্ব/দায়িত্বপ্রাপ্ত তথ্য এখনো যোগ হয়নি।' : 'Verified representation information for this Ward is not yet available.' ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
 
-                    <!-- Reserved Women Councillor -->
-                    <div class="mb-3 pt-2 border-top">
-                        <span class="text-muted small fw-semibold d-block">
-                            <i class="bi bi-person-heart text-danger me-1"></i>
-                            <?= ($locale ?? 'bn') === 'bn' ? 'সংরক্ষিত নারী আসন:' : 'Reserved Women Seat:' ?>
-                        </span>
-                        <?php if (!empty($resRep['name_bn'])): ?>
-                            <div class="fw-bold text-dark fs-6 mt-1">
-                                <?= ($locale ?? 'bn') === 'bn' ? e($resRep['name_bn']) : e($resRep['name_en']) ?>
-                            </div>
-                            <div class="small text-muted">
-                                <?= ($locale ?? 'bn') === 'bn' ? 'সংরক্ষিত কাউন্সিলর (' . e($resRep['seat_name_bn'] ?? '') . ')' : 'Reserved Councillor (' . e($resRep['seat_name_en'] ?? '') . ')' ?>
-                            </div>
-                        <?php else: ?>
-                            <div class="text-muted small mt-1 p-2 bg-light rounded border border-light-subtle">
-                                <i class="bi bi-info-circle text-secondary me-1"></i>
-                                <?= ($locale ?? 'bn') === 'bn' ? 'এই ওয়ার্ডের যাচাইকৃত প্রতিনিধিত্ব/দায়িত্বপ্রাপ্ত তথ্য এখনো যোগ হয়নি।' : 'Verified representation information for this Ward is not yet available.' ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+                            <?php if (!empty($rep['name_bn'])): ?>
+                                <div class="fw-bold text-dark fs-6 mb-1">
+                                    <?= ($locale ?? 'bn') === 'bn' ? e($rep['name_bn']) : e($rep['name_en']) ?>
+                                </div>
+                                <div class="small text-muted mb-2">
+                                    <?= e($rep['designation'] ?? '') ?>
+                                </div>
 
-                    <!-- Operational Service Responsibility -->
-                    <div class="mb-3 pt-2 border-top">
-                        <span class="text-muted small fw-semibold d-block mb-1">
-                            <i class="bi bi-building-gear text-teal me-1"></i>
-                            <?= ($locale ?? 'bn') === 'bn' ? 'সেবা ও প্রশাসনিক দায়িত্ব:' : 'Service & Administrative Units:' ?>
-                        </span>
-                        <div class="small text-dark">
-                            <span class="text-muted"><?= ($locale ?? 'bn') === 'bn' ? 'অঞ্চল:' : 'Zone:' ?></span> <?= e($zoneName) ?>
+                                <?php if (!empty($rep['phone'])): ?>
+                                    <div class="small d-flex align-items-center gap-1 text-dark">
+                                        <i class="bi bi-telephone-fill text-success"></i>
+                                        <span class="text-muted"><?= ($locale ?? 'bn') === 'bn' ? 'যোগাযোগ:' : 'Contact:' ?></span>
+                                        <a href="tel:<?= e(preg_replace('/[^0-9+]/', '', $rep['phone'])) ?>" class="fw-bold text-primary text-decoration-none font-monospace">
+                                            <?= e($rep['phone']) ?>
+                                        </a>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="small text-muted">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        <?= ($locale ?? 'bn') === 'bn' ? 'যাচাইকৃত যোগাযোগ তথ্য এখনো যোগ হয়নি।' : 'Verified contact not yet available.' ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (!empty($rep['status_note'])): ?>
+                                    <div class="mt-2 p-1 px-2 bg-danger-subtle text-danger border border-danger-subtle rounded small">
+                                        <i class="bi bi-exclamation-circle-fill me-1"></i>
+                                        <?= e($rep['status_note']) ?>
+                                    </div>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <div class="text-muted small p-2 bg-white rounded border border-light-subtle">
+                                    <i class="bi bi-info-circle text-secondary me-1"></i>
+                                    <?= ($locale ?? 'bn') === 'bn' ? 'এই ওয়ার্ডের দায়িত্বপ্রাপ্ত জনপ্রতিনিধির তথ্য যাচাইকরণ প্রক্রিয়াধীন।' : 'Governance responsibility pending verification.' ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
-                        <div class="small text-dark">
-                            <span class="text-muted"><?= ($locale ?? 'bn') === 'bn' ? 'জরুরি হেল্পলাইন:' : 'Helpline:' ?></span> <span class="font-monospace text-primary fw-semibold">+8809166666</span>
+
+                        <!-- 2. MCC OPERATIONAL / SERVICE RESPONSIBILITY -->
+                        <div class="p-3 rounded-3 border bg-light-subtle">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="small fw-bold text-teal">
+                                    <i class="bi bi-building-gear me-1"></i>
+                                    <?= ($locale ?? 'bn') === 'bn' ? '২. মসিক সেবা ও প্রশাসনিক কর্মকর্তা' : '2. MCC Operational Ward Officer' ?>
+                                </span>
+                                <span class="badge bg-info-subtle text-info-emphasis border small">
+                                    <?= ($locale ?? 'bn') === 'bn' ? 'প্রশাসনিক দায়িত্ব' : 'Operational' ?>
+                                </span>
+                            </div>
+
+                            <?php if (!empty($op['name_bn'])): ?>
+                                <div class="fw-bold text-dark fs-6 mb-1">
+                                    <?= ($locale ?? 'bn') === 'bn' ? e($op['name_bn']) : e($op['name_en']) ?>
+                                    <?php if (!empty($op['personnel_id'])): ?>
+                                        <span class="badge bg-secondary-subtle text-dark border small ms-1">
+                                            <?= ($locale ?? 'bn') === 'bn' ? 'পরিচিতি: ' . to_bn_number($op['personnel_id']) : 'ID: ' . $op['personnel_id'] ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="small text-muted mb-2">
+                                    <?= e($op['designation_bn'] ?? '') ?>
+                                </div>
+
+                                <?php if (!empty($op['phone'])): ?>
+                                    <div class="small d-flex align-items-center gap-1 text-dark mb-2">
+                                        <i class="bi bi-telephone-fill text-success"></i>
+                                        <span class="text-muted"><?= ($locale ?? 'bn') === 'bn' ? 'মোবাইল নম্বর:' : 'Mobile:' ?></span>
+                                        <a href="tel:<?= e(preg_replace('/[^0-9+]/', '', $op['phone'])) ?>" class="fw-bold text-primary text-decoration-none font-monospace">
+                                            <?= e($op['phone']) ?>
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
+
+                                <!-- Leave Substitute -->
+                                <?php if (!empty($sub['name_bn'])): ?>
+                                    <div class="mt-2 pt-2 border-top">
+                                        <span class="text-muted small fw-semibold d-block mb-1">
+                                            <i class="bi bi-arrow-repeat text-secondary me-1"></i>
+                                            <?= ($locale ?? 'bn') === 'bn' ? 'ছুটিকালীন প্রতিস্থাপক কর্মকর্তা:' : 'Leave-time Substitute Officer:' ?>
+                                        </span>
+                                        <div class="small fw-semibold text-dark">
+                                            <?= ($locale ?? 'bn') === 'bn' ? e($sub['name_bn']) : e($sub['name_en']) ?>
+                                            <?php if (!empty($sub['personnel_id'])): ?>
+                                                <span class="text-muted small ms-1">(পরিচিতি: <?= to_bn_number((string)$sub['personnel_id']) ?>)</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="small text-muted mb-1"><?= e($sub['designation_bn'] ?? '') ?></div>
+                                        <?php if (!empty($sub['phone'])): ?>
+                                            <div class="small font-monospace text-primary">
+                                                <i class="bi bi-telephone me-1 text-secondary"></i>
+                                                <a href="tel:<?= e(preg_replace('/[^0-9+]/', '', $sub['phone'])) ?>" class="text-decoration-none text-primary">
+                                                    <?= e($sub['phone']) ?>
+                                                </a>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <div class="text-muted small p-2 bg-white rounded border border-light-subtle">
+                                    <i class="bi bi-info-circle text-secondary me-1"></i>
+                                    <?= ($locale ?? 'bn') === 'bn' ? 'এই ওয়ার্ডের কর্মকর্তা পদায়ন তথ্য যাচাই প্রক্রিয়াধীন।' : 'Operational posting pending verification.' ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
-                    <!-- Action -->
-                    <div class="mt-auto pt-2">
-                        <a href="/submit?ward_id=<?= (int)($item['ward_id'] ?? 0) ?>" class="btn btn-sm btn-outline-success w-100">
+                    <!-- Action Button -->
+                    <div class="card-footer bg-white border-top p-3 mt-auto">
+                        <a href="/submit?ward_id=<?= (int)($item['ward_id'] ?? 0) ?>" class="btn btn-sm btn-outline-success w-100 rounded-3">
                             <i class="bi bi-megaphone me-1"></i>
-                            <?= ($locale ?? 'bn') === 'bn' ? 'এই ওয়ার্ডে অভিযোগ করুন' : 'Submit Complaint in this Ward' ?>
+                            <?= ($locale ?? 'bn') === 'bn' ? 'এই ওয়ার্ডের সমস্যা জানান' : 'Submit Issue in this Ward' ?>
                         </a>
                     </div>
                 </div>

@@ -133,6 +133,12 @@ class ExecutiveAttentionService
                    w.ward_number, d.name_bn as dept_name_bn,
                    p.full_name_bn as supervisor_name_bn, p.official_phone as supervisor_phone
             FROM executive_attention ea
+            INNER JOIN (
+                SELECT MAX(id) as max_ea_id, complaint_id
+                FROM executive_attention
+                WHERE is_active = 1
+                GROUP BY complaint_id
+            ) latest_ea ON latest_ea.max_ea_id = ea.id
             INNER JOIN complaints c ON c.id = ea.complaint_id
             INNER JOIN complaint_categories cc ON cc.id = c.category_id
             INNER JOIN complaint_subcategories cs ON cs.id = c.subcategory_id

@@ -53,17 +53,18 @@ class PublicAccountabilityService
 
         $query = "
             SELECT 
-                w.id as ward_id, w.ward_number, w.name_bn as ward_name_bn,
-                z.zone_number, z.name_bn as zone_name_bn,
-                rt.name_bn as role_title_bn, rt.slug as role_slug,
-                p.full_name_bn as official_name_bn, p.official_phone, p.official_email
-            FROM representation_assignments ra
-            INNER JOIN representation_types rt ON rt.id = ra.representation_type_id
-            INNER JOIN representation_areas area ON area.representation_assignment_id = ra.id AND area.area_type = 'ward'
-            INNER JOIN wards w ON w.id = area.area_id
-            INNER JOIN zones z ON z.id = w.zone_id
-            INNER JOIN persons p ON p.id = ra.person_id
-            WHERE ra.status = 'active'
+                w.id as ward_id, w.ward_number, w.name_bn as ward_name_bn, w.name_en as ward_name_en,
+                z.zone_number, z.name_bn as zone_name_bn, z.name_en as zone_name_en,
+                rt.name_bn as role_title_bn, rt.slug as role_slug, rt.name_en as role_title_en,
+                p.full_name_bn as official_name_bn, p.full_name_en as official_name_en, p.official_phone, p.official_email,
+                ra.verification_status, ra.source_name
+            FROM wards w
+            LEFT JOIN zones z ON z.id = w.zone_id
+            LEFT JOIN representation_areas area ON area.area_type = 'ward' AND area.area_id = w.id
+            LEFT JOIN representation_assignments ra ON ra.id = area.representation_assignment_id AND ra.status = 'active'
+            LEFT JOIN representation_types rt ON rt.id = ra.representation_type_id
+            LEFT JOIN persons p ON p.id = ra.person_id
+            WHERE w.status = 'active'
         ";
 
         $params = [];
@@ -72,12 +73,49 @@ class PublicAccountabilityService
             $params[] = $wardId;
         }
 
-        $query .= " ORDER BY w.ward_number ASC, rt.id ASC";
+        $query .= " ORDER BY w.ward_number ASC";
 
         $stmt = $pdo->prepare($query);
         $stmt->execute($params);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $raw = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Group by ward so every ward has structured representation or honest empty representation
+        $grouped = [];
+        foreach ($raw as $row) {
+            $wNo = (int)$row['ward_number'];
+            if (!isset($grouped[$wNo])) {
+                $grouped[$wNo] = [
+                    'ward_id' => $row['ward_id'],
+                    'ward_number' => $row['ward_number'],
+                    'ward_name_bn' => $row['ward_name_bn'],
+                    'ward_name_en' => $row['ward_name_en'],
+                    'zone_number' => $row['zone_number'],
+                    'zone_name_bn' => $row['zone_name_bn'],
+                    'zone_name_en' => $row['zone_name_en'],
+                    'general_representation' => null,
+                    'reserved_seat_representation' => null,
+                ];
+            }
+
+            if (!empty($row['official_name_bn'])) {
+                $repInfo = [
+                    'name_bn' => $row['official_name_bn'],
+                    'name_en' => $row['official_name_en'],
+                    'role_title' => $row['role_title_bn'],
+                    'role_slug' => $row['role_slug'],
+                    'phone' => $row['official_phone'],
+                    'email' => $row['official_email'],
+                ];
+                if ($row['role_slug'] === 'reserved_women_councillor') {
+                    $grouped[$wNo]['reserved_seat_representation'] = $repInfo;
+                } else {
+                    $grouped[$wNo]['general_representation'] = $repInfo;
+                }
+            }
+        }
+
+        return array_values($grouped);
     }
 
     /**

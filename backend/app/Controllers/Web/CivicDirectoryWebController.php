@@ -39,17 +39,56 @@ class CivicDirectoryWebController
     }
 
     /**
-     * Show Wards & Zones overview.
+     * Show Wards & Zones overview (with personalized "My Area" for authenticated citizens).
      */
     public function wards(Request $request): Response
     {
         $zones = $this->cityService->getZones(true);
         $profile = $this->cityService->getCityProfile();
+        $user = \AmarMayor\Auth\Auth::user();
+
+        $homeWard = null;
+        $homeRepresentation = null;
+        $homeSnapshot = null;
+
+        if ($user) {
+            $pdo = \AmarMayor\Database\DatabaseManager::getConnection();
+            $person = $pdo->query("SELECT * FROM persons WHERE user_id = {$user->id} LIMIT 1")->fetch(\PDO::FETCH_ASSOC);
+            if (!empty($person['home_ward_id'])) {
+                $homeWardId = (int)$person['home_ward_id'];
+                $homeWard = $this->cityService->getWardDetails($homeWardId);
+                
+                // Get accountability item for this ward
+                $directory = $this->publicService->getWhoIsResponsible();
+                foreach ($directory as $dirItem) {
+                    if ((int)($dirItem['ward_id'] ?? 0) === $homeWardId) {
+                        $homeRepresentation = $dirItem;
+                        break;
+                    }
+                }
+
+                // Public-safe ward activity snapshot
+                $stmtSnap = $pdo->prepare("
+                    SELECT 
+                        COUNT(*) as total_in_ward,
+                        SUM(CASE WHEN internal_status IN ('in_progress', 'work_completed') THEN 1 ELSE 0 END) as active_in_ward,
+                        SUM(CASE WHEN internal_status = 'resolved' THEN 1 ELSE 0 END) as resolved_in_ward
+                    FROM complaints
+                    WHERE ward_id = ?
+                ");
+                $stmtSnap->execute([$homeWardId]);
+                $homeSnapshot = $stmtSnap->fetch(\PDO::FETCH_ASSOC) ?: [];
+            }
+        }
 
         return view('wards/index', [
             'locale' => Translator::getLocale(),
             'zones' => $zones,
             'profile' => $profile,
+            'user' => $user,
+            'homeWard' => $homeWard,
+            'homeRepresentation' => $homeRepresentation,
+            'homeSnapshot' => $homeSnapshot,
         ]);
     }
 

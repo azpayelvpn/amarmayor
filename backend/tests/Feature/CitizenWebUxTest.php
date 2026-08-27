@@ -55,7 +55,7 @@ class CitizenWebUxTest extends TestCase
         // Wards overview
         $wardsRes = $this->get('/wards');
         $this->assertEquals(200, $wardsRes->getStatusCode());
-        $this->assertStringContains('আমার ওয়ার্ড ও অঞ্চল নির্দেশিকা', $wardsRes->getContent());
+        $this->assertStringContains('ওয়ার্ড নির্দেশিকা', $wardsRes->getContent());
 
         // Who is Responsible directory
         $whoRes = $this->get('/who-is-responsible');

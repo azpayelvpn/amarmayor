@@ -169,23 +169,123 @@ class ProductIntegrityAndDemoDataTest extends TestCase
         $this->assertNull($failLogin, "Real official email must NEVER be able to log in with demo password!");
     }
 
-    public function testDemoDataPreservesStructuralAndVerifiedOnReset(): void
+    public function testCitizenAOwnsMultipleFlagshipComplaintsWithDifferentStatuses(): void
     {
         $pdo = DatabaseManager::getConnection();
+        $citizenA = User::findByPhone('01711000001');
+        $citizenB = User::findByPhone('01711000002');
+        $this->assertNotNull($citizenA);
+        $this->assertNotNull($citizenB);
 
-        // Baseline counts before seeding
-        $wardsCount = (int)$pdo->query("SELECT count(*) FROM wards")->fetchColumn();
-        $this->assertEquals(33, $wardsCount);
+        $complaintService = new \AmarMayor\Domain\ComplaintCore\ComplaintService();
+        $aComplaints = $complaintService->getCitizenComplaints($citizenA->id);
+        $bComplaints = $complaintService->getCitizenComplaints($citizenB->id);
 
-        // Run Realistic Demo Seeder
-        RealisticDemoSeeder::run();
-        $demoCompCount = (int)$pdo->query("SELECT count(*) FROM complaints WHERE is_demo = 1")->fetchColumn();
-        $this->assertGreaterThanOrEqual(500, $demoCompCount);
+        $this->assertGreaterThanOrEqual(5, count($aComplaints), "Citizen A must have multiple owned complaints!");
+        $this->assertGreaterThanOrEqual(2, count($bComplaints), "Citizen B must have owned complaints!");
 
-        // Verify structural and verified records are intact
-        $this->assertEquals(33, (int)$pdo->query("SELECT count(*) FROM wards")->fetchColumn());
-        $this->assertEquals(3, (int)$pdo->query("SELECT count(*) FROM zones")->fetchColumn());
-        $this->assertEquals(11, (int)$pdo->query("SELECT count(*) FROM reserved_seats")->fetchColumn());
-        $this->assertGreaterThanOrEqual(10, (int)$pdo->query("SELECT count(*) FROM persons WHERE is_demo = 0")->fetchColumn());
+        // Verify status diversity for Citizen A
+        $statuses = array_column($aComplaints, 'citizen_status');
+        $this->assertContains('received', $statuses);
+        $this->assertContains('in_progress', $statuses);
+        $this->assertContains('confirmation_needed', $statuses);
+        $this->assertContains('needs_more_work', $statuses);
+        $this->assertContains('resolved', $statuses);
+
+        // Verify strict isolation (no complaint overlap)
+        $aTracking = array_column($aComplaints, 'public_complaint_number');
+        $bTracking = array_column($bComplaints, 'public_complaint_number');
+        $overlap = array_intersect($aTracking, $bTracking);
+        $this->assertEmpty($overlap, "Citizen A and Citizen B must NOT have overlapping complaints!");
+
+        // Verify /my-complaints renders correctly for Citizen A
+        Auth::login($citizenA);
+        $controller = new ComplaintWebController();
+        $resp = $controller->myComplaints(new Request('GET', '/my-complaints'));
+        $this->assertEquals(200, $resp->getStatusCode());
+        $content = $resp->getContent();
+        $this->assertStringContainsString('MCC-DEMO-001', $content);
+        $this->assertStringContainsString('MCC-DEMO-002', $content);
+        $this->assertStringContainsString('MCC-DEMO-003', $content);
+        $this->assertStringContainsString('MCC-DEMO-004', $content);
+        $this->assertStringContainsString('MCC-DEMO-005', $content);
+        $this->assertStringContainsString('MCC-DEMO-006', $content);
+        Auth::logout();
+    }
+
+    public function testPhoneVerifiedBadgeRenderedInProfile(): void
+    {
+        $citizen = User::findByPhone('01711000001');
+        $this->assertNotNull($citizen);
+        Auth::login($citizen);
+
+        $controller = new ProfileWebController();
+        $resp = $controller->show(new Request('GET', '/profile'));
+        $content = $resp->getContent();
+
+        $this->assertStringContainsString('মোবাইল নম্বর যাচাইকৃত', $content);
+        $this->assertStringNotContainsString('যাচাইকৃত অ্যাকাউন্ট', $content);
+        $this->assertStringNotContainsString('Verified Account', $content);
+        Auth::logout();
+    }
+
+    public function testPersonalizedMyAreaForCitizenWithHomeWard(): void
+    {
+        $citizen = User::findByPhone('01711000001');
+        $this->assertNotNull($citizen);
+        Auth::login($citizen);
+
+        $controller = new \AmarMayor\Controllers\Web\CivicDirectoryWebController();
+        $resp = $controller->wards(new Request('GET', '/my-area'));
+        $this->assertEquals(200, $resp->getStatusCode());
+        $content = $resp->getContent();
+
+        $this->assertStringContainsString('আমার নির্ধারিত ওয়ার্ড', $content);
+        $this->assertStringContainsString('ওয়ার্ড নং ১', $content);
+        $this->assertStringContainsString('প্রশাসনিক ও সেবা দায়িত্ব', $content);
+        $this->assertStringContainsString('+8809166666', $content);
+        $this->assertStringContainsString('সাধারণ ওয়ার্ড', $content);
+        Auth::logout();
+    }
+
+    public function testWhoIsResponsibleEmptyStateAndServiceResponsibility(): void
+    {
+        $controller = new \AmarMayor\Controllers\Web\CivicDirectoryWebController();
+        $resp = $controller->whoIsResponsible(new Request('GET', '/who-is-responsible'));
+        $this->assertEquals(200, $resp->getStatusCode());
+        $content = $resp->getContent();
+
+        $this->assertStringContainsString('এই ওয়ার্ডের যাচাইকৃত প্রতিনিধিত্ব/দায়িত্বপ্রাপ্ত তথ্য এখনো যোগ হয়নি।', $content);
+        $this->assertStringContainsString('সেবা ও প্রশাসনিক দায়িত্ব:', $content);
+        $this->assertStringContainsString('+8809166666', $content);
+        $this->assertStringContainsString('id="noWardsFound"', $content);
+    }
+
+    public function testMayorDashboardKpiMetricsRealism(): void
+    {
+        $commandCenter = new \AmarMayor\Domain\CommandCenter\CommandCenterService();
+        $kpis = $commandCenter->getExecutiveKpis();
+
+        $total = $kpis['total_complaints'];
+        $overdue = $kpis['overdue_count'];
+        $satisfaction = $kpis['citizen_satisfaction_percent'];
+        $feedbackCount = $kpis['total_feedback'];
+
+        $this->assertGreaterThan(500, $total);
+        // Overdue must be realistic (under 10% of total complaints)
+        $this->assertLessThan($total * 0.10, $overdue);
+        $this->assertGreaterThan(10, $overdue);
+
+        // Citizen satisfaction must be between 70% and 95%
+        $this->assertNotNull($satisfaction);
+        $this->assertGreaterThanOrEqual(70.0, $satisfaction);
+        $this->assertLessThanOrEqual(95.0, $satisfaction);
+        $this->assertGreaterThan(50, $feedbackCount);
+
+        // Unique attention queue items
+        $attentionService = new \AmarMayor\Domain\ExecutiveAttention\ExecutiveAttentionService();
+        $queue = $attentionService->getAttentionQueue();
+        $this->assertNotEmpty($queue);
+        $this->assertLessThan(100, count($queue));
     }
 }

@@ -121,9 +121,34 @@ abstract class TestCase
         $this->assert(!empty($actual), $message ?: 'Expected non-empty value, got empty');
     }
 
+    protected function assertEmpty(mixed $actual, string $message = ''): void
+    {
+        $this->assert(empty($actual), $message ?: 'Expected empty value, got non-empty');
+    }
+
     protected function assertGreaterThanOrEqual(int|float $expected, int|float $actual, string $message = ''): void
     {
         $this->assert($actual >= $expected, $message ?: "Expected [{$actual}] to be >= [{$expected}]");
+    }
+
+    protected function assertGreaterThan(int|float $expected, int|float $actual, string $message = ''): void
+    {
+        $this->assert($actual > $expected, $message ?: "Expected [{$actual}] to be > [{$expected}]");
+    }
+
+    protected function assertLessThanOrEqual(int|float $expected, int|float $actual, string $message = ''): void
+    {
+        $this->assert($actual <= $expected, $message ?: "Expected [{$actual}] to be <= [{$expected}]");
+    }
+
+    protected function assertLessThan(int|float $expected, int|float $actual, string $message = ''): void
+    {
+        $this->assert($actual < $expected, $message ?: "Expected [{$actual}] to be < [{$expected}]");
+    }
+
+    protected function assertContains(mixed $needle, array $haystack, string $message = ''): void
+    {
+        $this->assert(in_array($needle, $haystack, true), $message ?: "Array does not contain expected item");
     }
 
     protected function assertStringNotContainsString(string $needle, string $haystack, string $message = ''): void

@@ -32,6 +32,7 @@ $r->post('/profile', [\AmarMayor\Controllers\Web\ProfileWebController::class, 'u
 // Civic Governance, Wards & Public Notices
 $r->get('/who-is-responsible', [CivicDirectoryWebController::class, 'whoIsResponsible']);
 $r->get('/wards', [CivicDirectoryWebController::class, 'wards']);
+$r->get('/my-area', [CivicDirectoryWebController::class, 'wards']);
 $r->get('/notices', [CivicDirectoryWebController::class, 'notices']);
 
 // Authentication Routes

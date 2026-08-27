@@ -17,11 +17,13 @@ use RuntimeException;
  * - All 22 canonical system roles for interactive testing
  * - 40+ realistic fictional Demo Citizens with profiles and preferences
  * - Realistic Demo Workforce (cleaners, supervisors, technicians, inspectors)
- * - 600+ Demo Complaints across all 33 Wards and 3 Zones over 90 days
- * - Complete lifecycles: open, assigned, in-progress, completed, verified, confirmed, reopened, overdue
- * - Reopen & SLA breach triggers in executive attention queue
- * - Recurring municipal hotspots
- * - Coherent field tasks, status histories, and privacy-safe public locations
+ * - 600 Demo Complaints across all 33 Wards and 3 Zones over 90 days
+ * - Dedicated testable portfolio for Demo Citizen A (01711000001) covering all statuses
+ * - Separate isolated portfolio for Demo Citizen B (01711000002)
+ * - Calibrated SLA overdue rates (~5-8% realistic overdue instead of uncalibrated 80%)
+ * - Realistic citizen feedback distribution (~80% satisfaction score with 1-5 star mix)
+ * - Unique actionable executive attention queue cases
+ * - Privacy-safe public locations, status histories, and coherent field tasks
  *
  * All records strictly tagged with is_demo = 1 and verification_status = 'demo_test'.
  * Strictly blocked in production.
@@ -46,36 +48,37 @@ class RealisticDemoSeeder
 
             // 1. Seed Canonical 22 Roles Identities
             $canonicalRoles = [
-                ['slug' => 'public_viewer', 'email' => 'demo.public_viewer@demo.local', 'phone' => '01711000022', 'name_bn' => 'ডেমো পাবলিক ভিউয়ার', 'name_en' => 'Demo Public Viewer', 'type' => 'staff', 'desig_bn' => 'পর্যবেক্ষক', 'desig_en' => 'Observer'],
-                ['slug' => 'citizen', 'email' => 'demo.citizen@demo.local', 'phone' => '01711000001', 'name_bn' => 'রফিকুল ইসলাম', 'name_en' => 'Rafiqul Islam', 'type' => 'citizen', 'desig_bn' => 'নাগরিক', 'desig_en' => 'Citizen'],
-                ['slug' => 'citizen', 'email' => 'demo.citizen_b@demo.local', 'phone' => '01711000002', 'name_bn' => 'সাবিনা ইয়াসমিন', 'name_en' => 'Sabina Yasmin', 'type' => 'citizen', 'desig_bn' => 'নাগরিক', 'desig_en' => 'Citizen'],
-                ['slug' => 'mayor', 'email' => 'demo.mayor@demo.local', 'phone' => '01711000003', 'name_bn' => 'ডেমো মেয়র', 'name_en' => 'Demo Mayor', 'type' => 'staff', 'desig_bn' => 'মেয়র', 'desig_en' => 'City Mayor'],
-                ['slug' => 'administrator', 'email' => 'demo.administrator@demo.local', 'phone' => '01711000004', 'name_bn' => 'ডেমো প্রশাসক', 'name_en' => 'Demo Administrator', 'type' => 'staff', 'desig_bn' => 'প্রশাসক', 'desig_en' => 'City Administrator'],
-                ['slug' => 'ceo', 'email' => 'demo.ceo@demo.local', 'phone' => '01711000005', 'name_bn' => 'ডেমো প্রধান নির্বাহী কর্মকর্তা', 'name_en' => 'Demo Chief Executive Officer', 'type' => 'staff', 'desig_bn' => 'প্রধান নির্বাহী কর্মকর্তা (সিইও)', 'desig_en' => 'Chief Executive Officer'],
-                ['slug' => 'general_councillor', 'email' => 'demo.general_councillor@demo.local', 'phone' => '01711000006', 'name_bn' => 'ডেমো সাধারণ কাউন্সিলর', 'name_en' => 'Demo General Councillor', 'type' => 'representative', 'desig_bn' => 'কাউন্সিলর (ওয়ার্ড ১)', 'desig_en' => 'Ward Councillor (Ward 1)'],
-                ['slug' => 'reserved_women_councillor', 'email' => 'demo.reserved_women_councillor@demo.local', 'phone' => '01711000007', 'name_bn' => 'ডেমো সংরক্ষিত নারী কাউন্সিলর', 'name_en' => 'Demo Reserved Women Councillor', 'type' => 'representative', 'desig_bn' => 'সংরক্ষিত নারী কাউন্সিলর (যাচাইকরণাধীন)', 'desig_en' => 'Reserved Women Councillor (Unassigned)'],
-                ['slug' => 'responsible_officer', 'email' => 'demo.responsible_officer@demo.local', 'phone' => '01711000008', 'name_bn' => 'ডেমো দায়িত্বপ্রাপ্ত কর্মকর্তা', 'name_en' => 'Demo Responsible Officer', 'type' => 'representative', 'desig_bn' => 'দায়িত্বপ্রাপ্ত কর্মকর্তা (ওয়ার্ড ২)', 'desig_en' => 'Responsible Officer (Ward 2)'],
-                ['slug' => 'department_head', 'email' => 'demo.department_head@demo.local', 'phone' => '01711000009', 'name_bn' => 'ডেমো বিভাগীয় প্রধান', 'name_en' => 'Demo Department Head', 'type' => 'staff', 'desig_bn' => 'প্রধান বর্জ্য ব্যবস্থাপনা কর্মকর্তা', 'desig_en' => 'Chief Waste Management Officer'],
-                ['slug' => 'department_officer', 'email' => 'demo.department_officer@demo.local', 'phone' => '01711000010', 'name_bn' => 'ডেমো বিভাগীয় কর্মকর্তা', 'name_en' => 'Demo Department Officer', 'type' => 'staff', 'desig_bn' => 'সহকারী বর্জ্য ব্যবস্থাপনা কর্মকর্তা', 'desig_en' => 'Assistant Waste Officer'],
-                ['slug' => 'zone_officer', 'email' => 'demo.zone_officer@demo.local', 'phone' => '01711000011', 'name_bn' => 'ডেমো আঞ্চলিক নির্বাহী কর্মকর্তা', 'name_en' => 'Demo Zone Officer', 'type' => 'staff', 'desig_bn' => 'আঞ্চলিক নির্বাহী কর্মকর্তা (অঞ্চল ১)', 'desig_en' => 'Zonal Executive Officer (Zone 1)'],
-                ['slug' => 'ward_officer', 'email' => 'demo.ward_officer@demo.local', 'phone' => '01711000012', 'name_bn' => 'ডেমো ওয়ার্ড সচিব / কর্মকর্তা', 'name_en' => 'Demo Ward Officer', 'type' => 'staff', 'desig_bn' => 'ওয়ার্ড সচিব (ওয়ার্ড ১)', 'desig_en' => 'Ward Secretary (Ward 1)'],
-                ['slug' => 'supervisor', 'email' => 'demo.supervisor@demo.local', 'phone' => '01711000013', 'name_bn' => 'ডেমো সুপারভাইজার', 'name_en' => 'Demo Supervisor', 'type' => 'staff', 'desig_bn' => 'পরিচ্ছন্নতা পরিদর্শক', 'desig_en' => 'Sanitation Inspector'],
-                ['slug' => 'team_leader', 'email' => 'demo.team_leader@demo.local', 'phone' => '01711000014', 'name_bn' => 'ডেমো দলনেতা', 'name_en' => 'Demo Team Leader', 'type' => 'staff', 'desig_bn' => 'মাঠ দলনেতা', 'desig_en' => 'Field Team Leader'],
-                ['slug' => 'field_worker', 'email' => 'demo.field_worker@demo.local', 'phone' => '01711000015', 'name_bn' => 'ডেমো মাঠকর্মী', 'name_en' => 'Demo Field Worker', 'type' => 'staff', 'desig_bn' => 'সড়ক পরিচ্ছন্নতাকর্মী', 'desig_en' => 'Street Cleaner'],
-                ['slug' => 'call_center_operator', 'email' => 'demo.call_center_operator@demo.local', 'phone' => '01711000016', 'name_bn' => 'ডেমো কল সেন্টার অপারেটর', 'name_en' => 'Demo Call Center Operator', 'type' => 'staff', 'desig_bn' => 'অভিযোগ গ্রহণকারী অপারেটর', 'desig_en' => 'Intake Operator'],
-                ['slug' => 'control_room_officer', 'email' => 'demo.control_room_officer@demo.local', 'phone' => '01711000017', 'name_bn' => 'ডেমো কন্ট্রোল রুম কর্মকর্তা', 'name_en' => 'Demo Control Room Officer', 'type' => 'staff', 'desig_bn' => 'কন্ট্রোল রুম সমন্বয়ক', 'desig_en' => 'Control Room Coordinator'],
-                ['slug' => 'public_info_officer', 'email' => 'demo.public_info_officer@demo.local', 'phone' => '01711000018', 'name_bn' => 'ডেমো জনসংযোগ কর্মকর্তা', 'name_en' => 'Demo Public Information Officer', 'type' => 'staff', 'desig_bn' => 'জনসংযোগ কর্মকর্তা', 'desig_en' => 'Public Relations Officer'],
-                ['slug' => 'data_monitoring_officer', 'email' => 'demo.data_monitoring_officer@demo.local', 'phone' => '01711000019', 'name_bn' => 'ডেমো ডাটা ও মনিটরিং কর্মকর্তা', 'name_en' => 'Demo Data & Monitoring Officer', 'type' => 'staff', 'desig_bn' => 'আইটি ও পরিসংখ্যান কর্মকর্তা', 'desig_en' => 'IT & Statistics Officer'],
-                ['slug' => 'auditor', 'email' => 'demo.auditor@demo.local', 'phone' => '01711000020', 'name_bn' => 'ডেমো অডিটর', 'name_en' => 'Demo Auditor', 'type' => 'staff', 'desig_bn' => 'অভ্যন্তরীণ নিরীক্ষক', 'desig_en' => 'Internal Auditor'],
-                ['slug' => 'platform_super_admin', 'email' => 'demo.platform_super_admin@demo.local', 'phone' => '01711000021', 'name_bn' => 'ডেমো প্ল্যাটফর্ম সুপার অ্যাডমিন', 'name_en' => 'Demo Platform Super Admin', 'type' => 'staff', 'desig_bn' => 'প্ল্যাটফর্ম প্রশাসক', 'desig_en' => 'Platform Administrator'],
-                ['slug' => 'technical_super_admin', 'email' => 'demo.technical_super_admin@demo.local', 'phone' => '01711000000', 'name_bn' => 'ডেমো টেকনিক্যাল সুপার অ্যাডমিন', 'name_en' => 'Demo Technical Super Admin', 'type' => 'staff', 'desig_bn' => 'সিস্টেম ইঞ্জিনিয়ার', 'desig_en' => 'Lead System Engineer'],
+                ['slug' => 'public_viewer', 'email' => 'demo.public_viewer@demo.local', 'phone' => '01711000022', 'name_bn' => 'ডেমো পাবলিক ভিউয়ার', 'name_en' => 'Demo Public Viewer', 'type' => 'staff', 'desig_bn' => 'পর্যবেক্ষক', 'desig_en' => 'Observer', 'ward' => 1],
+                ['slug' => 'citizen', 'email' => 'demo.citizen@demo.local', 'phone' => '01711000001', 'name_bn' => 'রফিকুল ইসলাম', 'name_en' => 'Rafiqul Islam', 'type' => 'citizen', 'desig_bn' => 'নাগরিক', 'desig_en' => 'Citizen', 'ward' => 1, 'area' => 'গাঙ্গিনার পাড়'],
+                ['slug' => 'citizen_b', 'email' => 'demo.citizen_b@demo.local', 'phone' => '01711000002', 'name_bn' => 'সাবিনা ইয়াসমিন', 'name_en' => 'Sabina Yasmin', 'type' => 'citizen', 'desig_bn' => 'নাগরিক', 'desig_en' => 'Citizen', 'ward' => 5, 'area' => 'সানকিপাড়া'],
+                ['slug' => 'mayor', 'email' => 'demo.mayor@demo.local', 'phone' => '01711000003', 'name_bn' => 'ডেমো মেয়র', 'name_en' => 'Demo Mayor', 'type' => 'staff', 'desig_bn' => 'মেয়র', 'desig_en' => 'City Mayor', 'ward' => null],
+                ['slug' => 'administrator', 'email' => 'demo.administrator@demo.local', 'phone' => '01711000004', 'name_bn' => 'ডেমো প্রশাসক', 'name_en' => 'Demo Administrator', 'type' => 'staff', 'desig_bn' => 'প্রশাসক', 'desig_en' => 'City Administrator', 'ward' => null],
+                ['slug' => 'ceo', 'email' => 'demo.ceo@demo.local', 'phone' => '01711000005', 'name_bn' => 'ডেমো প্রধান নির্বাহী কর্মকর্তা', 'name_en' => 'Demo Chief Executive Officer', 'type' => 'staff', 'desig_bn' => 'প্রধান নির্বাহী কর্মকর্তা (সিইও)', 'desig_en' => 'Chief Executive Officer', 'ward' => null],
+                ['slug' => 'general_councillor', 'email' => 'demo.general_councillor@demo.local', 'phone' => '01711000006', 'name_bn' => 'ডেমো সাধারণ কাউন্সিলর', 'name_en' => 'Demo General Councillor', 'type' => 'representative', 'desig_bn' => 'কাউন্সিলর (ওয়ার্ড ১)', 'desig_en' => 'Ward Councillor (Ward 1)', 'ward' => 1],
+                ['slug' => 'reserved_women_councillor', 'email' => 'demo.reserved_women_councillor@demo.local', 'phone' => '01711000007', 'name_bn' => 'ডেমো সংরক্ষিত নারী কাউন্সিলর', 'name_en' => 'Demo Reserved Women Councillor', 'type' => 'representative', 'desig_bn' => 'সংরক্ষিত নারী কাউন্সিলর (যাচাইকরণাধীন)', 'desig_en' => 'Reserved Women Councillor (Unassigned)', 'ward' => null],
+                ['slug' => 'responsible_officer', 'email' => 'demo.responsible_officer@demo.local', 'phone' => '01711000008', 'name_bn' => 'ডেমো দায়িত্বপ্রাপ্ত কর্মকর্তা', 'name_en' => 'Demo Responsible Officer', 'type' => 'representative', 'desig_bn' => 'দায়িত্বপ্রাপ্ত কর্মকর্তা (ওয়ার্ড ২)', 'desig_en' => 'Responsible Officer (Ward 2)', 'ward' => 2],
+                ['slug' => 'department_head', 'email' => 'demo.department_head@demo.local', 'phone' => '01711000009', 'name_bn' => 'ডেমো বিভাগীয় প্রধান', 'name_en' => 'Demo Department Head', 'type' => 'staff', 'desig_bn' => 'প্রধান বর্জ্য ব্যবস্থাপনা কর্মকর্তা', 'desig_en' => 'Chief Waste Management Officer', 'ward' => null],
+                ['slug' => 'department_officer', 'email' => 'demo.department_officer@demo.local', 'phone' => '01711000010', 'name_bn' => 'ডেমো বিভাগীয় কর্মকর্তা', 'name_en' => 'Demo Department Officer', 'type' => 'staff', 'desig_bn' => 'সহকারী বর্জ্য ব্যবস্থাপনা কর্মকর্তা', 'desig_en' => 'Assistant Waste Officer', 'ward' => null],
+                ['slug' => 'zone_officer', 'email' => 'demo.zone_officer@demo.local', 'phone' => '01711000011', 'name_bn' => 'ডেমো আঞ্চলিক নির্বাহী কর্মকর্তা', 'name_en' => 'Demo Zone Officer', 'type' => 'staff', 'desig_bn' => 'আঞ্চলিক নির্বাহী কর্মকর্তা (অঞ্চল ১)', 'desig_en' => 'Zonal Executive Officer (Zone 1)', 'ward' => null],
+                ['slug' => 'ward_officer', 'email' => 'demo.ward_officer@demo.local', 'phone' => '01711000012', 'name_bn' => 'ডেমো ওয়ার্ড সচিব / কর্মকর্তা', 'name_en' => 'Demo Ward Officer', 'type' => 'staff', 'desig_bn' => 'ওয়ার্ড সচিব (ওয়ার্ড ১)', 'desig_en' => 'Ward Secretary (Ward 1)', 'ward' => 1],
+                ['slug' => 'supervisor', 'email' => 'demo.supervisor@demo.local', 'phone' => '01711000013', 'name_bn' => 'ডেমো সুপারভাইজার', 'name_en' => 'Demo Supervisor', 'type' => 'staff', 'desig_bn' => 'পরিচ্ছন্নতা পরিদর্শক', 'desig_en' => 'Sanitation Inspector', 'ward' => 1],
+                ['slug' => 'team_leader', 'email' => 'demo.team_leader@demo.local', 'phone' => '01711000014', 'name_bn' => 'ডেমো দলনেতা', 'name_en' => 'Demo Team Leader', 'type' => 'staff', 'desig_bn' => 'মাঠ দলনেতা', 'desig_en' => 'Field Team Leader', 'ward' => 1],
+                ['slug' => 'field_worker', 'email' => 'demo.field_worker@demo.local', 'phone' => '01711000015', 'name_bn' => 'ডেমো মাঠকর্মী', 'name_en' => 'Demo Field Worker', 'type' => 'staff', 'desig_bn' => 'সড়ক পরিচ্ছন্নতাকর্মী', 'desig_en' => 'Street Cleaner', 'ward' => 1],
+                ['slug' => 'call_center_operator', 'email' => 'demo.call_center_operator@demo.local', 'phone' => '01711000016', 'name_bn' => 'ডেমো কল সেন্টার অপারেটর', 'name_en' => 'Demo Call Center Operator', 'type' => 'staff', 'desig_bn' => 'অভিযোগ গ্রহণকারী অপারেটর', 'desig_en' => 'Intake Operator', 'ward' => null],
+                ['slug' => 'control_room_officer', 'email' => 'demo.control_room_officer@demo.local', 'phone' => '01711000017', 'name_bn' => 'ডেমো কন্ট্রোল রুম কর্মকর্তা', 'name_en' => 'Demo Control Room Officer', 'type' => 'staff', 'desig_bn' => 'কন্ট্রোল রুম সমন্বয়ক', 'desig_en' => 'Control Room Coordinator', 'ward' => null],
+                ['slug' => 'public_info_officer', 'email' => 'demo.public_info_officer@demo.local', 'phone' => '01711000018', 'name_bn' => 'ডেমো জনসংযোগ কর্মকর্তা', 'name_en' => 'Demo Public Information Officer', 'type' => 'staff', 'desig_bn' => 'জনসংযোগ কর্মকর্তা', 'desig_en' => 'Public Relations Officer', 'ward' => null],
+                ['slug' => 'data_monitoring_officer', 'email' => 'demo.data_monitoring_officer@demo.local', 'phone' => '01711000019', 'name_bn' => 'ডেমো ডাটা ও মনিটরিং কর্মকর্তা', 'name_en' => 'Demo Data & Monitoring Officer', 'type' => 'staff', 'desig_bn' => 'আইটি ও পরিসংখ্যান কর্মকর্তা', 'desig_en' => 'IT & Statistics Officer', 'ward' => null],
+                ['slug' => 'auditor', 'email' => 'demo.auditor@demo.local', 'phone' => '01711000020', 'name_bn' => 'ডেমো অডিটর', 'name_en' => 'Demo Auditor', 'type' => 'staff', 'desig_bn' => 'অভ্যন্তরীণ নিরীক্ষক', 'desig_en' => 'Internal Auditor', 'ward' => null],
+                ['slug' => 'platform_super_admin', 'email' => 'demo.platform_super_admin@demo.local', 'phone' => '01711000021', 'name_bn' => 'ডেমো প্ল্যাটফর্ম সুপার অ্যাডমিন', 'name_en' => 'Demo Platform Super Admin', 'type' => 'staff', 'desig_bn' => 'প্ল্যাটফর্ম প্রশাসক', 'desig_en' => 'Platform Administrator', 'ward' => null],
+                ['slug' => 'technical_super_admin', 'email' => 'demo.technical_super_admin@demo.local', 'phone' => '01711000000', 'name_bn' => 'ডেমো টেকনিক্যাল সুপার অ্যাডমিন', 'name_en' => 'Demo Technical Super Admin', 'type' => 'staff', 'desig_bn' => 'সিস্টেম ইঞ্জিনিয়ার', 'desig_en' => 'Lead System Engineer', 'ward' => null],
             ];
 
             $seededUserIds = [];
             $seededEmployeeIds = [];
 
             foreach ($canonicalRoles as $r) {
-                $roleId = (int)$pdo->query("SELECT id FROM roles WHERE slug = '{$r['slug']}' LIMIT 1")->fetchColumn();
+                $roleSlug = ($r['slug'] === 'citizen_b') ? 'citizen' : $r['slug'];
+                $roleId = (int)$pdo->query("SELECT id FROM roles WHERE slug = '{$roleSlug}' LIMIT 1")->fetchColumn();
                 if (!$roleId) {
                     continue;
                 }
@@ -99,9 +102,14 @@ class RealisticDemoSeeder
                         ->execute([$r['email'], $r['phone'], $lookupHash, $passwordHash, $r['type'], $userId]);
                 }
 
-                $seededUserIds[$r['slug']] = $userId;
-                if ($r['email'] === 'demo.citizen_b@demo.local') {
+                // Deterministic mapping
+                if ($r['email'] === 'demo.citizen@demo.local') {
+                    $seededUserIds['citizen'] = $userId;
+                    $seededUserIds['citizen_a'] = $userId;
+                } elseif ($r['email'] === 'demo.citizen_b@demo.local') {
                     $seededUserIds['citizen_b'] = $userId;
+                } else {
+                    $seededUserIds[$r['slug']] = $userId;
                 }
 
                 // Bind Role
@@ -110,22 +118,25 @@ class RealisticDemoSeeder
                     $pdo->prepare("INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)")->execute([$userId, $roleId]);
                 }
 
-                // Person record
+                // Person record with Home Ward
+                $homeWardId = !empty($r['ward']) ? (int)$pdo->query("SELECT id FROM wards WHERE ward_number = {$r['ward']} LIMIT 1")->fetchColumn() : null;
+                $homeArea = $r['area'] ?? null;
+
                 $pStmt = $pdo->prepare("SELECT id FROM persons WHERE user_id = ? LIMIT 1");
                 $pStmt->execute([$userId]);
                 $personId = $pStmt->fetchColumn();
 
                 if (!$personId) {
                     $insP = $pdo->prepare("
-                        INSERT INTO persons (user_id, full_name_bn, full_name_en, verification_status, is_demo, is_public_visible, created_at)
-                        VALUES (?, ?, ?, 'demo_test', 1, 1, NOW())
+                        INSERT INTO persons (user_id, full_name_bn, full_name_en, home_ward_id, home_area, notification_prefs, verification_status, is_demo, is_public_visible, created_at)
+                        VALUES (?, ?, ?, ?, ?, '{\"sms\":true,\"app\":true}', 'demo_test', 1, 1, NOW())
                     ");
-                    $insP->execute([$userId, $r['name_bn'], $r['name_en']]);
+                    $insP->execute([$userId, $r['name_bn'], $r['name_en'], $homeWardId, $homeArea]);
                     $personId = (int)$pdo->lastInsertId();
                 } else {
                     $personId = (int)$personId;
-                    $pdo->prepare("UPDATE persons SET full_name_bn = ?, full_name_en = ?, verification_status = 'demo_test', is_demo = 1 WHERE id = ?")
-                        ->execute([$r['name_bn'], $r['name_en'], $personId]);
+                    $pdo->prepare("UPDATE persons SET full_name_bn = ?, full_name_en = ?, home_ward_id = ?, home_area = ?, verification_status = 'demo_test', is_demo = 1 WHERE id = ?")
+                        ->execute([$r['name_bn'], $r['name_en'], $homeWardId, $homeArea, $personId]);
                 }
 
                 // Employee record for staff roles
@@ -253,7 +264,6 @@ class RealisticDemoSeeder
 
             $ward1Id = (int)$pdo->query("SELECT id FROM wards WHERE ward_number = 1 LIMIT 1")->fetchColumn();
 
-            // Teams list
             $demoTeams = [
                 ['name_bn' => 'ডেমো পরিচ্ছন্নতা দল ১ (অঞ্চল ১)', 'name_en' => 'Demo Sanitation Team 01 (Zone 1)', 'dept' => $wasteDeptId],
                 ['name_bn' => 'ডেমো পরিচ্ছন্নতা দল ২ (অঞ্চল ২)', 'name_en' => 'Demo Sanitation Team 02 (Zone 2)', 'dept' => $wasteDeptId],
@@ -311,98 +321,59 @@ class RealisticDemoSeeder
                 'engineering_civil' => $engDeptId,
             ];
 
-            // 5. Generate 620 Realistic Demo Complaints across 90 days
-            $complaintCount = 620;
+            // 5. Setup Flagship Scenarios specifically for Citizen A (01711000001) & Citizen B (01711000002)
             $now = time();
-
-            // Distinct Landmark & Issue Descriptors
-            $sampleLandmarks = [
-                'গাঙ্গিনার পাড় মোড়', 'বড় বাজার রেলক্রসিং', 'চরপাড়া মেডিকেল কলেজ গেইট', 'টাউন হল চত্বর',
-                'সানকিপাড়া রেলগেট', 'কাঁচিঝুলি মোড়', 'আকুয়া বাইপাস মোড়', 'নওমহল মাদ্রাসা রোড',
-                'কৃষ্টপুর প্রাইমারি স্কুল সংলগ্ন', 'শম্ভুগঞ্জ নতুন ব্রিজ রোড', 'ভাটিকাশর প্রধান সড়ক',
-                'দাপুনিয়া বাজার মোড়', 'খাগডহর নদী তীর', 'বয়রা পলিটেকনিক সংলগ্ন', 'পাটগুদাম বাস টার্মিনাল',
-                'মাসকান্দা কেন্দ্রীয় বাস টার্মিনাল', 'কেওয়াটখালী পাওয়ার হাউজ রোড', 'বাঘমারা মেডিকেল হোস্টেল',
-                'পণ্ডিতপাড়া জামে মসজিদ মোড়', 'মহারাজা পার্কের বিপরীত', 'আমলাপাড়া পূজা মণ্ডপ গলি',
-                'গুলকিবাড়ি সরকারি প্রাথমিক বিদ্যালয়', 'শান্তিনগর পানির পাম্প সংলগ্ন', 'রহমতপুর বাইপাস মোড়',
-                'কালীবাড়ি মোড়', 'ধোপাখলা জিলা স্কুল রোড', 'সেহড়া ডিবি রোড', 'নয়াপাড়া খেলার মাঠ সংলগ্ন',
-                'কাশিগঞ্জ বাজার রোড', 'বড়বিল মোড়', 'দুর্গাবাড়ী কালীমন্দির রোড', 'ছোট বাজার চালের আড়ত'
-            ];
-
-            $descriptions = [
-                'সড়কে গৃহস্থালি বর্জ্যের স্তূপ জমে আছে, পথচারীদের চলাচলে চরম দুর্গন্ধ ও বিঘ্ন ঘটছে। দ্রুত অপসারণ প্রয়োজন।',
-                'প্রধান ড্রেন উপচে রাস্তায় ময়লা পানি প্রবাহিত হচ্ছে। স্থানীয় দোকানপাটে পানি ঢুকে পড়ছে।',
-                'রাস্তার ৫টি সড়কবাতি গত ৩ দিন ধরে অচল থাকায় রাতে সম্পূর্ণ অন্ধকার থাকে এবং ছিনতাইয়ের ঝুঁকি তৈরি হয়েছে।',
-                'এলাকায় মশার প্রকোপ আশঙ্কাজনকভাবে বৃদ্ধি পেয়েছে। অবিলম্বে ফগিং ও লার্ভিসাইড স্প্রে করা দরকার।',
-                'সড়কের পিচ উঠে বড় বড় গর্তের সৃষ্টি হয়েছে। অটোরিকশা ও রিকশা চলাচলে দুর্ঘটনা ঘটছে।',
-                'ড্রেনের ওপরের কংক্রিট স্ল্যাব ভেঙে বিপজ্জনক গর্ত তৈরি হয়েছে। যেকোনো সময় পথচারী পড়ে যেতে পারে।',
-                'বাজারের সামনে ডাস্টবিন ভেঙে গেছে এবং ময়লা রাস্তায় ছড়িয়ে পড়ছে। নতুন ডাস্টবিন স্থাপন প্রয়োজন।',
-                'রাস্তায় হেলে পড়া গাছের শুকনো ডাল যে কোনো সময় বৈদ্যুতিক তারের ওপর পড়তে পারে। জরুরি অপসারণ চাই।',
-                'অবৈধভাবে ফুটপাত দখল করে মালামাল রাখায় হেঁটে চলার কোনো সুযোগ নেই। উচ্ছেদ অভিযান প্রয়োজন।',
-                'পৌর গণশৌচাগার অপরিচ্ছন্ন ও পানির সংযোগ বন্ধ থাকায় সাধারণ মানুষ ভোগান্তিতে পড়ছে।',
-            ];
-
-            $statusDist = [
-                ['internal' => 'submitted', 'citizen' => 'received', 'weight' => 10],
-                ['internal' => 'assigned', 'citizen' => 'assigned', 'weight' => 15],
-                ['internal' => 'in_progress', 'citizen' => 'in_progress', 'weight' => 20],
-                ['internal' => 'work_completed', 'citizen' => 'work_completed', 'weight' => 15],
-                ['internal' => 'supervisor_verified', 'citizen' => 'confirmation_needed', 'weight' => 12],
-                ['internal' => 'resolved', 'citizen' => 'resolved', 'weight' => 18],
-                ['internal' => 'needs_more_work', 'citizen' => 'needs_more_work', 'weight' => 6],
-                ['internal' => 'cancelled', 'citizen' => 'received', 'weight' => 4],
-            ];
-
-            $statusWeightedPool = [];
-            foreach ($statusDist as $item) {
-                for ($w = 0; $w < $item['weight']; $w++) {
-                    $statusWeightedPool[] = $item;
-                }
-            }
-
-            // Seed Fixed Flagship Scenarios first:
-            // S1: Citizen A Open Task for Field Worker
-            // S2: Citizen A Work Completed awaiting Supervisor Verification
-            // S3: Overdue SLA Breach for Mayor/Administrator
-            // S4: Reopened Needs More Work (First Reopen triggering Attention)
-            // S5: Citizen Confirmed Resolved
-            // S6: Recurring Hotspot
+            $citizenAId = $seededUserIds['citizen'];
+            $citizenBId = $seededUserIds['citizen_b'];
 
             $flagshipScenarios = [
                 [
-                    'num' => 'MCC-DEMO-001', 'citizen' => $seededUserIds['citizen'], 'ward_idx' => 0,
-                    'internal' => 'assigned', 'citizen_st' => 'assigned', 'days_ago' => 1,
+                    'num' => 'MCC-DEMO-001', 'citizen' => $citizenAId, 'ward_idx' => 0,
+                    'internal' => 'submitted', 'citizen_st' => 'received', 'hours_ago' => 3, 'sla_hours' => 48,
                     'desc' => 'টাউন হল মোড়ে সড়কে ময়লার স্তূপ জমে আছে, দ্রুত পরিষ্কার প্রয়োজন।',
                     'task_st' => 'pending', 'is_reopen' => 0, 'is_overdue' => 0, 'is_recurring' => 0
                 ],
                 [
-                    'num' => 'MCC-DEMO-002', 'citizen' => $seededUserIds['citizen'], 'ward_idx' => 0,
-                    'internal' => 'work_completed', 'citizen_st' => 'work_completed', 'days_ago' => 2,
-                    'desc' => 'গাঙ্গিনার পাড়ে ড্রেন উপচে রাস্তায় পানি ও ময়লা নিষ্কাশন হচ্ছে।',
+                    'num' => 'MCC-DEMO-002', 'citizen' => $citizenAId, 'ward_idx' => 0,
+                    'internal' => 'work_completed', 'citizen_st' => 'confirmation_needed', 'hours_ago' => 20, 'sla_hours' => 48,
+                    'desc' => 'গাঙ্গিনার পাড়ে ড্রেন উপচে রাস্তায় পানি ও ময়লা নিষ্কাশন হচ্ছে। মাঠকর্মীরা কাজ শেষ করেছেন।',
                     'task_st' => 'completed', 'is_reopen' => 0, 'is_overdue' => 0, 'is_recurring' => 0
                 ],
                 [
-                    'num' => 'MCC-DEMO-003', 'citizen' => $seededUserIds['citizen'], 'ward_idx' => 1,
-                    'internal' => 'in_progress', 'citizen_st' => 'in_progress', 'days_ago' => 4,
-                    'desc' => 'চরপাড়া মেডিকেল মোড়ে জরুরি ড্রেনেজ ব্লকেজ - পানি নামছে না।',
+                    'num' => 'MCC-DEMO-003', 'citizen' => $citizenAId, 'ward_idx' => 1,
+                    'internal' => 'in_progress', 'citizen_st' => 'in_progress', 'hours_ago' => 96, 'sla_hours' => 48,
+                    'desc' => 'চরপাড়া মেডিকেল মোড়ে জরুরি ড্রেনেজ ব্লকেজ - পানি নামছে না। সময়সীমা অতিক্রম করেছে।',
                     'task_st' => 'in_progress', 'is_reopen' => 0, 'is_overdue' => 1, 'is_recurring' => 0
                 ],
                 [
-                    'num' => 'MCC-DEMO-004', 'citizen' => $seededUserIds['citizen'], 'ward_idx' => 2,
-                    'internal' => 'needs_more_work', 'citizen_st' => 'needs_more_work', 'days_ago' => 6,
-                    'desc' => 'সানকিপাড়ায় ড্রেন পরিষ্কার করার পর আবর্জনা রাস্তার পাশে স্তূপ করে রেখে যাওয়া হয়েছে।',
+                    'num' => 'MCC-DEMO-004', 'citizen' => $citizenAId, 'ward_idx' => 2,
+                    'internal' => 'needs_more_work', 'citizen_st' => 'needs_more_work', 'hours_ago' => 72, 'sla_hours' => 48,
+                    'desc' => 'সানকিপাড়ায় ড্রেন পরিষ্কার করার পর আবর্জনা রাস্তার পাশে স্তূপ করে রেখে যাওয়া হয়েছে। নাগরিক পুনরায় চালু করেছেন।',
                     'task_st' => 'in_progress', 'is_reopen' => 1, 'is_overdue' => 0, 'is_recurring' => 0
                 ],
                 [
-                    'num' => 'MCC-DEMO-005', 'citizen' => $seededUserIds['citizen_b'], 'ward_idx' => 3,
-                    'internal' => 'resolved', 'citizen_st' => 'resolved', 'days_ago' => 10,
-                    'desc' => 'কাঁচিঝুলি মোড়ে ৫টি এলইডি সড়কবাতি মেরামত সম্পন্ন হয়েছে।',
-                    'task_st' => 'completed', 'is_reopen' => 0, 'is_overdue' => 0, 'is_recurring' => 0
+                    'num' => 'MCC-DEMO-005', 'citizen' => $citizenAId, 'ward_idx' => 3,
+                    'internal' => 'resolved', 'citizen_st' => 'resolved', 'hours_ago' => 140, 'sla_hours' => 48,
+                    'desc' => 'কাঁচিঝুলি মোড়ে ৫টি এলইডি সড়কবাতি মেরামত সম্পন্ন হয়েছে। নাগরিক সন্তুষ্টি নিশ্চিত করেছেন।',
+                    'task_st' => 'completed', 'is_reopen' => 0, 'is_overdue' => 0, 'is_recurring' => 0, 'rating' => 5
                 ],
                 [
-                    'num' => 'MCC-DEMO-006', 'citizen' => $seededUserIds['citizen'], 'ward_idx' => 0,
-                    'internal' => 'in_progress', 'citizen_st' => 'in_progress', 'days_ago' => 5,
+                    'num' => 'MCC-DEMO-006', 'citizen' => $citizenAId, 'ward_idx' => 0,
+                    'internal' => 'in_progress', 'citizen_st' => 'in_progress', 'hours_ago' => 30, 'sla_hours' => 48,
                     'desc' => 'বড় বাজার রেলক্রসিং সংলগ্ন নিয়মিত আবর্জনা হটস্পট। প্রতিদিন উপচে পড়ে।',
                     'task_st' => 'in_progress', 'is_reopen' => 0, 'is_overdue' => 0, 'is_recurring' => 1
+                ],
+                [
+                    'num' => 'MCC-DEMO-007', 'citizen' => $citizenBId, 'ward_idx' => 4,
+                    'internal' => 'in_progress', 'citizen_st' => 'in_progress', 'hours_ago' => 15, 'sla_hours' => 48,
+                    'desc' => 'আকুয়া মোড়ে ভাঙা রাস্তায় বৃষ্টির পানি জমে যান চলাচলে বিঘ্ন ঘটছে।',
+                    'task_st' => 'in_progress', 'is_reopen' => 0, 'is_overdue' => 0, 'is_recurring' => 0
+                ],
+                [
+                    'num' => 'MCC-DEMO-008', 'citizen' => $citizenBId, 'ward_idx' => 5,
+                    'internal' => 'resolved', 'citizen_st' => 'resolved', 'hours_ago' => 160, 'sla_hours' => 48,
+                    'desc' => 'পাটগুদাম ব্রিজ সংলগ্ন ড্রেন পরিষ্কারকরণ ও ময়লা অপসারণ সফলভাবে সম্পন্ন হয়েছে।',
+                    'task_st' => 'completed', 'is_reopen' => 0, 'is_overdue' => 0, 'is_recurring' => 0, 'rating' => 4
                 ],
             ];
 
@@ -454,9 +425,16 @@ class RealisticDemoSeeder
                 ) VALUES (?, ?, ?, 1, 1, ?)
             ");
 
+            $insFeedback = $pdo->prepare("
+                INSERT INTO citizen_feedback (
+                    complaint_id, citizen_user_id, resolution_confirmation, unresolved_reason_code,
+                    rating_score, comment, confirmed_at
+                ) VALUES (?, ?, 'confirmed', NULL, ?, ?, ?)
+            ");
+
             $existingTracking = [];
 
-            // Execute flagship scenarios
+            // Seed Flagship Scenarios
             foreach ($flagshipScenarios as $fs) {
                 $sub = $subcategories[0];
                 $catId = (int)$sub['category_id'];
@@ -467,19 +445,26 @@ class RealisticDemoSeeder
                 $deptId = $wasteDeptId;
                 $tId = $teamIds[0] ?? null;
 
-                $submittedTime = date('Y-m-d H:i:s', $now - ($fs['days_ago'] * 86400));
-                $deadlineTime = date('Y-m-d H:i:s', $now - (($fs['days_ago'] - 1) * 86400));
-                $deadlineMissed = $fs['is_overdue'] ? date('Y-m-d H:i:s', $now - 3600 * 6) : null;
-                $verifiedAt = in_array($fs['internal'], ['supervisor_verified', 'resolved'], true) ? date('Y-m-d H:i:s', $now - 3600 * 4) : null;
-                $confirmedAt = ($fs['internal'] === 'resolved') ? date('Y-m-d H:i:s', $now - 3600 * 2) : null;
-                $closedAt = ($fs['internal'] === 'resolved') ? date('Y-m-d H:i:s', $now - 3600 * 2) : null;
-                $reopenedAt = $fs['is_reopen'] ? date('Y-m-d H:i:s', $now - 3600 * 8) : null;
+                $submittedSec = $now - ($fs['hours_ago'] * 3600);
+                $submittedTime = date('Y-m-d H:i:s', $submittedSec);
+
+                $deadlineSec = $submittedSec + ($fs['sla_hours'] * 3600);
+                $deadlineTime = date('Y-m-d H:i:s', $deadlineSec);
+
+                $isOverdue = (bool)$fs['is_overdue'];
+                $deadlineMissed = $isOverdue ? date('Y-m-d H:i:s', $deadlineSec) : null;
+
+                $isResolved = ($fs['internal'] === 'resolved');
+                $verifiedAt = in_array($fs['internal'], ['supervisor_verified', 'resolved'], true) ? date('Y-m-d H:i:s', $submittedSec + (20 * 3600)) : null;
+                $confirmedAt = $isResolved ? date('Y-m-d H:i:s', $submittedSec + (24 * 3600)) : null;
+                $closedAt = $isResolved ? date('Y-m-d H:i:s', $submittedSec + (24 * 3600)) : null;
+                $reopenedAt = $fs['is_reopen'] ? date('Y-m-d H:i:s', $submittedSec + (36 * 3600)) : null;
 
                 $cExists = $pdo->query("SELECT id FROM complaints WHERE public_complaint_number = '{$fs['num']}' LIMIT 1")->fetchColumn();
                 if ($cExists) {
                     $cId = (int)$cExists;
-                    $pdo->prepare("UPDATE complaints SET internal_status = ?, citizen_status = ?, is_demo = 1 WHERE id = ?")
-                        ->execute([$fs['internal'], $fs['citizen_st'], $cId]);
+                    $pdo->prepare("UPDATE complaints SET citizen_user_id = ?, created_by_user_id = ?, internal_status = ?, citizen_status = ?, is_demo = 1 WHERE id = ?")
+                        ->execute([$fs['citizen'], $fs['citizen'], $fs['internal'], $fs['citizen_st'], $cId]);
                 } else {
                     $insComp->execute([
                         $fs['num'], $fs['citizen'], $fs['citizen'],
@@ -488,7 +473,7 @@ class RealisticDemoSeeder
                         'p2_high', 'quick_action', $fs['internal'], $fs['citizen_st'],
                         $fs['desc'], $fs['is_recurring'],
                         $submittedTime, $deadlineTime, $deadlineMissed,
-                        $fs['internal'] === 'resolved' ? 1 : 0, $fs['is_reopen'], $reopenedAt, $verifiedAt, $confirmedAt, $closedAt,
+                        $isResolved ? 1 : 0, $fs['is_reopen'], $reopenedAt, $verifiedAt, $confirmedAt, $closedAt,
                         $submittedTime
                     ]);
                     $cId = (int)$pdo->lastInsertId();
@@ -507,23 +492,86 @@ class RealisticDemoSeeder
                         $cId, null, 'submitted', null, 'received', 'submitted', $fs['citizen'], $submittedTime
                     ]);
 
-                    if ($fs['is_overdue']) {
-                        $insEA->execute([$cId, 'deadline_breach', 'p2_high', $submittedTime]);
+                    if ($isOverdue) {
+                        $insEA->execute([$cId, 'deadline_breach', 'p2_high', $deadlineTime]);
                     }
                     if ($fs['is_reopen']) {
                         $insEA->execute([$cId, 'reopened_unresolved', 'p2_high', $reopenedAt ?: $submittedTime]);
+                    }
+                    if ($fs['is_recurring']) {
+                        $insEA->execute([$cId, 'recurring_hotspot', 'p3_normal', $submittedTime]);
+                    }
+
+                    if ($isResolved && !empty($fs['rating'])) {
+                        $insFeedback->execute([
+                            $cId, $fs['citizen'], (int)$fs['rating'], 'দ্রুত সেবা দেওয়ার জন্য ধন্যবাদ।', $confirmedAt
+                        ]);
                     }
                 }
                 $existingTracking[$fs['num']] = true;
             }
 
-            // Generate remaining ~614 complaints spread across all 33 wards and 90 days
+            // 6. Generate Remaining Complaints up to 600 total across all 33 Wards
+            $complaintCount = 600;
+            $sampleLandmarks = [
+                'গাঙ্গিনের পাড় মোড়', 'বড় বাজার রেলক্রসিং', 'চরপাড়া মেডিকেল কলেজ গেইট', 'টাউন হল চত্বর',
+                'সানকিপাড়া রেলগেট', 'কাঁচিঝুলি মোড়', 'আকুয়া বাইপাস মোড়', 'নওমহল মাদ্রাসা রোড',
+                'কৃষ্টপুর প্রাইমারি স্কুল সংলগ্ন', 'শম্ভুগঞ্জ নতুন ব্রিজ রোড', 'ভাটিকাশর প্রধান সড়ক',
+                'দাপুনিয়া বাজার মোড়', 'খাগডহর নদী তীর', 'বয়রা পলিটেকনিক সংলগ্ন', 'পাটগুদাম বাস টার্মিনাল',
+                'মাসকান্দা কেন্দ্রীয় বাস টার্মিনাল', 'কেওয়াটখালী পাওয়ার হাউজ রোড', 'বাঘমারা মেডিকেল হোস্টেল',
+                'পণ্ডিতপাড়া জামে মসজিদ মোড়', 'মহারাজা পার্কের বিপরীত', 'আমলাপাড়া পূজা মণ্ডপ গলি',
+                'গুলকিবাড়ি সরকারি প্রাথমিক বিদ্যালয়', 'শান্তিনগর পানির পাম্প সংলগ্ন', 'রহমতপুর বাইপাস মোড়',
+                'কালীবাড়ি মোড়', 'ধোপাখলা জিলা স্কুল রোড', 'সেহড়া ডিবি রোড', 'নয়াপাড়া খেলার মাঠ সংলগ্ন',
+                'কাশিগঞ্জ বাজার রোড', 'বড়বিল মোড়', 'দুর্গাবাড়ী কালীমন্দির রোড', 'ছোট বাজার চালের আড়ত'
+            ];
+
+            $descriptions = [
+                'সড়কে গৃহস্থালি বর্জ্যের স্তূপ জমে আছে, পথচারীদের চলাচলে চরম দুর্গন্ধ ও বিঘ্ন ঘটছে। দ্রুত অপসারণ প্রয়োজন।',
+                'প্রধান ড্রেন উপচে রাস্তায় ময়লা পানি প্রবাহিত হচ্ছে। স্থানীয় দোকানপাটে পানি ঢুকে পড়ছে।',
+                'রাস্তার ৫টি সড়কবাতি গত ৩ দিন ধরে অচল থাকায় রাতে সম্পূর্ণ অন্ধকার থাকে এবং ছিনতাইয়ের ঝুঁকি তৈরি হয়েছে।',
+                'এলাকায় মশার প্রকোপ আশঙ্কাজনকভাবে বৃদ্ধি পেয়েছে। অবিলম্বে ফগিং ও লার্ভিসাইড স্প্রে করা দরকার।',
+                'সড়কের পিচ উঠে বড় বড় গর্তের সৃষ্টি হয়েছে। অটোরিকশা ও রিকশা চলাচলে দুর্ঘটনা ঘটছে।',
+                'ড্রেনের ওপরের কংক্রিট স্ল্যাব ভেঙে বিপজ্জনক গর্ত তৈরি হয়েছে। যেকোনো সময় পথচারী পড়ে যেতে পারে।',
+                'বাজারের সামনে ডাস্টবিন ভেঙে গেছে এবং ময়লা রাস্তায় ছড়িয়ে পড়ছে। নতুন ডাস্টবিন স্থাপন প্রয়োজন।',
+                'রাস্তায় হেলে পড়া গাছের শুকনো ডাল যে কোনো সময় বৈদ্যুতিক তারের ওপর পড়তে পারে। জরুরি অপসারণ চাই।',
+                'অবৈধভাবে ফুটপাত দখল করে মালামাল রাখায় হেঁটে চলার কোনো সুযোগ নেই। উচ্ছেদ অভিযান প্রয়োজন।',
+                'পৌর গণশৌচাগার অপরিচ্ছন্ন ও পানির সংযোগ বন্ধ থাকায় সাধারণ মানুষ ভোগান্তিতে পড়ছে।',
+            ];
+
+            $statusDist = [
+                ['internal' => 'submitted', 'citizen' => 'received', 'weight' => 8],
+                ['internal' => 'assigned', 'citizen' => 'assigned', 'weight' => 14],
+                ['internal' => 'in_progress', 'citizen' => 'in_progress', 'weight' => 22],
+                ['internal' => 'work_completed', 'citizen' => 'work_completed', 'weight' => 12],
+                ['internal' => 'supervisor_verified', 'citizen' => 'confirmation_needed', 'weight' => 10],
+                ['internal' => 'resolved', 'citizen' => 'resolved', 'weight' => 28],
+                ['internal' => 'needs_more_work', 'citizen' => 'needs_more_work', 'weight' => 4],
+                ['internal' => 'cancelled', 'citizen' => 'received', 'weight' => 2],
+            ];
+
+            $statusWeightedPool = [];
+            foreach ($statusDist as $item) {
+                for ($w = 0; $w < $item['weight']; $w++) {
+                    $statusWeightedPool[] = $item;
+                }
+            }
+
             $subCount = count($subcategories);
             $wardCount = count($wards);
             $citCount = count($demoCitizenUserIds);
             $poolSize = count($statusWeightedPool);
 
-            for ($i = 7; $i <= $complaintCount; $i++) {
+            // Calibrated feedback ratings distribution (5: 55%, 4: 25%, 3: 12%, 2: 5%, 1: 3%)
+            $feedbackRatings = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 3, 3, 2, 1];
+            $feedbackComments = [
+                5 => 'চমৎকার ও দ্রুততম সমাধান। সিটি কর্পোরেশনকে ধন্যবাদ।',
+                4 => 'কাজটি সঠিকভাবে সম্পন্ন হয়েছে। পরিচ্ছন্নতা বজায় থাকুক।',
+                3 => 'সমাধান হয়েছে তবে আরও একটু দ্রুত হলে ভালো হতো।',
+                2 => 'অনেক দেরিতে কাজ শেষ হলো।',
+                1 => 'কাজের মান আশানুরূপ হয়নি।'
+            ];
+
+            for ($i = 9; $i <= $complaintCount; $i++) {
                 $tracking = 'MCC-DEMO-' . str_pad((string)$i, 4, '0', STR_PAD_LEFT);
                 if (isset($existingTracking[$tracking])) {
                     continue;
@@ -540,33 +588,79 @@ class RealisticDemoSeeder
                 $ward = $wards[$i % $wardCount];
                 $wId = (int)$ward['id'];
                 $zId = (int)$ward['zone_id'];
-                $citizenId = $demoCitizenUserIds[$i % $citCount];
                 $st = $statusWeightedPool[$i % $poolSize];
+
+                // Assign ~10 complaints throughout the range directly to Citizen A
+                if ($i % 55 === 0) {
+                    $citizenId = $citizenAId;
+                } elseif ($i % 56 === 0) {
+                    $citizenId = $citizenBId;
+                } else {
+                    $citizenId = $demoCitizenUserIds[$i % $citCount];
+                }
 
                 $catSlug = $sub['cat_slug'] ?? 'waste_management';
                 $deptId = $deptMap[$catSlug] ?? $wasteDeptId;
                 $tId = $teamIds[$i % count($teamIds)] ?? null;
 
-                // Spread submission days across 1 to 90 days ago
-                $daysAgo = ($i % 90) + 1;
-                $submittedSec = $now - ($daysAgo * 86400) + (($i % 12) * 3600);
-                $submittedTime = date('Y-m-d H:i:s', $submittedSec);
+                $isResolved = ($st['internal'] === 'resolved');
+                $isCancelled = ($st['internal'] === 'cancelled');
 
-                $deadlineSec = $submittedSec + (48 * 3600); // 48 hr default SLA
-                $deadlineTime = date('Y-m-d H:i:s', $deadlineSec);
+                if ($isResolved || $isCancelled) {
+                    // Historical completed complaints spread across 3 to 90 days ago
+                    $daysAgo = ($i % 87) + 3;
+                    $submittedSec = $now - ($daysAgo * 86400) + (($i % 12) * 3600);
+                    $submittedTime = date('Y-m-d H:i:s', $submittedSec);
 
-                $isOverdue = ($deadlineSec < $now && !in_array($st['internal'], ['resolved', 'cancelled'], true) && ($i % 7 === 0));
-                $deadlineMissed = $isOverdue ? date('Y-m-d H:i:s', $deadlineSec) : null;
+                    // SLA was 48h, resolved within 24-38 hours
+                    $deadlineSec = $submittedSec + (48 * 3600);
+                    $deadlineTime = date('Y-m-d H:i:s', $deadlineSec);
 
-                $isReopen = ($st['internal'] === 'needs_more_work' || ($st['internal'] === 'in_progress' && $i % 11 === 0));
-                $reopenCount = $isReopen ? (($i % 2) + 1) : 0;
-                $firstReopenedAt = $isReopen ? date('Y-m-d H:i:s', $submittedSec + (36 * 3600)) : null;
+                    $durationHours = ($i % 14) + 20; // 20 to 33 hours
+                    $closedSec = $submittedSec + ($durationHours * 3600);
+                    $closedTime = date('Y-m-d H:i:s', $closedSec);
+                    $verifiedTime = date('Y-m-d H:i:s', $closedSec - 7200);
 
-                $verifiedAt = in_array($st['internal'], ['supervisor_verified', 'resolved'], true) ? date('Y-m-d H:i:s', $submittedSec + (24 * 3600)) : null;
-                $confirmedAt = ($st['internal'] === 'resolved') ? date('Y-m-d H:i:s', $submittedSec + (30 * 3600)) : null;
-                $closedAt = ($st['internal'] === 'resolved') ? date('Y-m-d H:i:s', $submittedSec + (30 * 3600)) : null;
+                    $isOverdue = false;
+                    $deadlineMissed = null;
+                    $reopenCount = 0;
+                    $firstReopenedAt = null;
+                    $verifiedAt = $isResolved ? $verifiedTime : null;
+                    $confirmedAt = $isResolved ? $closedTime : null;
+                    $closedAt = $closedTime;
+                } else {
+                    // Open complaints
+                    // 1. Overdue Breaches: strictly ~5-6% (approx 25-30 complaints total)
+                    $isOverdue = ($i % 18 === 0);
 
-                $isRecurring = ($i % 13 === 0);
+                    // 2. Reopened active cases: ~4%
+                    $isReopen = ($st['internal'] === 'needs_more_work' || ($i % 24 === 0));
+                    $reopenCount = $isReopen ? 1 : 0;
+
+                    if ($isOverdue) {
+                        // Submitted 4-7 days ago with 48h SLA -> Overdue
+                        $daysAgo = ($i % 4) + 4;
+                        $submittedSec = $now - ($daysAgo * 86400);
+                        $deadlineSec = $submittedSec + (48 * 3600);
+                        $deadlineMissed = date('Y-m-d H:i:s', $deadlineSec);
+                    } else {
+                        // Healthy on-time active complaints submitted recently (2 to 36 hours ago)
+                        $hoursAgo = ($i % 34) + 2;
+                        $submittedSec = $now - ($hoursAgo * 3600);
+                        $deadlineSec = $submittedSec + (48 * 3600); // deadline in future (> NOW())
+                        $deadlineMissed = null;
+                    }
+
+                    $submittedTime = date('Y-m-d H:i:s', $submittedSec);
+                    $deadlineTime = date('Y-m-d H:i:s', $deadlineSec);
+                    $firstReopenedAt = $isReopen ? date('Y-m-d H:i:s', $submittedSec + (30 * 3600)) : null;
+
+                    $verifiedAt = in_array($st['internal'], ['supervisor_verified', 'work_completed'], true) ? date('Y-m-d H:i:s', $submittedSec + (18 * 3600)) : null;
+                    $confirmedAt = null;
+                    $closedAt = null;
+                }
+
+                $isRecurring = ($i % 28 === 0);
                 $landmark = $sampleLandmarks[$i % count($sampleLandmarks)];
                 $desc = $descriptions[$i % count($descriptions)];
 
@@ -581,7 +675,7 @@ class RealisticDemoSeeder
                     $st['internal'], $st['citizen'],
                     $desc, $isRecurring ? 1 : 0,
                     $submittedTime, $deadlineTime, $deadlineMissed,
-                    $st['internal'] === 'resolved' ? 1 : 0, $reopenCount, $firstReopenedAt, $verifiedAt, $confirmedAt, $closedAt,
+                    $isResolved ? 1 : 0, $reopenCount, $firstReopenedAt, $verifiedAt, $confirmedAt, $closedAt,
                     $submittedTime
                 ]);
                 $cId = (int)$pdo->lastInsertId();
@@ -595,11 +689,11 @@ class RealisticDemoSeeder
                 if ($st['internal'] !== 'submitted' && $st['internal'] !== 'cancelled') {
                     $tCode = 'TSK-DEMO-' . str_pad((string)$cId, 4, '0', STR_PAD_LEFT);
                     $taskSt = in_array($st['internal'], ['work_completed', 'supervisor_verified', 'resolved'], true) ? 'completed' : 'in_progress';
-                    $completedAt = ($taskSt === 'completed') ? ($verifiedAt ?: $submittedTime) : null;
+                    $taskCompletedAt = ($taskSt === 'completed') ? ($verifiedAt ?: $submittedTime) : null;
 
                     $insTask->execute([
                         $cId, $tCode, $tId, $workerEmpId, $supervisorEmpId,
-                        $taskSt, $desc, $submittedTime, $completedAt, $submittedTime
+                        $taskSt, $desc, $submittedTime, $taskCompletedAt, $submittedTime
                     ]);
                 }
 
@@ -615,14 +709,23 @@ class RealisticDemoSeeder
                     ]);
                 }
 
-                // Executive Attention triggers
-                if ($isOverdue) {
-                    $insEA->execute([$cId, 'deadline_breach', 'p2_high', $submittedTime]);
+                // Seed Citizen Feedback for resolved complaints
+                if ($isResolved) {
+                    $rating = $feedbackRatings[$i % count($feedbackRatings)];
+                    $comment = $feedbackComments[$rating] ?? 'ধন্যবাদ।';
+                    $insFeedback->execute([
+                        $cId, $citizenId, $rating, $comment, $closedAt
+                    ]);
                 }
-                if ($reopenCount >= 1) {
+
+                // Executive Attention triggers (Active only)
+                if ($isOverdue && !$isResolved) {
+                    $insEA->execute([$cId, 'deadline_breach', 'p2_high', $deadlineTime]);
+                }
+                if ($reopenCount >= 1 && !$isResolved) {
                     $insEA->execute([$cId, 'reopened_unresolved', 'p2_high', $firstReopenedAt ?: $submittedTime]);
                 }
-                if ($isRecurring) {
+                if ($isRecurring && !$isResolved) {
                     $insEA->execute([$cId, 'recurring_hotspot', 'p3_normal', $submittedTime]);
                 }
             }

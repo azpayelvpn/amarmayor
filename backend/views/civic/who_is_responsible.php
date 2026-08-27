@@ -57,7 +57,8 @@
                     <!-- General Representative / Officer -->
                     <div class="mb-3">
                         <span class="text-muted small fw-semibold d-block">
-                            <?= ($locale ?? 'bn') === 'bn' ? 'সাধারণ ওয়ার্ড দায়িত্বপ্রাপ্ত:' : 'General Ward Representation:' ?>
+                            <i class="bi bi-person-badge text-primary me-1"></i>
+                            <?= ($locale ?? 'bn') === 'bn' ? 'সাধারণ ওয়ার্ড প্রতিনিধিত্ব:' : 'General Ward Representation:' ?>
                         </span>
                         <?php if (!empty($rep['name_bn'])): ?>
                             <div class="fw-bold text-dark fs-6 mt-1">
@@ -65,7 +66,6 @@
                             </div>
                             <div class="small text-primary fw-semibold">
                                 <?php
-                                    $roleTitle = $rep['role_title'] ?? 'কাউন্সিলর';
                                     if (($rep['type'] ?? '') === 'responsible_officer') {
                                         echo ($locale ?? 'bn') === 'bn' ? 'দায়িত্বপ্রাপ্ত কর্মকর্তা' : 'Responsible Officer';
                                     } else {
@@ -74,16 +74,18 @@
                                 ?>
                             </div>
                         <?php else: ?>
-                            <span class="text-muted small">
-                                <?= ($locale ?? 'bn') === 'bn' ? 'এই ওয়ার্ডের বর্তমান যাচাইকৃত দায়িত্বশীল ব্যক্তির তথ্য এখনো যোগ করা হয়নি।' : 'Information for the verified responsible officer/representative for this ward has not been added yet.' ?>
-                            </span>
+                            <div class="text-muted small mt-1 p-2 bg-light rounded border border-light-subtle">
+                                <i class="bi bi-info-circle text-secondary me-1"></i>
+                                <?= ($locale ?? 'bn') === 'bn' ? 'এই ওয়ার্ডের যাচাইকৃত প্রতিনিধিত্ব/দায়িত্বপ্রাপ্ত তথ্য এখনো যোগ হয়নি।' : 'Verified representation information for this Ward is not yet available.' ?>
+                            </div>
                         <?php endif; ?>
                     </div>
 
                     <!-- Reserved Women Councillor -->
                     <div class="mb-3 pt-2 border-top">
                         <span class="text-muted small fw-semibold d-block">
-                            <?= ($locale ?? 'bn') === 'bn' ? 'সংরক্ষিত নারী কাউন্সিলর:' : 'Reserved Women Councillor:' ?>
+                            <i class="bi bi-person-heart text-danger me-1"></i>
+                            <?= ($locale ?? 'bn') === 'bn' ? 'সংরক্ষিত নারী আসন:' : 'Reserved Women Seat:' ?>
                         </span>
                         <?php if (!empty($resRep['name_bn'])): ?>
                             <div class="fw-bold text-dark fs-6 mt-1">
@@ -93,15 +95,30 @@
                                 <?= ($locale ?? 'bn') === 'bn' ? 'সংরক্ষিত কাউন্সিলর (' . e($resRep['seat_name_bn'] ?? '') . ')' : 'Reserved Councillor (' . e($resRep['seat_name_en'] ?? '') . ')' ?>
                             </div>
                         <?php else: ?>
-                            <span class="text-muted small">
-                                <?= ($locale ?? 'bn') === 'bn' ? 'এই ওয়ার্ডের বর্তমান যাচাইকৃত দায়িত্বশীল ব্যক্তির তথ্য এখনো যোগ করা হয়নি।' : 'Information for the verified responsible officer/representative for this ward has not been added yet.' ?>
-                            </span>
+                            <div class="text-muted small mt-1 p-2 bg-light rounded border border-light-subtle">
+                                <i class="bi bi-info-circle text-secondary me-1"></i>
+                                <?= ($locale ?? 'bn') === 'bn' ? 'এই ওয়ার্ডের যাচাইকৃত প্রতিনিধিত্ব/দায়িত্বপ্রাপ্ত তথ্য এখনো যোগ হয়নি।' : 'Verified representation information for this Ward is not yet available.' ?>
+                            </div>
                         <?php endif; ?>
+                    </div>
+
+                    <!-- Operational Service Responsibility -->
+                    <div class="mb-3 pt-2 border-top">
+                        <span class="text-muted small fw-semibold d-block mb-1">
+                            <i class="bi bi-building-gear text-teal me-1"></i>
+                            <?= ($locale ?? 'bn') === 'bn' ? 'সেবা ও প্রশাসনিক দায়িত্ব:' : 'Service & Administrative Units:' ?>
+                        </span>
+                        <div class="small text-dark">
+                            <span class="text-muted"><?= ($locale ?? 'bn') === 'bn' ? 'অঞ্চল:' : 'Zone:' ?></span> <?= e($zoneName) ?>
+                        </div>
+                        <div class="small text-dark">
+                            <span class="text-muted"><?= ($locale ?? 'bn') === 'bn' ? 'জরুরি হেল্পলাইন:' : 'Helpline:' ?></span> <span class="font-monospace text-primary fw-semibold">+8809166666</span>
+                        </div>
                     </div>
 
                     <!-- Action -->
                     <div class="mt-auto pt-2">
-                        <a href="/complaints/create?ward_id=<?= (int)($item['ward_id'] ?? 0) ?>" class="btn btn-sm btn-outline-success w-100">
+                        <a href="/submit?ward_id=<?= (int)($item['ward_id'] ?? 0) ?>" class="btn btn-sm btn-outline-success w-100">
                             <i class="bi bi-megaphone me-1"></i>
                             <?= ($locale ?? 'bn') === 'bn' ? 'এই ওয়ার্ডে অভিযোগ করুন' : 'Submit Complaint in this Ward' ?>
                         </a>
@@ -109,6 +126,19 @@
                 </div>
             </div>
         <?php endforeach; ?>
+
+        <!-- Empty Search State -->
+        <div id="noWardsFound" class="col-12 text-center py-5 d-none">
+            <div class="p-5 bg-white rounded-4 border shadow-sm max-w-md mx-auto">
+                <i class="bi bi-search text-muted fs-1 mb-3 d-block"></i>
+                <h5 class="fw-bold text-dark mb-1">
+                    <?= ($locale ?? 'bn') === 'bn' ? 'কোনো ওয়ার্ড পাওয়া যায়নি' : 'No Ward Found' ?>
+                </h5>
+                <p class="text-muted small mb-0">
+                    <?= ($locale ?? 'bn') === 'bn' ? 'অনুগ্রহ করে সঠিক ওয়ার্ড নম্বর লিখুন (১ থেকে ৩৩)।' : 'Please enter a valid Ward number (1 to 33).' ?>
+                </p>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -116,15 +146,26 @@
 function filterWards() {
     const q = document.getElementById('wardSearch').value.trim().toLowerCase();
     const cols = document.querySelectorAll('.ward-card-col');
+    const emptyState = document.getElementById('noWardsFound');
+    let visibleCount = 0;
 
     cols.forEach(col => {
         const wardNo = col.getAttribute('data-ward-no');
         const text = col.textContent.toLowerCase();
         if (!q || wardNo.includes(q) || text.includes(q)) {
             col.style.display = '';
+            visibleCount++;
         } else {
             col.style.display = 'none';
         }
     });
+
+    if (emptyState) {
+        if (visibleCount === 0) {
+            emptyState.classList.remove('d-none');
+        } else {
+            emptyState.classList.add('d-none');
+        }
+    }
 }
 </script>

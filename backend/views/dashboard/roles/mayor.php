@@ -37,9 +37,16 @@
                 <div class="col-6 col-md-4 col-lg-2">
                     <div class="p-3 bg-light rounded-3 text-center">
                         <div class="fs-2 fw-bold text-success">
-                            <?= ($kpis['total_complaints'] ?? 0) > 0 ? to_bn_number((string)($kpis['citizen_satisfaction_percent'] ?? 100)) . '%' : '-' ?>
+                            <?php if (isset($kpis['citizen_satisfaction_percent']) && $kpis['citizen_satisfaction_percent'] !== null && ($kpis['total_feedback'] ?? 0) > 0): ?>
+                                <?= to_bn_number((string)$kpis['citizen_satisfaction_percent']) ?>%
+                            <?php else: ?>
+                                <span class="fs-6 text-muted"><?= ($locale ?? 'bn') === 'bn' ? 'পর্যাপ্ত তথ্য নেই' : 'Insufficient Data' ?></span>
+                            <?php endif; ?>
                         </div>
-                        <small class="text-muted"><?= ($locale ?? 'bn') === 'bn' ? 'নাগরিক সন্তুষ্টি' : 'Citizen Satisfaction' ?></small>
+                        <small class="text-muted d-block"><?= ($locale ?? 'bn') === 'bn' ? 'নাগরিক সন্তুষ্টি' : 'Citizen Satisfaction' ?></small>
+                        <?php if (($kpis['total_feedback'] ?? 0) > 0): ?>
+                            <small class="text-muted" style="font-size: 0.7rem;">(<?= to_bn_number((string)$kpis['total_feedback']) ?> <?= ($locale ?? 'bn') === 'bn' ? 'মতামত' : 'reviews' ?>)</small>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="col-6 col-md-4 col-lg-2">

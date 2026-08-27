@@ -43,14 +43,14 @@
                             <h5 class="fw-bold mb-0 text-dark">
                                 <?= e(!empty($person['full_name_bn']) ? $person['full_name_bn'] : (!empty($person['full_name_en']) ? $person['full_name_en'] : (($locale ?? 'bn') === 'bn' ? 'সম্মানিত নাগরিক' : 'Citizen'))) ?>
                             </h5>
-                            <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill small">
-                                <i class="bi bi-patch-check-fill me-1"></i>
-                                <?= ($locale ?? 'bn') === 'bn' ? 'যাচাইকৃত অ্যাকাউন্ট' : 'Verified Account' ?>
+                            <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill small border border-success-subtle">
+                                <i class="bi bi-phone-vibrate-fill me-1"></i>
+                                <?= ($locale ?? 'bn') === 'bn' ? 'মোবাইল নম্বর যাচাইকৃত' : 'Phone Verified' ?>
                             </span>
                         </div>
                         <p class="text-muted small mb-0 font-monospace">
                             <i class="bi bi-phone me-1"></i> <?= e($user->phone ?? 'N/A') ?> 
-                            <span class="text-success small fw-semibold ms-2">(OTP Verified)</span>
+                            <span class="text-success small fw-semibold ms-2">(SMS OTP)</span>
                         </p>
                     </div>
                 </div>

@@ -93,7 +93,7 @@ class CommandCenterService
         $satData = $stmtSat->fetch(PDO::FETCH_ASSOC) ?: [];
         $totalFeedback = (int)($satData['total_feedback'] ?? 0);
         $positiveFeedback = (int)($satData['positive_feedback'] ?? 0);
-        $satisfactionPercent = $totalFeedback > 0 ? round(($positiveFeedback / $totalFeedback) * 100, 1) : 100.0;
+        $satisfactionPercent = $totalFeedback > 0 ? round(($positiveFeedback / $totalFeedback) * 100, 1) : null;
 
         return [
             'total_complaints' => $total,
@@ -102,6 +102,7 @@ class CommandCenterService
             'reopen_rate_percent' => $reopenRate,
             'avg_resolution_hours' => round($avgHours, 1),
             'citizen_satisfaction_percent' => $satisfactionPercent,
+            'total_feedback' => $totalFeedback,
         ];
     }
 

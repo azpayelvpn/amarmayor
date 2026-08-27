@@ -155,6 +155,22 @@ class ComplaintWebController
         $error = null;
 
         if (!empty($number)) {
+            // Public tracking rate limiting (60 lookups per minute per IP)
+            $ip = $request->ip() ?: '127.0.0.1';
+            $rateLimitKey = 'rate_limit:track:' . md5($ip);
+            $attempts = (int)\AmarMayor\Support\RedisClient::get($rateLimitKey);
+            if ($attempts > 60) {
+                return view('complaints/track', [
+                    'locale' => Translator::getLocale(),
+                    'trackingNumber' => $number,
+                    'complaint' => null,
+                    'error' => 'অতিরিক্ত অনুসন্ধানের কারণে সাময়িকভাবে অনুরোধ সীমিত করা হয়েছে। অনুগ্রহ করে কিছুক্ষণ পর চেষ্টা করুন।',
+                    'user' => $user,
+                    'success' => null,
+                ]);
+            }
+            \AmarMayor\Support\RedisClient::set($rateLimitKey, (string)($attempts + 1), 60);
+
             $complaint = $this->complaintService->getComplaintByTrackingNumber($number, $viewingUserId);
             if (!$complaint) {
                 $error = 'এই ট্র্যাকিং নম্বরের কোনো অভিযোগ পাওয়া যায়নি। অনুগ্রহ করে সঠিক নম্বর দিন।';
@@ -178,9 +194,12 @@ class ComplaintWebController
     {
         $complaintId = (int)$id;
         $action = (string)$request->input('action'); // 'confirm' or 'reject'
-        $user = Auth::user();
-        $citizenUserId = $user ? $user->id : 1;
+        
+        if (!Auth::check()) {
+            return Response::redirect('/login?error=auth_required');
+        }
 
+        $user = Auth::user();
         $pdo = DatabaseManager::getConnection();
         $stmt = $pdo->prepare("SELECT public_complaint_number, citizen_user_id FROM complaints WHERE id = ? LIMIT 1");
         $stmt->execute([$complaintId]);
@@ -192,6 +211,10 @@ class ComplaintWebController
 
         $trackingNumber = $row['public_complaint_number'];
         $actualCitizenId = (int)$row['citizen_user_id'];
+
+        if ($user->id !== $actualCitizenId) {
+            return Response::redirect("/track/{$trackingNumber}?error=" . urlencode('শুধুমাত্র অভিযোগকারী নাগরিকই সমাধান নিশ্চিত বা পুনর্বিবেচনার আবেদন করতে পারেন।'));
+        }
 
         if ($action === 'confirm') {
             $rating = max(1, min(5, (int)$request->input('rating', 5)));

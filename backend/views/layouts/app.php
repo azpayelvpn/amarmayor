@@ -40,45 +40,85 @@
 
             <!-- Navigation Links -->
             <div class="collapse navbar-collapse" id="civicNavbar">
+                <?php 
+                    $isAuth = \AmarMayor\Auth\Auth::check();
+                    $user = $isAuth ? \AmarMayor\Auth\Auth::user() : null;
+                    $roles = $user ? $user->getRoleSlugs() : [];
+                    $isStaff = $user && ($user->userType !== 'citizen' || count(array_diff($roles, ['citizen', 'public_viewer'])) > 0);
+                    $isCitizen = $user && !$isStaff;
+                ?>
+
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-2" href="/"><?= ($locale ?? 'bn') === 'bn' ? 'হোম' : 'Home' ?></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-2" href="/complaints/create"><?= ($locale ?? 'bn') === 'bn' ? 'অভিযোগ করুন' : 'Submit Complaint' ?></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-2" href="/track"><?= ($locale ?? 'bn') === 'bn' ? 'অভিযোগ ট্র্যাক করুন' : 'Track Complaint' ?></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-2" href="/wards"><?= ($locale ?? 'bn') === 'bn' ? 'আমার ওয়ার্ড' : 'My Ward' ?></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-2" href="/who-is-responsible"><?= ($locale ?? 'bn') === 'bn' ? 'দায়িত্বে কে?' : 'Who is Responsible?' ?></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-2" href="/notices"><?= ($locale ?? 'bn') === 'bn' ? 'নোটিশ' : 'Notices' ?></a>
-                    </li>
+                    <?php if ($isCitizen): ?>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/"><?= ($locale ?? 'bn') === 'bn' ? 'হোম' : 'Home' ?></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/my-complaints"><?= ($locale ?? 'bn') === 'bn' ? 'আমার অভিযোগ' : 'My Complaints' ?></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/complaints/create"><?= ($locale ?? 'bn') === 'bn' ? 'নতুন অভিযোগ' : 'New Complaint' ?></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/track"><?= ($locale ?? 'bn') === 'bn' ? 'অভিযোগ ট্র্যাক' : 'Track' ?></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/wards"><?= ($locale ?? 'bn') === 'bn' ? 'আমার এলাকা' : 'My Area' ?></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/profile"><?= ($locale ?? 'bn') === 'bn' ? 'আমার প্রোফাইল' : 'My Profile' ?></a>
+                        </li>
+                    <?php elseif ($isStaff): ?>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2 active text-primary" href="/dashboard">
+                                <i class="bi bi-speedometer2 me-1"></i><?= ($locale ?? 'bn') === 'bn' ? 'দাপ্তরিক ড্যাশবোর্ড' : 'Staff Dashboard' ?>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/profile">
+                                <i class="bi bi-person-badge me-1"></i><?= ($locale ?? 'bn') === 'bn' ? 'প্রোফাইল' : 'Profile' ?>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/wards"><?= ($locale ?? 'bn') === 'bn' ? 'ওয়ার্ড ও এলাকা' : 'Wards' ?></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/" target="_blank">
+                                <i class="bi bi-box-arrow-up-right me-1 small"></i><?= ($locale ?? 'bn') === 'bn' ? 'পাবলিক সাইট' : 'Public Site' ?>
+                            </a>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/"><?= ($locale ?? 'bn') === 'bn' ? 'হোম' : 'Home' ?></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/complaints/create"><?= ($locale ?? 'bn') === 'bn' ? 'অভিযোগ করুন' : 'Submit Complaint' ?></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/track"><?= ($locale ?? 'bn') === 'bn' ? 'অভিযোগ ট্র্যাক করুন' : 'Track Complaint' ?></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/wards"><?= ($locale ?? 'bn') === 'bn' ? 'আমার ওয়ার্ড' : 'My Ward' ?></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/who-is-responsible"><?= ($locale ?? 'bn') === 'bn' ? 'দায়িত্বে কে?' : 'Who is Responsible?' ?></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/notices"><?= ($locale ?? 'bn') === 'bn' ? 'নোটিশ' : 'Notices' ?></a>
+                        </li>
+                    <?php endif; ?>
                 </ul>
 
                 <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
                     <!-- Auth Actions -->
-                    <?php if (\AmarMayor\Auth\Auth::check()): ?>
-                        <?php $user = \AmarMayor\Auth\Auth::user(); ?>
-                        <?php if ($user && ($user->userType !== 'citizen' || count($user->getRoleSlugs()) > 1 || !$user->hasRole('citizen'))): ?>
-                            <a href="/dashboard" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1">
-                                <i class="bi bi-speedometer2"></i>
-                                <span><?= ($locale ?? 'bn') === 'bn' ? 'ড্যাশবোর্ড' : 'Dashboard' ?></span>
-                            </a>
-                        <?php else: ?>
-                            <a href="/my-complaints" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1">
-                                <i class="bi bi-person-circle"></i>
-                                <span><?= ($locale ?? 'bn') === 'bn' ? 'আমার অভিযোগ' : 'My Complaints' ?></span>
-                            </a>
-                        <?php endif; ?>
+                    <?php if ($isAuth): ?>
+                        <a href="/profile" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                            <i class="bi bi-person-circle"></i>
+                            <span class="small font-monospace"><?= e($user->phone ?? $user->email ?? 'Account') ?></span>
+                        </a>
                         <form action="/logout" method="POST" class="d-inline">
                             <?= csrf_field() ?>
-                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
                                 <?= ($locale ?? 'bn') === 'bn' ? 'লগআউট' : 'Logout' ?>
                             </button>
                         </form>

@@ -109,8 +109,8 @@
                         </div>
                     <?php endif; ?>
 
-                    <!-- CITIZEN CONFIRMATION & REOPEN CONTROLS -->
-                    <?php if (in_array($citizenStatus, ['confirmation_needed', 'work_completed'], true)): ?>
+                    <!-- CITIZEN CONFIRMATION & REOPEN CONTROLS (OWNER ONLY) -->
+                    <?php if (!empty($complaint['is_owner']) && in_array($citizenStatus, ['confirmation_needed', 'work_completed'], true)): ?>
                         <div class="alert alert-warning border-0 rounded-3 p-3 mt-3">
                             <h6 class="fw-bold text-dark mb-2">
                                 <i class="bi bi-patch-question-fill text-warning me-1"></i>
@@ -132,6 +132,16 @@
                                     <?= ($locale ?? 'bn') === 'bn' ? 'সমাধান হয়নি — আবার কাজ প্রয়োজন' : 'Not Resolved — Needs More Work' ?>
                                 </button>
                             </div>
+                    <?php elseif (empty($complaint['is_owner']) && in_array($citizenStatus, ['confirmation_needed', 'work_completed'], true)): ?>
+                        <div class="alert alert-info border-0 rounded-3 p-3 mt-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-info-circle-fill text-info fs-5"></i>
+                            <div class="small">
+                                <?= ($locale ?? 'bn') === 'bn' ? 'মাঠপর্যায়ের কাজ সম্পন্ন হয়েছে। অভিযোগকারী নাগরিক তার একাউন্টে লগইন করে সমাধান নিশ্চিত বা পুনরায় কাজের আবেদন করতে পারেন।' : 'Field work has been completed. The citizen owner can log in to confirm or request rework.' ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($complaint['is_owner']) && in_array($citizenStatus, ['confirmation_needed', 'work_completed'], true)): ?>
 
                             <!-- Collapse Confirm Form -->
                             <div class="collapse mt-3" id="confirmBox">

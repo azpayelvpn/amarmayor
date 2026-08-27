@@ -18,7 +18,7 @@ class DevTestingAndOtpInboxTest extends TestCase
     public function testOtpDoesNotAppearInUrl(): void
     {
         $this->setUp();
-        $phone = '01711998811';
+        $phone = '01711' . random_int(100000, 999999);
 
         $res = $this->post('/auth/otp/request', [
             '_csrf_token' => Security::generateCsrfToken(),
@@ -26,7 +26,7 @@ class DevTestingAndOtpInboxTest extends TestCase
         ]);
 
         $this->assertEquals(302, $res->getStatusCode());
-        $location = $res->getHeader('Location');
+        $location = $res->getHeader('location') ?: $res->getHeader('Location');
 
         $this->assert(!empty($location), 'Location header must exist on redirect');
         $this->assert(!str_contains($location, 'mock_otp='), 'Redirect Location URL must NEVER contain mock_otp parameter');

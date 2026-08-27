@@ -24,8 +24,10 @@ $r->get('/track', [ComplaintWebController::class, 'track']);
 $r->get('/track/{trackingNumber}', [ComplaintWebController::class, 'track']);
 $r->post('/complaints/{id}/confirm-resolution', [ComplaintWebController::class, 'confirmResolution']);
 
-// Authenticated Citizen Portfolio
+// Authenticated Citizen Portfolio & Profile
 $r->get('/my-complaints', [ComplaintWebController::class, 'myComplaints']);
+$r->get('/profile', [\AmarMayor\Controllers\Web\ProfileWebController::class, 'show']);
+$r->post('/profile', [\AmarMayor\Controllers\Web\ProfileWebController::class, 'update']);
 
 // Civic Governance, Wards & Public Notices
 $r->get('/who-is-responsible', [CivicDirectoryWebController::class, 'whoIsResponsible']);

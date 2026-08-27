@@ -50,16 +50,19 @@ The platform distinguishes five explicit verification states across all administ
 
 ---
 
-## 4. Current Identified Real Data Gaps
+## 4. Current Identified Real Data Gaps & Verified Baseline
 
-| Entity / Ward Scope | Source Checked | Issue / Gap Description | Applied Policy & Resolution |
+| Entity / Scope | Official Source | Verification Status | Provenance & Applied Policy |
 | :--- | :--- | :--- | :--- |
-| **General Wards 01–33** | MCC Official Site Document Archive | Transitional administrative period; councillor tenures subject to Ministry of LGRD administrative orders. | Structural wards seeded cleanly. Effective-dated `representation_assignments` populated only upon confirmed official gazette parsing. |
-| **Reserved Seats 01–11** | Local Government (City Corporation) Act 2009 | Statutory cluster mapping: each reserved seat maps to exactly 3 general wards (1–3, 4–6, ..., 31–33). | Fully mapped in `structural` seed data (`reserved_seat_wards`). Representation assignments linked to verified appointees. |
-| **Departmental Contacts** | MCC Portal Directory | Contact numbers undergoing periodic administrative redistribution. | Provenance tagged as `pending_verification` until cross-checked against active MCC gazette. |
+| **MCC Administrative Leadership** (Administrator, CEO, Secretary, Chief Engineer, Chief Waste Officer, Health Officer, ZEOs, Town Planner) | MCC Official Administration Directory & Ministry of LGRD Gazette (`https://mcc.gov.bd/site/page/officers-directory`) | `verified_current` | Fully imported into `persons` and `employees` with `user_id = NULL`. Zero login accounts created (Rule 7: Person != Employee != User). |
+| **General Wards 01–33 Councillors** | Ministry of LGRD Transitional Orders | `pending_verification` / Transition | Post-August 2024 local government transition under Administrator. Wards seeded structurally; representation assignments populated as official gazettes are released. |
+| **Reserved Seats 01–11** | Local Government (City Corporation) Act 2009 | `structural` | 11 reserved seats configured with statutorily defined coverage mapping. |
+| **Operational Field Workforce** (Cleaners, Sweepers, Drivers, Drain Desilters) | Pending Official HR Personnel Roll | `pending_verification` / Gap | No real field workers or drivers are fabricated. Fictional operational workforce is strictly isolated in demo seeds (`is_demo = 1`). |
+| **Departmental Contacts** | MCC Portal Directory | `verified_current` | Core official helpline and email verified (`+8809166666`, `info@mcc.gov.bd`). |
 
 ---
 
 ## 5. Data Cleanup Guarantee
 
 Commands such as `demo:clear` or `demo:reset` are strictly scoped to remove only records marked `is_demo = 1` or `verification_status = 'demo_test'`. All `structural`, `verified_current`, `verified_historical`, and `pending_verification` records are permanently preserved.
+

@@ -116,6 +116,23 @@ abstract class TestCase
         }
     }
 
+    protected function assertNotEmpty(mixed $actual, string $message = ''): void
+    {
+        $this->assert(!empty($actual), $message ?: 'Expected non-empty value, got empty');
+    }
+
+    protected function assertGreaterThanOrEqual(int|float $expected, int|float $actual, string $message = ''): void
+    {
+        $this->assert($actual >= $expected, $message ?: "Expected [{$actual}] to be >= [{$expected}]");
+    }
+
+    protected function assertStringNotContainsString(string $needle, string $haystack, string $message = ''): void
+    {
+        if (str_contains($haystack, $needle)) {
+            throw new \AssertionError($message ?: "String [{$haystack}] unexpectedly contains [{$needle}]");
+        }
+    }
+
     protected function assertIsArray(mixed $actual, string $message = ''): void
     {
         if (!is_array($actual)) {

@@ -158,6 +158,11 @@ class Request
         return (string)($this->server['REMOTE_ADDR'] ?? '127.0.0.1');
     }
 
+    public function ip(): string
+    {
+        return $this->getIp();
+    }
+
     public function getClientIp(): string
     {
         return $this->getIp();

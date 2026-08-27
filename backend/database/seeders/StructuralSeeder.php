@@ -30,6 +30,9 @@ class StructuralSeeder
             self::seedSkills($pdo);
             self::seedCoreSettings($pdo);
         });
+
+        // Seed verified official MCC administrative baseline
+        VerifiedMccDataSeeder::run();
     }
 
     private static function seedCity(PDO $pdo): void

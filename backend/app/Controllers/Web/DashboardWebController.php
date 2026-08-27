@@ -59,12 +59,13 @@ class DashboardWebController
             return Response::redirect('/login');
         }
 
-        // If pure citizen, redirect to citizen portal
-        if ($user->hasRole('citizen') && count($user->getRoleSlugs()) === 1) {
+        // If pure citizen or user without staff roles, always redirect to citizen portal
+        $roles = $user->getRoleSlugs();
+        $staffRoles = array_diff($roles, ['citizen', 'public_viewer']);
+        if ($user->userType === 'citizen' || empty($staffRoles)) {
             return Response::redirect('/my-complaints');
         }
 
-        $roles = $user->getRoleSlugs();
         $primaryRole = $this->resolvePrimaryRole($roles);
         $pdo = DatabaseManager::getConnection();
         $locale = Translator::getLocale();
@@ -383,8 +384,8 @@ class DashboardWebController
             'public_info_officer',
             'data_monitoring_officer',
             'auditor',
-            'public_viewer',
             'citizen',
+            'public_viewer',
         ];
 
         foreach ($priority as $r) {
@@ -393,6 +394,6 @@ class DashboardWebController
             }
         }
 
-        return $roles[0] ?? 'public_viewer';
+        return in_array('citizen', $roles, true) ? 'citizen' : ($roles[0] ?? 'citizen');
     }
 }

@@ -280,6 +280,7 @@ class ComplaintService
         $row['timeline'] = $dedupedTimeline;
 
         // If viewing as citizen owner, include full description and uploaded media
+        $row['is_owner'] = $isOwner;
         if ($isOwner) {
             $desc = $pdo->query("SELECT description FROM complaints WHERE id = {$row['id']}")->fetchColumn();
             $row['description'] = $desc;

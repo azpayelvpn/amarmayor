@@ -124,20 +124,140 @@ switch ($command) {
         }
         break;
 
+    case 'demo:seed':
     case 'seed:demo':
         try {
             $env = Config::get('app.env', 'production');
             $hasForce = in_array('--force', $args, true);
             if ($env === 'production' && !$hasForce) {
-                echo "🚨 ERROR: Cannot run seed:demo in PRODUCTION environment without --force flag.\n";
+                echo "🚨 ERROR: Cannot run demo seeding in PRODUCTION environment without --force flag.\n";
                 echo "   Fictional demo accounts and data must never pollute production systems.\n";
                 exit(1);
             }
-            echo "Seeding fictional demo data (Demo Employees, Teams, Users)...\n";
-            \AmarMayor\Database\Seeders\DemoSeeder::run();
+            echo "Seeding rich realistic demo dataset (Demo Citizens, Workforce, Teams, 600+ Complaints)...\n";
+            \AmarMayor\Database\Seeders\RealisticDemoSeeder::run();
             echo "✅ Demo seeding completed successfully.\n";
         } catch (\Throwable $e) {
             echo "❌ Demo seeding failed: " . $e->getMessage() . "\n";
+            exit(1);
+        }
+        break;
+
+    case 'demo:clear':
+        try {
+            $env = Config::get('app.env', 'production');
+            $hasForce = in_array('--force', $args, true);
+            $isDryRun = in_array('--dry-run', $args, true);
+
+            if ($env === 'production' && !$hasForce) {
+                echo "🚨 ERROR: Cannot run demo:clear in PRODUCTION environment without --force flag.\n";
+                exit(1);
+            }
+
+            $pdo = DatabaseManager::getConnection();
+
+            // Calculate Demo Records Counts
+            $demoCompIds = $pdo->query("SELECT id FROM complaints WHERE is_demo = 1 OR data_origin = 'demo' OR public_complaint_number LIKE 'MCC-DEMO-%'")->fetchAll(PDO::FETCH_COLUMN);
+            $compCount = count($demoCompIds);
+            $demoUserIds = $pdo->query("SELECT id FROM users WHERE is_demo = 1 OR email LIKE '%@demo.local'")->fetchAll(PDO::FETCH_COLUMN);
+            $userCount = count($demoUserIds);
+            $demoEmpIds = $pdo->query("SELECT id FROM employees WHERE is_demo = 1 OR verification_status = 'demo_test' OR employee_code LIKE 'DEMO-%'")->fetchAll(PDO::FETCH_COLUMN);
+            $empCount = count($demoEmpIds);
+            $demoPersonIds = $pdo->query("SELECT id FROM persons WHERE is_demo = 1 OR verification_status = 'demo_test'")->fetchAll(PDO::FETCH_COLUMN);
+            $personCount = count($demoPersonIds);
+            $demoTeamIds = $pdo->query("SELECT id FROM teams WHERE is_demo = 1 OR name_en LIKE 'Demo %'")->fetchAll(PDO::FETCH_COLUMN);
+            $teamCount = count($demoTeamIds);
+
+            echo "Identified Demo/Test Entities for Purge:\n";
+            echo "  - Demo Complaints & Tasks:        {$compCount} complaints\n";
+            echo "  - Demo Users & Authentications:   {$userCount} users\n";
+            echo "  - Demo Employees & Workforce:     {$empCount} employees\n";
+            echo "  - Demo Persons & Profiles:        {$personCount} persons\n";
+            echo "  - Demo Operational Teams:         {$teamCount} teams\n\n";
+
+            if ($isDryRun) {
+                echo "🔍 [DRY RUN] No records were modified or deleted.\n";
+                echo "   All structural, verified official, and historical records remain intact.\n";
+                break;
+            }
+
+            echo "Purging only positively identified Demo/Test records...\n";
+            DatabaseManager::transaction(function (PDO $pdo) use ($demoCompIds, $demoUserIds, $demoEmpIds, $demoPersonIds, $demoTeamIds) {
+                $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
+
+                if (!empty($demoCompIds)) {
+                    $cList = implode(',', array_map('intval', $demoCompIds));
+                    $pdo->exec("DELETE FROM complaint_locations WHERE complaint_id IN ({$cList})");
+                    $pdo->exec("DELETE FROM complaint_media WHERE complaint_id IN ({$cList})");
+                    $pdo->exec("DELETE FROM complaint_status_history WHERE complaint_id IN ({$cList})");
+                    $pdo->exec("DELETE FROM complaint_messages WHERE complaint_id IN ({$cList})");
+                    $pdo->exec("DELETE FROM citizen_feedback WHERE complaint_id IN ({$cList})");
+                    $pdo->exec("DELETE FROM internal_notes WHERE complaint_id IN ({$cList})");
+                    $pdo->exec("DELETE FROM task_evidence WHERE field_task_id IN (SELECT id FROM field_tasks WHERE complaint_id IN ({$cList}))");
+                    $pdo->exec("DELETE FROM field_task_assignments WHERE field_task_id IN (SELECT id FROM field_tasks WHERE complaint_id IN ({$cList}))");
+                    $pdo->exec("DELETE FROM support_requests WHERE complaint_id IN ({$cList})");
+                    $pdo->exec("DELETE FROM explanation_requests WHERE complaint_id IN ({$cList})");
+                    $pdo->exec("DELETE FROM field_tasks WHERE complaint_id IN ({$cList})");
+                    $pdo->exec("DELETE FROM executive_attention WHERE complaint_id IN ({$cList})");
+                    $pdo->exec("DELETE FROM executive_directives WHERE complaint_id IN ({$cList})");
+                    $pdo->exec("DELETE FROM complaints WHERE id IN ({$cList})");
+                }
+
+                if (!empty($demoTeamIds)) {
+                    $tList = implode(',', array_map('intval', $demoTeamIds));
+                    $pdo->exec("DELETE FROM team_members WHERE team_id IN ({$tList})");
+                    $pdo->exec("DELETE FROM teams WHERE id IN ({$tList})");
+                }
+
+                if (!empty($demoEmpIds)) {
+                    $eList = implode(',', array_map('intval', $demoEmpIds));
+                    $pdo->exec("DELETE FROM employee_postings WHERE employee_id IN ({$eList})");
+                    $pdo->exec("DELETE FROM employee_responsibilities WHERE employee_id IN ({$eList})");
+                    $pdo->exec("DELETE FROM employees WHERE id IN ({$eList})");
+                }
+
+                $pdo->exec("DELETE FROM representation_assignments WHERE is_demo = 1 OR verification_status = 'demo_test'");
+
+                if (!empty($demoPersonIds)) {
+                    $pList = implode(',', array_map('intval', $demoPersonIds));
+                    $pdo->exec("DELETE FROM persons WHERE id IN ({$pList})");
+                }
+
+                if (!empty($demoUserIds)) {
+                    $uList = implode(',', array_map('intval', $demoUserIds));
+                    $pdo->exec("DELETE FROM user_roles WHERE user_id IN ({$uList})");
+                    $pdo->exec("DELETE FROM user_scopes WHERE user_id IN ({$uList})");
+                    $pdo->exec("DELETE FROM user_tokens WHERE user_id IN ({$uList})");
+                    $pdo->exec("DELETE FROM users WHERE id IN ({$uList})");
+                }
+
+                $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
+            });
+
+            echo "✅ Successfully purged all demo/test records.\n";
+            echo "   Preserved: Structural data (33 Wards, 3 Zones, 11 Reserved Seats, Roles, Permissions, Taxonomies) & Verified Official Records.\n";
+        } catch (\Throwable $e) {
+            echo "❌ demo:clear failed: " . $e->getMessage() . "\n";
+            exit(1);
+        }
+        break;
+
+    case 'demo:reset':
+        try {
+            $env = Config::get('app.env', 'production');
+            $hasForce = in_array('--force', $args, true);
+            if ($env === 'production' && !$hasForce) {
+                echo "🚨 ERROR: Cannot run demo:reset in PRODUCTION environment without --force flag.\n";
+                exit(1);
+            }
+
+            echo "Step 1: Clearing existing demo records...\n";
+            passthru("php " . __FILE__ . " demo:clear" . ($hasForce ? " --force" : ""));
+            echo "\nStep 2: Reseeding fresh realistic demo dataset...\n";
+            passthru("php " . __FILE__ . " demo:seed" . ($hasForce ? " --force" : ""));
+            echo "✅ demo:reset completed successfully.\n";
+        } catch (\Throwable $e) {
+            echo "❌ demo:reset failed: " . $e->getMessage() . "\n";
             exit(1);
         }
         break;
@@ -184,8 +304,10 @@ switch ($command) {
         echo "  migrate:status    Show migration execution status\n";
         echo "  migrate:rollback  Rollback the latest migration batch\n";
         echo "  migrate:fresh     Drop all tables, re-run all migrations & structural seed\n";
-        echo "  seed:structural   Run official MCC structural seeder\n";
-        echo "  seed:demo         Run fictional development demo seeder\n";
+        echo "  seed:structural   Run official MCC structural seeder & verified baseline\n";
+        echo "  demo:seed         Run rich realistic development demo seeder (600+ complaints)\n";
+        echo "  demo:clear        Purge only demo/test records (preserves structural & verified)\n";
+        echo "  demo:reset        Purge and reseed realistic demo dataset\n";
         echo "  make:migration    Generate a new migration template\n";
         echo "  health            Check system connectivity and component health\n";
         echo "  serve [port]      Start PHP built-in web server (default: 8000)\n";

@@ -112,8 +112,34 @@ class ComplaintWebController
             $categoryId = $sub ? (int)$sub['category_id'] : 1;
         }
 
+        $isEmergency = (bool)$request->input('is_emergency', false);
+        $mediaList = [];
+
+        // Handle photo upload
+        $file = $request->file('photo') ?? ($_FILES['photo'] ?? null);
+        if ($file && !empty($file['tmp_name']) && (is_uploaded_file($file['tmp_name']) || file_exists($file['tmp_name']))) {
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
+                $filename = 'comp_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                $targetDir = dirname(__DIR__, 3) . '/public/uploads/complaints';
+                if (!is_dir($targetDir)) {
+                    @mkdir($targetDir, 0777, true);
+                }
+                $targetPath = $targetDir . '/' . $filename;
+                if (@move_uploaded_file($file['tmp_name'], $targetPath) || @copy($file['tmp_name'], $targetPath)) {
+                    $mediaList[] = [
+                        'media_type' => 'image',
+                        'file_path' => '/uploads/complaints/' . $filename,
+                        'mime_type' => $file['type'] ?? 'image/jpeg',
+                        'file_size' => (int)($file['size'] ?? 102400),
+                        'is_live' => false,
+                    ];
+                }
+            }
+        }
+
         try {
-            $complaint = $this->complaintService->createComplaint([
+            $complaintParams = [
                 'citizen_user_id' => $citizenUserId,
                 'category_id' => $categoryId,
                 'subcategory_id' => $subcategoryId,
@@ -121,7 +147,41 @@ class ComplaintWebController
                 'description' => $description,
                 'landmark' => !empty($landmark) ? $landmark : null,
                 'approximate_address' => !empty($approximateAddress) ? $approximateAddress : null,
-            ]);
+                'media' => $mediaList,
+            ];
+
+            if ($isEmergency) {
+                $complaintParams['priority'] = 'p1_urgent';
+                $complaintParams['operational_classification'] = 'emergency';
+            }
+
+            $complaint = $this->complaintService->createComplaint($complaintParams);
+
+            if ($isEmergency) {
+                try {
+                    $notifService = new \AmarMayor\Domain\Notifications\NotificationService();
+                    $notifService->notifyRole(
+                        'mayor',
+                        '🚨 জরুরি নাগরিক বিপত্তি এলার্ট!',
+                        'Emergency Civic Hazard Alert',
+                        "ওয়ার্ড নং {$wardId}-এ জরুরি বিপত্তির অভিযোগ জমা পড়েছে (ট্র্যাকিং: {$complaint['public_complaint_number']})। দ্রুত ব্যবস্থা প্রয়োজন।",
+                        "Emergency civic hazard reported in Ward {$wardId} (Tracking: {$complaint['public_complaint_number']}).",
+                        'emergency_alert',
+                        ['complaint_id' => $complaint['id']]
+                    );
+                    $notifService->notifyRole(
+                        'control_room_officer',
+                        '🚨 জরুরি নাগরিক বিপত্তি এলার্ট!',
+                        'Emergency Civic Hazard Alert',
+                        "ওয়ার্ড নং {$wardId}-এ জরুরি বিপত্তির অভিযোগ জমা পড়েছে (ট্র্যাকিং: {$complaint['public_complaint_number']})।",
+                        "Emergency civic hazard in Ward {$wardId}.",
+                        'emergency_alert',
+                        ['complaint_id' => $complaint['id']]
+                    );
+                } catch (\Throwable $t) {
+                    // Non-blocking notification failure
+                }
+            }
 
             return view('complaints/success', [
                 'locale' => Translator::getLocale(),
@@ -255,5 +315,48 @@ class ComplaintWebController
             'user' => $user,
             'complaints' => $complaints,
         ]);
+    }
+
+    /**
+     * Community upvote: "আমিও ভুক্তভোগী" (I am also affected)
+     */
+    public function support(Request $request, string $id): Response
+    {
+        $complaintId = (int)$id;
+        $pdo = DatabaseManager::getConnection();
+
+        $stmt = $pdo->prepare("SELECT public_complaint_number FROM complaints WHERE id = ? LIMIT 1");
+        $stmt->execute([$complaintId]);
+        $trackingNumber = $stmt->fetchColumn();
+
+        if (!$trackingNumber) {
+            return Response::redirect('/track');
+        }
+
+        if (!Auth::check()) {
+            return Response::redirect('/login?return=' . urlencode("/track/{$trackingNumber}"));
+        }
+
+        $userId = Auth::id();
+
+        // Check if already supported
+        $chk = $pdo->prepare("SELECT id FROM complaint_supporters WHERE complaint_id = ? AND citizen_user_id = ? LIMIT 1");
+        $chk->execute([$complaintId, $userId]);
+        $existingId = $chk->fetchColumn();
+
+        if (!$existingId) {
+            $ins = $pdo->prepare("INSERT INTO complaint_supporters (complaint_id, citizen_user_id, created_at) VALUES (?, ?, NOW())");
+            $ins->execute([$complaintId, $userId]);
+            $msg = 'আপনার সমর্থন যোগ করা হয়েছে। আপনিও এই সমস্যার ভুক্তভোগী হিসেবে নথিভুক্ত হলেন।';
+        } else {
+            $msg = 'আপনি ইতিমধ্যে এই সমস্যায় আপনার সমর্থন জানিয়েছেন।';
+        }
+
+        if ($request->isHtmx() || $request->isJson()) {
+            $cnt = (int)$pdo->query("SELECT COUNT(*) FROM complaint_supporters WHERE complaint_id = {$complaintId}")->fetchColumn();
+            return Response::json(['success' => true, 'supporters_count' => $cnt]);
+        }
+
+        return Response::redirect("/track/{$trackingNumber}?success=" . urlencode($msg));
     }
 }

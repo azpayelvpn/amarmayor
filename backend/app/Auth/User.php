@@ -49,6 +49,20 @@ class User implements \ArrayAccess
         $this->createdAt = (string)($attributes['created_at'] ?? date('Y-m-d H:i:s'));
     }
 
+    public function __get(string $name): mixed
+    {
+        if ($name === 'user_type') {
+            return $this->userType;
+        }
+        if ($name === 'phone_lookup_hash') {
+            return $this->phoneLookupHash;
+        }
+        if ($name === 'password_hash') {
+            return $this->passwordHash;
+        }
+        return null;
+    }
+
     public static function findById(int $id): ?self
     {
         $pdo = DatabaseManager::getConnection();

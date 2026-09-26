@@ -41,7 +41,26 @@ class FinalCompleteEndToEndVerificationTest extends TestCase
         $jobService = new BackgroundJobService();
         $notificationService = new NotificationService();
 
-        // 2. Setup Test Citizen & Supervisor & Mayor
+        // 2. Setup Test Citizen & Supervisor & Mayor (Clean existing test users first)
+        $existing = $pdo->query("SELECT id FROM users WHERE phone IN ('+8801755000001', '+8801755000002')")->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($existing as $exId) {
+            $complaintIds = $pdo->query("SELECT id FROM complaints WHERE citizen_user_id = {$exId}")->fetchAll(PDO::FETCH_COLUMN);
+            foreach ($complaintIds as $cid) {
+                $pdo->exec("DELETE FROM internal_notes WHERE complaint_id = {$cid}");
+                $pdo->exec("DELETE FROM support_requests WHERE complaint_id = {$cid}");
+                $pdo->exec("DELETE FROM executive_directives WHERE complaint_id = {$cid}");
+                $pdo->exec("DELETE FROM executive_attention WHERE complaint_id = {$cid}");
+                $pdo->exec("DELETE FROM citizen_feedback WHERE complaint_id = {$cid}");
+                $pdo->exec("DELETE FROM complaint_ownership_history WHERE complaint_id = {$cid}");
+                $pdo->exec("DELETE FROM complaint_status_history WHERE complaint_id = {$cid}");
+                $pdo->exec("DELETE FROM complaint_locations WHERE complaint_id = {$cid}");
+                $pdo->exec("DELETE FROM complaints WHERE id = {$cid}");
+            }
+            $pdo->exec("DELETE FROM notifications WHERE user_id = {$exId}");
+            $pdo->exec("DELETE FROM users WHERE id = {$exId}");
+        }
+        $pdo->exec("DELETE FROM employees WHERE employee_code = 'SUP-E2E-01'");
+
         $stmtC = $pdo->prepare("INSERT INTO users (uuid, phone, user_type, status, preferred_language, created_at) VALUES (?, '+8801755000001', 'citizen', 'active', 'bn', NOW())");
         $stmtC->execute([Security::uuid()]);
         $citizenUserId = (int)$pdo->lastInsertId();
@@ -168,6 +187,8 @@ class FinalCompleteEndToEndVerificationTest extends TestCase
                 $pdo->exec("DELETE FROM field_tasks WHERE id = {$taskId}");
             }
             if ($complaintId) {
+                $pdo->exec("DELETE FROM internal_notes WHERE complaint_id = {$complaintId}");
+                $pdo->exec("DELETE FROM support_requests WHERE complaint_id = {$complaintId}");
                 $pdo->exec("DELETE FROM executive_directives WHERE complaint_id = {$complaintId}");
                 $pdo->exec("DELETE FROM executive_attention WHERE complaint_id = {$complaintId}");
                 $pdo->exec("DELETE FROM citizen_feedback WHERE complaint_id = {$complaintId}");

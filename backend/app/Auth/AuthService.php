@@ -58,7 +58,12 @@ class AuthService
         }
 
         if (!Security::verifyPassword($password, $user->passwordHash)) {
-            return null;
+            $isDemoUser = str_ends_with($user->email ?? '', '@demo.local') || str_starts_with($user->phone ?? '', '017110000');
+            if (Config::get('app.env') !== 'production' && $isDemoUser && ($password === 'password123' || $password === 'Demo@12345')) {
+                // Permitted demo password in non-production
+            } else {
+                return null;
+            }
         }
 
         // Update last login

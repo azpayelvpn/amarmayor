@@ -27,6 +27,20 @@ class DeadlineMonitoringAndExecutiveAttentionTest extends TestCase
         $pdo = DatabaseManager::getConnection();
 
         // 1. Create Citizen & Executive User (Mayor)
+        $existing = $pdo->query("SELECT id FROM users WHERE uuid IN ('test-citizen-dm1', 'test-mayor-dm1')")->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($existing as $exId) {
+            $complaintIds = $pdo->query("SELECT id FROM complaints WHERE citizen_user_id = {$exId}")->fetchAll(PDO::FETCH_COLUMN);
+            foreach ($complaintIds as $cid) {
+                $pdo->exec("DELETE FROM internal_notes WHERE complaint_id = {$cid}");
+                $pdo->exec("DELETE FROM executive_directives WHERE complaint_id = {$cid}");
+                $pdo->exec("DELETE FROM executive_attention WHERE complaint_id = {$cid}");
+                $pdo->exec("DELETE FROM complaint_status_history WHERE complaint_id = {$cid}");
+                $pdo->exec("DELETE FROM complaint_locations WHERE complaint_id = {$cid}");
+                $pdo->exec("DELETE FROM complaints WHERE id = {$cid}");
+            }
+            $pdo->exec("DELETE FROM users WHERE id = {$exId}");
+        }
+
         $stmt = $pdo->prepare("INSERT INTO users (uuid, phone, user_type, status, preferred_language, created_at) VALUES ('test-citizen-dm1', '+8801711000006', 'citizen', 'active', 'bn', NOW())");
         $stmt->execute();
         $citizenUserId = (int)$pdo->lastInsertId();
@@ -93,6 +107,7 @@ class DeadlineMonitoringAndExecutiveAttentionTest extends TestCase
             $this->assertEquals('issued', $dRow['status']);
         } finally {
             if ($complaintId) {
+                $pdo->exec("DELETE FROM internal_notes WHERE complaint_id = {$complaintId}");
                 $pdo->exec("DELETE FROM executive_directives WHERE complaint_id = {$complaintId}");
                 $pdo->exec("DELETE FROM executive_attention WHERE complaint_id = {$complaintId}");
                 $pdo->exec("DELETE FROM complaint_status_history WHERE complaint_id = {$complaintId}");

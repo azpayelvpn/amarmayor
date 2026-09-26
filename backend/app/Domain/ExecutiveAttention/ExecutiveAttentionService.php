@@ -178,8 +178,145 @@ class ExecutiveAttentionService
             VALUES (?, ?, ?, ?, 'issued', NOW())
         ");
         $stmt->execute([$executiveUserId, $complaintId, $directiveType, $instruction]);
+        $directiveId = (int)$pdo->lastInsertId();
 
-        return (int)$pdo->lastInsertId();
+        // Check assigned supervisor and notify them immediately
+        $supStmt = $pdo->prepare("
+            SELECT p.user_id, c.public_complaint_number, w.ward_number
+            FROM complaints c
+            LEFT JOIN wards w ON w.id = c.ward_id
+            LEFT JOIN employees e ON e.id = c.current_supervisor_employee_id
+            LEFT JOIN persons p ON p.id = e.person_id
+            WHERE c.id = ? LIMIT 1
+        ");
+        $supStmt->execute([$complaintId]);
+        $supInfo = $supStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($supInfo && !empty($supInfo['user_id'])) {
+            try {
+                $notif = new \AmarMayor\Domain\Notifications\NotificationService();
+                $notif->notifyUser(
+                    (int)$supInfo['user_id'],
+                    "🚨 মেয়র মহোদয়ের সরাসরি নির্দেশনা!",
+                    "Mayor Executive Directive",
+                    "অভিযোগ {$supInfo['public_complaint_number']}-এর বিষয়ে মেয়র মহোদয়ের জরুরি নির্দেশনা: {$instruction}",
+                    "Mayor directive for {$supInfo['public_complaint_number']}: {$instruction}",
+                    "executive_directive",
+                    ['complaint_id' => $complaintId, 'directive_id' => $directiveId]
+                );
+            } catch (\Throwable $t) {
+                // Non-blocking notification failure
+            }
+        }
+
+        // Record into internal notes
+        try {
+            $noteStmt = $pdo->prepare("
+                INSERT INTO internal_notes (complaint_id, author_user_id, note_type, note_text, created_at)
+                VALUES (?, ?, 'directive', ?, NOW())
+            ");
+            $noteStmt->execute([$complaintId, $executiveUserId, "মেয়র মহোদয়ের নির্দেশনা ({$directiveType}): " . $instruction]);
+        } catch (\Throwable $t) {
+            // Non-blocking note failure
+        }
+
+        return $directiveId;
+    }
+
+    /**
+     * Supervisor responds to Mayor's Executive Directive.
+     */
+    public function respondToDirective(int $directiveId, int $supervisorUserId, string $responseText): void
+    {
+        $pdo = DatabaseManager::getConnection();
+
+        $stmt = $pdo->prepare("
+            SELECT ed.*, c.public_complaint_number, p.full_name_bn as supervisor_name
+            FROM executive_directives ed
+            LEFT JOIN complaints c ON c.id = ed.complaint_id
+            LEFT JOIN persons p ON p.user_id = ?
+            WHERE ed.id = ? LIMIT 1
+        ");
+        $stmt->execute([$supervisorUserId, $directiveId]);
+        $directive = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$directive) {
+            throw new InvalidArgumentException("Directive #{$directiveId} not found.");
+        }
+
+        $pdo->beginTransaction();
+        try {
+            $upd = $pdo->prepare("
+                UPDATE executive_directives
+                SET status = 'acknowledged', response_text = ?, responded_at = NOW()
+                WHERE id = ?
+            ");
+            $upd->execute([$responseText, $directiveId]);
+
+            // Append internal note
+            if (!empty($directive['complaint_id'])) {
+                $noteStmt = $pdo->prepare("
+                    INSERT INTO internal_notes (complaint_id, author_user_id, note_type, note_text, created_at)
+                    VALUES (?, ?, 'directive_reply', ?, NOW())
+                ");
+                $supName = $directive['supervisor_name'] ?? 'সুপারভাইজার';
+                $noteStmt->execute([
+                    $directive['complaint_id'],
+                    $supervisorUserId,
+                    "মেয়র মহোদয়ের নির্দেশনার জবাব ({$supName}): " . $responseText
+                ]);
+            }
+
+            $pdo->commit();
+
+            // Real-time notify Mayor / Executive
+            if (!empty($directive['executive_user_id'])) {
+                try {
+                    $notif = new \AmarMayor\Domain\Notifications\NotificationService();
+                    $compNum = $directive['public_complaint_number'] ?? 'সাধারণ';
+                    $notif->notifyUser(
+                        (int)$directive['executive_user_id'],
+                        "নির্দেশনার জবাব এসেছে ({$compNum})",
+                        "Supervisor Replied to Directive",
+                        "অভিযোগ {$compNum}-এর বিষয়ে সুপারভাইজারের জবাব: {$responseText}",
+                        "Supervisor responded to directive on {$compNum}: {$responseText}",
+                        "directive_response",
+                        ['directive_id' => $directiveId, 'complaint_id' => $directive['complaint_id']]
+                    );
+                } catch (\Throwable $t) {
+                    // Non-blocking notification failure
+                }
+            }
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Get active executive directives for a supervisor's ward.
+     */
+    public function getDirectivesForSupervisor(int $supervisorUserId): array
+    {
+        $pdo = DatabaseManager::getConnection();
+        $stmt = $pdo->prepare("
+            SELECT ed.*, c.public_complaint_number, w.ward_number,
+                   p_exec.full_name_bn as executive_name_bn
+            FROM executive_directives ed
+            INNER JOIN complaints c ON c.id = ed.complaint_id
+            INNER JOIN wards w ON w.id = c.ward_id
+            LEFT JOIN persons p_exec ON p_exec.user_id = ed.executive_user_id
+            WHERE ed.status = 'issued' AND c.ward_id IN (
+                SELECT w2.id FROM employee_responsibilities er
+                INNER JOIN employees em ON em.id = er.employee_id
+                INNER JOIN persons pr ON pr.id = em.person_id
+                INNER JOIN wards w2 ON w2.ward_number = er.area_id
+                WHERE pr.user_id = ? AND er.area_type = 'ward'
+            )
+            ORDER BY ed.id DESC
+        ");
+        $stmt->execute([$supervisorUserId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**

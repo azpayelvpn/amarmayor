@@ -50,9 +50,44 @@
             ];
         ?>
 
+        <!-- Filter Toolbar -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-3 mb-3 table-filter-toolbar" data-filter-target="#citizen-complaints-table">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control border-start-0 filter-search" placeholder="<?= ($locale ?? 'bn') === 'bn' ? 'ট্র্যাকিং নম্বর বা সমস্যার বিবরণ খুঁজুন...' : 'Search tracking # or issue details...' ?>">
+                    </div>
+                </div>
+                <div class="col-md-7 d-flex flex-wrap align-items-center justify-content-md-end gap-1">
+                    <button class="btn btn-sm btn-primary filter-pill active" data-status="">
+                        <?= ($locale ?? 'bn') === 'bn' ? 'সকল' : 'All' ?>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary filter-pill" data-status="received">
+                        <?= ($locale ?? 'bn') === 'bn' ? 'গৃহীত' : 'Received' ?>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary filter-pill" data-status="in_progress">
+                        <?= ($locale ?? 'bn') === 'bn' ? 'চলমান' : 'In Progress' ?>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary filter-pill" data-status="confirmation_needed">
+                        <?= ($locale ?? 'bn') === 'bn' ? 'যাচাই প্রয়োজন' : 'Action Needed' ?>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary filter-pill" data-status="resolved">
+                        <?= ($locale ?? 'bn') === 'bn' ? 'সমাধানকৃত' : 'Resolved' ?>
+                    </button>
+                    <button class="btn btn-sm btn-link text-muted filter-reset p-1 ms-1" title="রিসেট">
+                        <i class="bi bi-arrow-counterclockwise fs-6"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mt-2 text-muted small filter-count">
+                <!-- Dynamically updated by table-filter.js -->
+            </div>
+        </div>
+
         <div class="card border shadow-sm rounded-4 bg-white overflow-hidden">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0" id="citizen-complaints-table">
                     <thead class="table-light">
                         <tr>
                             <th class="ps-4 py-3"><?= ($locale ?? 'bn') === 'bn' ? 'ট্র্যাকিং নম্বর' : 'Tracking #' ?></th>
@@ -68,8 +103,9 @@
                             <?php
                                 $st = $c['citizen_status'] ?? 'received';
                                 $badgeText = ($locale ?? 'bn') === 'bn' ? ($statusMapBn[$st] ?? $st) : ($statusMapEn[$st] ?? $st);
+                                $searchString = ($c['public_complaint_number'] ?? '') . ' ' . ($c['subcategory_name_bn'] ?? '') . ' ' . ($c['category_name_bn'] ?? '') . ' ' . ($c['description'] ?? '');
                             ?>
-                            <tr>
+                            <tr data-search="<?= e($searchString) ?>" data-status="<?= e($st) ?>" data-ward="<?= e((string)($c['ward_number'] ?? '')) ?>">
                                 <td class="ps-4 font-monospace fw-bold text-primary">
                                     <?= e($c['public_complaint_number']) ?>
                                 </td>

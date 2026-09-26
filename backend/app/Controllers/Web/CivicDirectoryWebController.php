@@ -104,4 +104,14 @@ class CivicDirectoryWebController
             'notices' => $notices,
         ]);
     }
+
+    /**
+     * Show Citizen Charter & Operational Schedules (Waste pickup, Mosquito spray, SLA).
+     */
+    public function schedules(Request $request): Response
+    {
+        return view('civic/schedules', [
+            'locale' => Translator::getLocale(),
+        ]);
+    }
 }

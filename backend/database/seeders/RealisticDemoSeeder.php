@@ -577,10 +577,6 @@ class RealisticDemoSeeder
                     continue;
                 }
                 $cExistsInDb = $pdo->query("SELECT id FROM complaints WHERE public_complaint_number = '{$tracking}' LIMIT 1")->fetchColumn();
-                if ($cExistsInDb) {
-                    $existingTracking[$tracking] = true;
-                    continue;
-                }
 
                 $sub = $subcategories[$i % $subCount];
                 $catId = (int)$sub['category_id'];
@@ -660,6 +656,19 @@ class RealisticDemoSeeder
                     $closedAt = null;
                 }
 
+                if ($cExistsInDb) {
+                    $existingTracking[$tracking] = true;
+                    // Keep open complaint deadlines fresh relative to NOW() so that demo data stays realistic over time
+                    if (!$isResolved && !$isCancelled) {
+                        $pdo->prepare("
+                            UPDATE complaints 
+                            SET submitted_at = ?, deadline_at = ?, deadline_missed_at = ?
+                            WHERE id = ?
+                        ")->execute([$submittedTime, $deadlineTime, $deadlineMissed, $cExistsInDb]);
+                    }
+                    continue;
+                }
+
                 $isRecurring = ($i % 28 === 0);
                 $landmark = $sampleLandmarks[$i % count($sampleLandmarks)];
                 $desc = $descriptions[$i % count($descriptions)];
@@ -729,6 +738,18 @@ class RealisticDemoSeeder
                     $insEA->execute([$cId, 'recurring_hotspot', 'p3_normal', $submittedTime]);
                 }
             }
+
+            // Synchronize executive attention triggers for deadline breaches
+            $pdo->exec("
+                UPDATE executive_attention ea
+                JOIN complaints c ON c.id = ea.complaint_id
+                SET ea.is_active = 0
+                WHERE ea.trigger_type = 'deadline_breach' 
+                  AND (c.deadline_at >= NOW() OR c.closed_at IS NOT NULL OR c.internal_status IN ('closed', 'rejected', 'cancelled'))
+            ");
         });
+
+        WardSupervisorsSeeder::run();
+        WardTeamsAndLeadersSeeder::run();
     }
 }

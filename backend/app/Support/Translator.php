@@ -110,6 +110,14 @@ class Translator
     }
 
     /**
+     * Alias for toBanglaNumber.
+     */
+    public static function toBanglaNumeral(int|float|string $number): string
+    {
+        return self::toBanglaNumber($number);
+    }
+
+    /**
      * Converts Bangla numerals to ASCII/English numbers.
      */
     public static function toEnglishNumber(string $number): string

@@ -187,6 +187,13 @@ class MilestoneBEndToEndFlowTest extends TestCase
             $pdo->exec("DELETE FROM citizen_feedback WHERE citizen_user_id IN ({$userList}) OR complaint_id IN (SELECT id FROM complaints WHERE citizen_user_id IN ({$userList}))");
             $pdo->exec("DELETE FROM task_evidence WHERE field_task_id IN (SELECT id FROM field_tasks WHERE complaint_id IN (SELECT id FROM complaints WHERE citizen_user_id IN ({$userList})))");
             $pdo->exec("DELETE FROM field_task_assignments WHERE field_task_id IN (SELECT id FROM field_tasks WHERE complaint_id IN (SELECT id FROM complaints WHERE citizen_user_id IN ({$userList})))");
+            $pdo->exec("DELETE FROM internal_notes WHERE complaint_id IN (SELECT id FROM complaints WHERE citizen_user_id IN ({$userList}))");
+            $pdo->exec("DELETE FROM support_requests WHERE complaint_id IN (SELECT id FROM complaints WHERE citizen_user_id IN ({$userList}))");
+            $pdo->exec("DELETE FROM executive_directives WHERE complaint_id IN (SELECT id FROM complaints WHERE citizen_user_id IN ({$userList}))");
+            $pdo->exec("DELETE FROM executive_attention WHERE complaint_id IN (SELECT id FROM complaints WHERE citizen_user_id IN ({$userList}))");
+            $pdo->exec("DELETE FROM citizen_feedback WHERE complaint_id IN (SELECT id FROM complaints WHERE citizen_user_id IN ({$userList}))");
+            $pdo->exec("DELETE FROM task_evidence WHERE field_task_id IN (SELECT id FROM field_tasks WHERE complaint_id IN (SELECT id FROM complaints WHERE citizen_user_id IN ({$userList})))");
+            $pdo->exec("DELETE FROM field_task_assignments WHERE field_task_id IN (SELECT id FROM field_tasks WHERE complaint_id IN (SELECT id FROM complaints WHERE citizen_user_id IN ({$userList})))");
             $pdo->exec("DELETE FROM field_tasks WHERE complaint_id IN (SELECT id FROM complaints WHERE citizen_user_id IN ({$userList}))");
             $pdo->exec("DELETE FROM complaint_media WHERE uploader_user_id IN ({$userList}) OR complaint_id IN (SELECT id FROM complaints WHERE citizen_user_id IN ({$userList}))");
             $pdo->exec("DELETE FROM complaint_ownership_history WHERE transferred_by_user_id IN ({$userList}) OR complaint_id IN (SELECT id FROM complaints WHERE citizen_user_id IN ({$userList}))");

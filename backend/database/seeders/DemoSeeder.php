@@ -16,5 +16,7 @@ class DemoSeeder
     public static function run(): void
     {
         RealisticDemoSeeder::run();
+        WardSupervisorsSeeder::run();
+        WardTeamsAndLeadersSeeder::run();
     }
 }

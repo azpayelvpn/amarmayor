@@ -75,6 +75,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/dashboard/reports">
+                                <i class="bi bi-file-earmark-bar-graph me-1 text-primary"></i><?= ($locale ?? 'bn') === 'bn' ? 'রিপোর্ট কেন্দ্র' : 'Reports' ?>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link fw-semibold px-2" href="/profile">
                                 <i class="bi bi-person-badge me-1"></i><?= ($locale ?? 'bn') === 'bn' ? 'প্রোফাইল' : 'Profile' ?>
                             </a>
@@ -106,12 +111,32 @@
                         <li class="nav-item">
                             <a class="nav-link fw-semibold px-2" href="/notices"><?= ($locale ?? 'bn') === 'bn' ? 'নোটিশ' : 'Notices' ?></a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold px-2" href="/schedules"><?= ($locale ?? 'bn') === 'bn' ? 'সেবা সূচি ও সনদ' : 'Schedules & Charter' ?></a>
+                        </li>
                     <?php endif; ?>
                 </ul>
 
                 <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
-                    <!-- Auth Actions -->
+                    <!-- Auth Actions & Notification Bell -->
                     <?php if ($isAuth): ?>
+                        <?php
+                            $unreadNotifCount = 0;
+                            try {
+                                $notifSvc = new \AmarMayor\Domain\Notifications\NotificationService();
+                                $unreadNotifCount = $notifSvc->getUnreadCount($user->id);
+                            } catch (\Throwable $t) {
+                                $unreadNotifCount = 0;
+                            }
+                        ?>
+                        <a href="/notifications" class="btn btn-sm btn-outline-secondary position-relative me-1" title="<?= ($locale ?? 'bn') === 'bn' ? 'নোটিফিকেশন কেন্দ্র' : 'Notifications' ?>">
+                            <i class="bi bi-bell-fill"></i>
+                            <?php if ($unreadNotifCount > 0): ?>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                    <?= \AmarMayor\Support\Translator::toBanglaNumeral($unreadNotifCount) ?>
+                                </span>
+                            <?php endif; ?>
+                        </a>
                         <a href="/profile" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
                             <i class="bi bi-person-circle"></i>
                             <span class="small font-monospace"><?= e($user->phone ?? $user->email ?? 'Account') ?></span>
@@ -172,5 +197,7 @@
 
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Civic Table Filter -->
+    <script src="/js/table-filter.js"></script>
 </body>
 </html>

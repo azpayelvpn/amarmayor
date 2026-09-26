@@ -142,6 +142,16 @@ class Request
         return $this->headers[$normalized] ?? $default;
     }
 
+    public function files(): array
+    {
+        return $this->files;
+    }
+
+    public function file(string $key): ?array
+    {
+        return $this->files[$key] ?? null;
+    }
+
     public function isJson(): bool
     {
         $contentType = (string)$this->header('content-type', '');
@@ -171,6 +181,18 @@ class Request
     public function getHeader(string $name, mixed $default = null): mixed
     {
         return $this->header($name, $default);
+    }
+
+    public function server(string $key, mixed $default = null): mixed
+    {
+        if (isset($this->server[$key])) {
+            return $this->server[$key];
+        }
+        if (str_starts_with($key, 'HTTP_')) {
+            $headerKey = strtolower(str_replace('_', '-', substr($key, 5)));
+            return $this->header($headerKey, $default);
+        }
+        return $default;
     }
 
     public function setAttribute(string $key, mixed $value): void

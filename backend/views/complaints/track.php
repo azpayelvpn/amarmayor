@@ -102,10 +102,79 @@
                         </div>
                     </div>
 
+                    <!-- Community Upvote / Anti-Duplicate -->
+                    <div class="d-flex align-items-center justify-content-between p-3 mb-3 bg-light rounded-3 border">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-people-fill text-primary fs-4"></i>
+                            <div>
+                                <strong class="text-dark">
+                                    <?= \AmarMayor\Support\Translator::toBanglaNumeral($complaint['supporters_count'] ?? 0) ?> জন
+                                </strong>
+                                <small class="text-muted d-block"><?= ($locale ?? 'bn') === 'bn' ? 'নাগরিক এই এলাকার একই সমস্যার ভুক্তভোগী' : 'citizens affected by this same issue' ?></small>
+                            </div>
+                        </div>
+                        <form action="/complaints/<?= (int)$complaint['id'] ?>/support" method="POST" class="d-inline">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-sm <?= !empty($complaint['user_supported']) ? 'btn-primary' : 'btn-outline-primary' ?> fw-semibold shadow-sm">
+                                <i class="bi bi-hand-thumbs-up-fill me-1"></i>
+                                <?= !empty($complaint['user_supported']) ? (($locale ?? 'bn') === 'bn' ? 'আমিও ভুক্তভোগী (সমর্থিত)' : 'Supported') : (($locale ?? 'bn') === 'bn' ? 'আমিও ভুক্তভোগী (+১)' : 'I am also affected (+1)') ?>
+                            </button>
+                        </form>
+                    </div>
+
                     <?php if (!empty($complaint['description'])): ?>
-                        <div class="p-3 bg-light rounded-3 mb-3">
+                        <div class="p-3 bg-light rounded-3 mb-3 border">
                             <span class="text-muted small fw-semibold d-block mb-1"><?= ($locale ?? 'bn') === 'bn' ? 'বিবরণ' : 'Description' ?></span>
                             <p class="mb-0 text-dark small"><?= nl2br(e($complaint['description'])) ?></p>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Before & After Resolution Visual Comparison -->
+                    <?php if (!empty($complaint['before_media']) || !empty($complaint['after_media'])): ?>
+                        <div class="card border-0 shadow-sm bg-white p-3 rounded-3 mb-3 border">
+                            <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                                <i class="bi bi-camera-fill text-primary"></i>
+                                <span><?= ($locale ?? 'bn') === 'bn' ? 'কাজের প্রমাণ ও চিত্র (Before & After প্রমাণ)' : 'Before & After Work Evidence' ?></span>
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="card h-100 border shadow-sm overflow-hidden bg-light">
+                                        <div class="card-header bg-danger text-white py-1 px-3 small fw-bold d-flex align-items-center justify-content-between">
+                                            <span><i class="bi bi-exclamation-triangle-fill me-1"></i><?= ($locale ?? 'bn') === 'bn' ? 'কাজের পূর্বের ছবি (সমস্যা)' : 'Before Work' ?></span>
+                                            <span class="badge bg-white text-danger">BEFORE</span>
+                                        </div>
+                                        <div class="card-body p-2 text-center d-flex align-items-center justify-content-center" style="min-height: 180px;">
+                                            <?php if (!empty($complaint['before_media']['original_file_path'])): ?>
+                                                <img src="<?= e($complaint['before_media']['original_file_path']) ?>" alt="Before Work" class="img-fluid rounded" style="max-height: 220px; object-fit: cover; width: 100%;">
+                                            <?php else: ?>
+                                                <div class="text-muted small py-4">
+                                                    <i class="bi bi-image fs-1 d-block mb-1 text-secondary opacity-50"></i>
+                                                    <?= ($locale ?? 'bn') === 'bn' ? 'কোন ছবি দেওয়া হয়নি' : 'No photo attached' ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="card h-100 border shadow-sm overflow-hidden bg-light">
+                                        <div class="card-header bg-success text-white py-1 px-3 small fw-bold d-flex align-items-center justify-content-between">
+                                            <span><i class="bi bi-check-circle-fill me-1"></i><?= ($locale ?? 'bn') === 'bn' ? 'কাজের পরের ছবি (সমাধান)' : 'After Resolution' ?></span>
+                                            <span class="badge bg-white text-success">AFTER</span>
+                                        </div>
+                                        <div class="card-body p-2 text-center d-flex align-items-center justify-content-center" style="min-height: 180px;">
+                                            <?php if (!empty($complaint['after_media']['original_file_path'])): ?>
+                                                <img src="<?= e($complaint['after_media']['original_file_path']) ?>" alt="After Resolution" class="img-fluid rounded" style="max-height: 220px; object-fit: cover; width: 100%;">
+                                            <?php else: ?>
+                                                <div class="text-muted small py-4">
+                                                    <i class="bi bi-hourglass-split fs-1 d-block mb-1 text-warning"></i>
+                                                    <?= ($locale ?? 'bn') === 'bn' ? 'মাঠপর্যায়ের কাজ শেষে সমাধান ছবি যুক্ত হবে' : 'Resolution photo will appear upon completion' ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     <?php endif; ?>
 

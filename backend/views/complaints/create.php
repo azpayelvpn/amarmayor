@@ -153,6 +153,19 @@
                             </div>
                         </div>
 
+                        <!-- Emergency Civic Hazard Flag -->
+                        <div class="card border-warning bg-warning bg-opacity-10 p-3 rounded-3 mb-4">
+                            <div class="form-check form-switch mb-1">
+                                <input class="form-check-input" type="checkbox" role="switch" id="is_emergency" name="is_emergency" value="1">
+                                <label class="form-check-label fw-bold text-dark" for="is_emergency">
+                                    🚨 <?= ($locale ?? 'bn') === 'bn' ? 'এটি কি একটি অতি জরুরি / বিপজ্জনক সমস্যা?' : 'Is this an urgent civic hazard?' ?>
+                                </label>
+                            </div>
+                            <small class="text-muted ps-4">
+                                <?= ($locale ?? 'bn') === 'bn' ? 'যেমন: খোলা ম্যানহোল, প্রধান সড়কে বিপজ্জনক গর্ত, ঝুলন্ত বিদ্যুৎ তার বা মৃত পশু। এটি নির্বাচন করলে সরাসরি কন্ট্রোল রুম ও মেয়রের নজরে আসবে।' : 'e.g. Open manhole, live electric wire, deep road crater, dead animal. Will be routed immediately to Mayor & Control Room.' ?>
+                            </small>
+                        </div>
+
                         <div class="d-flex justify-content-between">
                             <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="goToStep(2)">
                                 <?= ($locale ?? 'bn') === 'bn' ? '&larr; পূর্ববর্তী' : '&larr; Back' ?>

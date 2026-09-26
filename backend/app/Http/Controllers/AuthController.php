@@ -32,6 +32,7 @@ class AuthController
             'error' => $request->query('error'),
             'phone' => $request->query('phone'),
             'step' => $request->query('step', 'request'),
+            'demo_otp' => $request->query('demo_otp'),
         ]);
     }
 
@@ -66,7 +67,8 @@ class AuthController
             return Response::redirect('/login?error=' . urlencode($result['message']) . '&tab=otp');
         }
 
-        return Response::redirect('/login?step=verify&phone=' . urlencode($phone) . '&tab=otp');
+        $demoOtpParam = !empty($result['mock_otp']) ? '&demo_otp=' . urlencode($result['mock_otp']) : '';
+        return Response::redirect('/login?step=verify&phone=' . urlencode($phone) . $demoOtpParam . '&tab=otp');
     }
 
     /**

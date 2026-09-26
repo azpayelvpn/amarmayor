@@ -105,14 +105,20 @@
                                 </td>
                                 <td class="text-end pe-4">
                                     <div class="d-flex justify-content-end gap-1">
-                                        <form action="/login/password" method="POST" class="d-inline">
-                                            <?= csrf_field() ?>
-                                            <input type="hidden" name="identifier" value="<?= e($u['email']) ?>">
-                                            <input type="hidden" name="password" value="Demo@12345">
-                                            <button type="submit" class="btn btn-sm btn-primary">
-                                                Login &rarr;
-                                            </button>
-                                        </form>
+                                        <?php if (($u['role_slug'] ?? '') === 'field_worker'): ?>
+                                            <span class="badge bg-secondary-subtle text-secondary border px-2 py-1 small">
+                                                <i class="bi bi-person-x me-1"></i>ম্যানুয়াল কর্মী — সরাসরি লগইন নেই (মাঠ সম্পদ)
+                                            </span>
+                                        <?php else: ?>
+                                            <form action="/login/password" method="POST" class="d-inline">
+                                                <?= csrf_field() ?>
+                                                <input type="hidden" name="identifier" value="<?= e($u['email']) ?>">
+                                                <input type="hidden" name="password" value="Demo@12345">
+                                                <button type="submit" class="btn btn-sm btn-primary">
+                                                    Login &rarr;
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
                                         <a href="/dashboard" class="btn btn-sm btn-outline-secondary">
                                             Dashboard
                                         </a>

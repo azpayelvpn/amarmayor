@@ -79,8 +79,12 @@ class ComplaintService
 
         // 4. Generate Unique Public Complaint Number: MCC-YYMM-XXXXX
         $prefix = 'MCC-' . date('ym') . '-';
-        $randomSeq = sprintf('%05d', random_int(10000, 99999));
-        $complaintNumber = $prefix . $randomSeq;
+        do {
+            $randomSeq = sprintf('%05d', random_int(10000, 99999));
+            $complaintNumber = $prefix . $randomSeq;
+            $chk = $pdo->prepare("SELECT id FROM complaints WHERE public_complaint_number = ? LIMIT 1");
+            $chk->execute([$complaintNumber]);
+        } while ($chk->fetchColumn());
 
         $pdo->beginTransaction();
         try {
@@ -279,7 +283,42 @@ class ComplaintService
         }
         $row['timeline'] = $dedupedTimeline;
 
-        // If viewing as citizen owner, include full description and uploaded media
+        // Supporters count ('আমিও ভুক্তভোগী' Community Upvotes)
+        $suppStmt = $pdo->prepare("SELECT COUNT(*) FROM complaint_supporters WHERE complaint_id = ?");
+        $suppStmt->execute([(int)$row['id']]);
+        $row['supporters_count'] = (int)$suppStmt->fetchColumn();
+
+        $row['user_supported'] = false;
+        if ($viewingUserId !== null) {
+            $chkStmt = $pdo->prepare("SELECT 1 FROM complaint_supporters WHERE complaint_id = ? AND citizen_user_id = ? LIMIT 1");
+            $chkStmt->execute([(int)$row['id'], $viewingUserId]);
+            $row['user_supported'] = (bool)$chkStmt->fetchColumn();
+        }
+
+        // Before & After Proof Photos
+        // Before work (Initial citizen problem evidence)
+        $bStmt = $pdo->prepare("
+            SELECT cm.id, cm.original_file_path, cm.media_type, cm.created_at
+            FROM complaint_media cm
+            WHERE cm.complaint_id = ?
+            ORDER BY cm.id ASC LIMIT 1
+        ");
+        $bStmt->execute([(int)$row['id']]);
+        $row['before_media'] = $bStmt->fetch(PDO::FETCH_ASSOC) ?: null;
+
+        // After work (Field crew / supervisor resolution evidence)
+        $aStmt = $pdo->prepare("
+            SELECT cm.id, cm.original_file_path, cm.media_type, te.server_timestamp, te.evidence_stage
+            FROM task_evidence te
+            INNER JOIN complaint_media cm ON cm.id = te.media_id
+            INNER JOIN field_tasks ft ON ft.id = te.field_task_id
+            WHERE ft.complaint_id = ? AND te.evidence_stage = 'after_work'
+            ORDER BY te.id DESC LIMIT 1
+        ");
+        $aStmt->execute([(int)$row['id']]);
+        $row['after_media'] = $aStmt->fetch(PDO::FETCH_ASSOC) ?: null;
+
+        // If viewing as citizen owner or staff, include full description and uploaded media
         $row['is_owner'] = $isOwner;
         if ($isOwner) {
             $desc = $pdo->query("SELECT description FROM complaints WHERE id = {$row['id']}")->fetchColumn();
